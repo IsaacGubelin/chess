@@ -1,7 +1,14 @@
 package chess;
 
+
+
 import java.util.Collection;
+import java.util.List;
+import java.util.ArrayList;
 import java.util.Objects;
+
+import chess.KnightMovesCalculator;
+
 
 /**
  * Represents a single chess piece
@@ -11,14 +18,17 @@ import java.util.Objects;
  */
 public class ChessPiece {
 
+
     public ChessPiece(ChessGame.TeamColor pieceColor, ChessPiece.PieceType type) {
         this.pieceColor = pieceColor;
         this.type = type;
     }
 
     // Private Member variables for this class
-    ChessGame.TeamColor pieceColor;
-    ChessPiece.PieceType type;
+    private ChessGame.TeamColor pieceColor;
+    private ChessPiece.PieceType type;
+
+    private boolean hasMoved; // Useful for pawn moves
 
     /**
      * The various different chess piece options
@@ -55,9 +65,13 @@ public class ChessPiece {
      *
      * @return Collection of valid moves
      */
+
+
     public Collection<ChessMove> pieceMoves(ChessBoard board, ChessPosition myPosition) {
 
         // TODO: Declare a temporary variable, Collection<ChessMove> to fill
+
+
 
         // TODO: Use if/else logic to determine piece.
         // Logic for each piece
@@ -72,7 +86,7 @@ public class ChessPiece {
 
         // ROOK:
 
-        // KNIGHT:
+
 
         // BISHOP:
 
@@ -83,6 +97,22 @@ public class ChessPiece {
 
         throw new RuntimeException("Not implemented");
     }
+
+
+
+
+
+    // TODO: Fill in these helper methods
+    private Collection<ChessMove> pawnMoves(ChessBoard board, ChessPosition myPos) {
+
+        ArrayList<ChessMove> moves = new ArrayList<>();
+        //FIXME: Need to add more logic
+        return moves;
+    }
+
+
+
+
 
     @Override
     public boolean equals(Object o) {

@@ -12,6 +12,11 @@ public class ChessBoard {
         
     }
 
+    // This is a 2D array of ChessPiece objects.
+    // Their Piecetypes either hold a game piece or are set to null.
+    private ChessPiece[][] squares;
+
+
     /**
      * Adds a chess piece to the chessboard
      *
@@ -19,8 +24,19 @@ public class ChessBoard {
      * @param piece    the piece to add
      */
     public void addPiece(ChessPosition position, ChessPiece piece) {
-        throw new RuntimeException("Not implemented");
+        int r = position.getRow();
+        int c = position.getColumn();
+
+        // Before adding piece to square, verify that the square is vacant.
+        if (squares[r][c] != null) {
+            squares[r][c] = piece;
+        }
+        else {
+
+        }
     }
+
+
 
     /**
      * Gets a chess piece on the chessboard
@@ -30,7 +46,7 @@ public class ChessBoard {
      * position
      */
     public ChessPiece getPiece(ChessPosition position) {
-        throw new RuntimeException("Not implemented");
+        return squares[position.getRow()][position.getColumn()];
     }
 
     /**
