@@ -7,7 +7,7 @@ import java.util.List;
 import java.util.ArrayList;
 import java.util.Objects;
 
-import chess.KnightMovesCalculator;
+import chess.PieceMovesCalculator;
 
 
 /**
@@ -69,30 +69,18 @@ public class ChessPiece {
 
     public Collection<ChessMove> pieceMoves(ChessBoard board, ChessPosition myPosition) {
 
-        // TODO: Declare a temporary variable, Collection<ChessMove> to fill
+        ArrayList<ChessMove> moves = new ArrayList<>(); // Container to fill with available moves
+
+//        PieceMovesCalculator foo = new PieceMovesCalculator();
+        PieceMovesCalculator.calcMoves();
 
 
 
-        // TODO: Use if/else logic to determine piece.
-        // Logic for each piece
 
-        // PAWN:
-        // Check if in initial position
-        // Available moves include the following:
-        // One spot forward
-        // Two spots forward
-        // Forward one, left one if occupied by opposing piece
-        // Forward one, right one if occupied by opposing piece
-
-        // ROOK:
+//        moves = foo.calcMoves(board, myPosition);
 
 
 
-        // BISHOP:
-
-        // KING:
-
-        // QUEEN:
 
 
         throw new RuntimeException("Not implemented");
