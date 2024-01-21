@@ -28,7 +28,7 @@ public class ChessPiece {
     private ChessGame.TeamColor pieceColor;
     private ChessPiece.PieceType type;
 
-    private boolean hasMoved; // Useful for pawn moves
+    protected boolean hasMoved; // Useful for pawn moves
 
     /**
      * The various different chess piece options
@@ -72,7 +72,7 @@ public class ChessPiece {
         ArrayList<ChessMove> moves = new ArrayList<>(); // Container to fill with available moves
 
 //        PieceMovesCalculator foo = new PieceMovesCalculator();
-        PieceMovesCalculator.calcMoves();
+        chess.PieceMovesCalculator.calcMoves(board, myPosition);
 
 
 

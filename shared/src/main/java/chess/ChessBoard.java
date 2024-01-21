@@ -49,6 +49,11 @@ public class ChessBoard {
         return squares[position.getRow()][position.getColumn()];
     }
 
+    // Overloaded function if user gives row and column parameters instead.
+    public ChessPiece getPiece(int row, int column) {
+        return squares[row][column];
+    }
+
     /**
      * Sets the board to the default starting board
      * (How the game of chess normally starts)
