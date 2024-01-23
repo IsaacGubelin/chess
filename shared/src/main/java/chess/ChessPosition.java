@@ -34,6 +34,14 @@ public class ChessPosition {
         return col;
     }
 
+    // Change the row/column data of a position object.
+    // Used in piece moves to make a generic position object and change it to test
+    // possible valid locations to move a piece to.
+    public void setPositionRowColumn(int row, int column) {
+        this.row = row;
+        this.col = column;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -53,4 +61,6 @@ public class ChessPosition {
                 "row=" + row +
                 ", col=" + col;
     }
+
+
 }

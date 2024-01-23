@@ -2,10 +2,7 @@ package chess;
 
 
 
-import java.util.Collection;
-import java.util.List;
-import java.util.ArrayList;
-import java.util.Objects;
+import java.util.*;
 
 import chess.PieceMovesCalculator;
 
@@ -69,7 +66,7 @@ public class ChessPiece {
 
     public Collection<ChessMove> pieceMoves(ChessBoard board, ChessPosition myPosition) {
 
-        ArrayList<ChessMove> moves = new ArrayList<>(); // Container to fill with available moves
+        HashSet<ChessMove> moves = new HashSet<>(); // Container to fill with available moves
 
         moves = chess.PieceMovesCalculator.calcMoves(board, myPosition);
         return moves;

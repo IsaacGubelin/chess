@@ -1,3 +1,6 @@
+
+//FIXME: Change indexing to 1-indexed
+
 package chess;
 
 import java.util.Arrays;
@@ -11,7 +14,8 @@ import java.util.Arrays;
 public class ChessBoard {
 
     public ChessBoard() {
-        
+        squares = new ChessPiece[8][8];
+//        resetBoard();
     }
 
     // This is a 2D array of ChessPiece objects.
@@ -26,33 +30,26 @@ public class ChessBoard {
      * @param piece    the piece to add
      */
     public void addPiece(ChessPosition position, ChessPiece piece) {
-        int r = position.getRow();
-        int c = position.getColumn();
+        int r = position.getRow() - 1;
+        int c = position.getColumn() - 1;
 
         // Before adding piece to square, verify that the square is vacant.
-        if (squares[r][c] != null) {
+//        if (squares[r][c] == null) {
             squares[r][c] = piece;
-        }
-        else {
-            System.out.println("Space already occupied."); //TODO: Change to throw statement, or remove
-        }
+//        }
+
     }
 
     // Overload function that takes row and column info as parameters
     public void addPiece(int row, int col, ChessPiece piece) {
-        // Before adding piece to square, verify that the square is vacant.
-        if (squares[row][col] != null) {
+
             squares[row][col] = piece;
-        }
-        else {
-            System.out.println("Space already occupied."); //TODO: Change to throw statement, or remove
-        }
     }
 
     // Helper function for removing a piece from the board by setting it to null.
     // Called when a piece is captured.
     public void removePiece(ChessPosition position) {
-        squares[position.getRow()][position.getColumn()] = null;
+        squares[position.getRow() - 1][position.getColumn() - 1] = null;
     }
 
 
@@ -65,7 +62,7 @@ public class ChessBoard {
      * position
      */
     public ChessPiece getPiece(ChessPosition position) {
-        return squares[position.getRow()][position.getColumn()];
+        return squares[position.getRow() - 1][position.getColumn() - 1];
     }
 
     // Overloaded function if user gives row and column parameters instead.
@@ -136,7 +133,7 @@ public class ChessBoard {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         ChessBoard that = (ChessBoard) o;
-        return Arrays.equals(squares, that.squares);
+        return Arrays.deepEquals(squares, that.squares);
     }
 
     @Override

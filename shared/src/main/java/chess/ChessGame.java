@@ -12,6 +12,11 @@ public class ChessGame {
 
     public ChessGame() {
 
+        // The white team goes first
+        turn = TeamColor.WHITE;
+
+        //FIXME: Initialize anything else
+
     }
 
     private TeamColor turn;

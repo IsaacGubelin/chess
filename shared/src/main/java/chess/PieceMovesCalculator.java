@@ -2,26 +2,31 @@ package chess;
 
 import javax.imageio.stream.ImageOutputStream;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Collection;
 
 
 public class PieceMovesCalculator {
 
 
+    // Verify that a given row and column is in bounds. Zero indexed.
+    private static boolean isInBounds(int row, int column) {
+        return (row < 8 && row >= 0 && column < 8 && column >= 0);
+    }
+    // Same function, but for ChessPosition parameter. One indexed.
+    private static boolean isInBounds(ChessPosition pos) {
+        return (pos.getRow() < 9 && pos.getRow() >= 1 && pos.getColumn() < 9 && pos.getColumn() >= 1);
+    }
 
-    // Easy validation function to make sure a position is not out of bounds
-    // or occupied by another chess piece of the same team color.
-    private static boolean isValidKnightPosition(int row, int col, ChessBoard board) {
-        // Get position and team color info
-        ChessPosition pos = new ChessPosition(row, col);
-        ChessGame.TeamColor sameColor = board.getPiece(pos).getTeamColor();
-
-        // Is it within the bounds of the board?
-        boolean inBounds = (row < 8 && row >= 0 && col < 8 && col >= 0);
-        // Is the space either empty or an enemy piece?
-        boolean goodToClaim = (board.getPiece(pos) == null || board.getPiece(pos).getTeamColor() != sameColor);
-
-        return (inBounds && goodToClaim); // If both conditions are met, return true.
+    // Verify that a given location is a valid spot to move a piece.
+    // First checks if the given location is null (empty). If so, returns true immediately
+    // Otherwise, if there is a piece, checks if the piece is a different color.
+    private static boolean isGoodSpot(int row, int column, ChessBoard board, ChessGame.TeamColor sameColor) {
+        return (board.getPiece(row, column) == null || board.getPiece(row, column).getTeamColor() != sameColor);
+    }
+    // Same function, but for ChessPosition parameter
+    private static boolean isGoodSpot(ChessPosition pos, ChessBoard board, ChessGame.TeamColor sameColor) {
+        return (board.getPiece(pos) == null || board.getPiece(pos).getTeamColor() != sameColor);
     }
 
 
@@ -29,9 +34,9 @@ public class PieceMovesCalculator {
     // This function is a hub that determines the piece type and calls the corresponding helper function.
     // It returns an Array List of ChessMove objects that gets returned to the pieceMoves function call
     // in the ChessPiece class.
-    public static ArrayList<ChessMove> calcMoves(ChessBoard board, ChessPosition myPosition) {
+    public static HashSet<ChessMove> calcMoves(ChessBoard board, ChessPosition myPosition) {
 
-        ArrayList<ChessMove> moves = new ArrayList<>();
+        HashSet<ChessMove> moves = new HashSet<>();
 
         ChessPiece.PieceType type = board.getPiece(myPosition).getPieceType();
         ChessGame.TeamColor color = board.getPiece(myPosition).getTeamColor();
@@ -41,21 +46,32 @@ public class PieceMovesCalculator {
             // For a pawn, check which team its on.
             case PAWN:
                 if (color == ChessGame.TeamColor.BLACK) {
-                    moves = pawnMovesBlack(board, myPosition);
+                    moves = pawnMovesBlack(board, myPosition); //FIXME
                 }
                 else {
-                    moves = pawnMovesWhite(board, myPosition);
+                    moves = pawnMovesWhite(board, myPosition); //FIXME
                 }
+                break;
+
             case ROOK:
             //FIXME
+                break;
+
             case KNIGHT:
                 moves = knightMoves(board, myPosition);
+                break;
 
             case BISHOP:
             //FIXME
+                break;
+
             case KING:
-                //FIXME
+                moves = kingMoves(board, myPosition);
+                break;
+
             case QUEEN:
+
+                break;
 
         }
 
@@ -67,67 +83,68 @@ public class PieceMovesCalculator {
     // Checks eight different squares in L-shape displacements from origin position.
     // If a valid position is found, make a new position object for the end position and
     // then make a new Chess move object.
-    public static ArrayList<ChessMove> knightMoves(ChessBoard board, ChessPosition myPos) {
+    public static HashSet<ChessMove> knightMoves(ChessBoard board, ChessPosition myPos) {
 
-        ArrayList<ChessMove> moves = new ArrayList<>();
+        HashSet<ChessMove> moves = new HashSet<>();
+
+        // This position object will be changed to try different end move scenarios
+        ChessPosition endPos = new ChessPosition(myPos.getRow(), myPos.getColumn());
+
+        // Keep current row, column, and color info
+        int r = myPos.getRow();
+        int c = myPos.getColumn();
+        ChessGame.TeamColor pieceColor = board.getPiece(myPos).getTeamColor();
+
 
         // One row down, two columns left
-        if (isValidKnightPosition(myPos.getRow() - 1, myPos.getColumn() - 2, board)) {
+        endPos.setPositionRowColumn(r - 1, c - 2);
+        if (isInBounds(endPos) && isGoodSpot(endPos, board, pieceColor)) {
 
-            // If the position is valid, store it.
-            ChessPosition endPos = new ChessPosition(myPos.getRow() - 1, myPos.getColumn() - 2);
-            // Make a new ChessMove object.
-            ChessMove move =  new ChessMove(myPos, endPos);
             // Add to list.
-            moves.add(move);
+            moves.add(new ChessMove(myPos, endPos));
         }
-        // One row up, two columns left
-        if (isValidKnightPosition(myPos.getRow() + 1, myPos.getColumn() - 2, board)) {
 
-            ChessPosition endPos = new ChessPosition(myPos.getRow() + 1, myPos.getColumn() - 2);
+        // One row up, two columns left
+        endPos.setPositionRowColumn(r + 1, c - 2);
+        if (isInBounds(endPos) && isGoodSpot(endPos, board, pieceColor)) {
             ChessMove move =  new ChessMove(myPos, endPos);
             moves.add(move);
         }
-        // Two rows up, one column left
-        if (isValidKnightPosition(myPos.getRow() + 2, myPos.getColumn() - 1, board)) {
 
-            ChessPosition endPos = new ChessPosition(myPos.getRow() + 2, myPos.getColumn() - 1);
+        // Two rows up, one column left
+        endPos.setPositionRowColumn(r + 2, c - 1);
+        if (isInBounds(endPos) && isGoodSpot(endPos, board, pieceColor)) {
             ChessMove move =  new ChessMove(myPos, endPos);
             moves.add(move);
         }
         // Two rows up, one column right
-        if (isValidKnightPosition(myPos.getRow() + 2, myPos.getColumn() + 1, board)) {
+        endPos.setPositionRowColumn(r + 2, c + 1);
+        if (isInBounds(endPos) && isGoodSpot(endPos, board, pieceColor)) {
 
-            ChessPosition endPos = new ChessPosition(myPos.getRow() + 2, myPos.getColumn() + 1);
-            ChessMove move =  new ChessMove(myPos, endPos);
-            moves.add(move);
+            moves.add(new ChessMove(myPos, endPos));
         }
         // One row up, two columns right
-        if (isValidKnightPosition(myPos.getRow() + 1, myPos.getColumn() + 2, board)) {
+        endPos.setPositionRowColumn(r + 1, c + 2);
+        if (isInBounds(endPos) && isGoodSpot(endPos, board, pieceColor)) {
 
-            ChessPosition endPos = new ChessPosition(myPos.getRow() + 1, myPos.getColumn() + 2);
-            ChessMove move =  new ChessMove(myPos, endPos);
-            moves.add(move);
+            moves.add(new ChessMove(myPos, endPos));
         }
         // One row down, two columns right
-        if (isValidKnightPosition(myPos.getRow() - 1, myPos.getColumn() + 2, board)) {
-
-            ChessPosition endPos = new ChessPosition(myPos.getRow() - 1, myPos.getColumn() + 2);
+        endPos.setPositionRowColumn(r - 1, c + 2);
+        if (isInBounds(endPos) && isGoodSpot(endPos, board, pieceColor)) {
             ChessMove move =  new ChessMove(myPos, endPos);
             moves.add(move);
         }
         // Two rows down, one column right
-        if (isValidKnightPosition(myPos.getRow() - 2, myPos.getColumn() + 1, board)) {
-
-            ChessPosition endPos = new ChessPosition(myPos.getRow() - 2, myPos.getColumn() + 1);
+        endPos.setPositionRowColumn(r - 2, c + 1);
+        if (isInBounds(endPos) && isGoodSpot(endPos, board, pieceColor)) {
             ChessMove move =  new ChessMove(myPos, endPos);
             moves.add(move);
         }
         // Two rows down, one column left
-        if (isValidKnightPosition(myPos.getRow() - 2, myPos.getColumn() - 1, board)) {
-
-            ChessPosition endPos = new ChessPosition(myPos.getRow() - 2, myPos.getColumn() - 1);
-            ChessMove move = new ChessMove(myPos, endPos);
+        endPos.setPositionRowColumn(r - 2, c - 1);
+        if (isInBounds(endPos) && isGoodSpot(endPos, board, pieceColor)) {
+            ChessMove move =  new ChessMove(myPos, endPos);
             moves.add(move);
         }
 
@@ -141,11 +158,12 @@ public class PieceMovesCalculator {
     // One forward, one left (Capture only)
     // One forward, one right (Capture only)
     // Black pawns start in row 6, moving towards 0. White pawns start in row 1, moving towards 7.
-    public static ArrayList<ChessMove> pawnMovesBlack(ChessBoard board, ChessPosition myPos) {
-        ArrayList<ChessMove> moves = new ArrayList<>();
+    public static HashSet<ChessMove> pawnMovesBlack(ChessBoard board, ChessPosition myPos) {
+        HashSet<ChessMove> moves = new HashSet<>();
 
         int r = myPos.getRow();     // Current row
         int c = myPos.getColumn();  // Current column
+
 
 
         // If the pawn hasn't reached its last row and the space in front is empty
@@ -171,7 +189,7 @@ public class PieceMovesCalculator {
         }
         // If pawn hasn't moved yet and there is nothing within two spaces ahead
         if (!board.getPiece(myPos).hasMoved && board.getPiece(r - 1, c) == null
-            && board.getPiece(r - 2, c) == null) {
+            && board.getPiece(r - 2, c) == null && r == 6) {
 
             ChessPosition endPos = new ChessPosition(r - 2, c);
             ChessMove move = new ChessMove(myPos, endPos);
@@ -179,7 +197,9 @@ public class PieceMovesCalculator {
         }
 
         // If there are enemy pieces diagonally to either side, those are potential capture moves
-        if (board.getPiece(r - 1, c - 1).getTeamColor() == ChessGame.TeamColor.WHITE) {
+        if (board.getPiece(r - 1, c - 1) != null &&
+            board.getPiece(r - 1, c - 1).getTeamColor() == ChessGame.TeamColor.WHITE) {
+
             ChessPosition endPos = new ChessPosition(r - 1, c - 1);
             ChessMove move = new ChessMove(myPos, endPos);
 
@@ -198,7 +218,9 @@ public class PieceMovesCalculator {
             }
         }
 
-        if (board.getPiece(r - 1, c + 1).getTeamColor() == ChessGame.TeamColor.WHITE) {
+        if (board.getPiece(r - 1, c + 1) != null &&
+            board.getPiece(r - 1, c + 1).getTeamColor() == ChessGame.TeamColor.WHITE) {
+
             ChessPosition endPos = new ChessPosition(r - 1, c + 1);
             ChessMove move = new ChessMove(myPos, endPos);
             if (r == 1) {
@@ -221,8 +243,8 @@ public class PieceMovesCalculator {
 
     // WHITE PAWN MOVE CALCULATOR
     // Exactly the same as black, but in opposite direction.
-    public static ArrayList<ChessMove> pawnMovesWhite(ChessBoard board, ChessPosition myPos) {
-        ArrayList<ChessMove> moves = new ArrayList<>();
+    public static HashSet<ChessMove> pawnMovesWhite(ChessBoard board, ChessPosition myPos) {
+        HashSet<ChessMove> moves = new HashSet<>();
 
         int r = myPos.getRow();
         int c = myPos.getColumn();
@@ -248,8 +270,9 @@ public class PieceMovesCalculator {
 
         }
 
+        // Check for double forward move (Only possible for first move)
         if (!board.getPiece(myPos).hasMoved && board.getPiece(r + 1, c) == null
-                && board.getPiece(r + 2, c) == null) {
+            && board.getPiece(r + 2, c) == null && r == 1) {
 
             ChessPosition endPos = new ChessPosition(r + 2, c);
             ChessMove move = new ChessMove(myPos, endPos);
@@ -257,7 +280,9 @@ public class PieceMovesCalculator {
         }
 
         // If there are enemy pieces diagonally to either side, those are potential capture moves
-        if (board.getPiece(r + 1, c - 1).getTeamColor() == ChessGame.TeamColor.BLACK) {
+        if (board.getPiece(r + 1, c - 1) != null &&
+            board.getPiece(r + 1, c - 1).getTeamColor() == ChessGame.TeamColor.BLACK) {
+
             ChessPosition endPos = new ChessPosition(r + 1, c - 1);
             ChessMove move = new ChessMove(myPos, endPos);
 
@@ -275,7 +300,9 @@ public class PieceMovesCalculator {
             }
         }
 
-        if (board.getPiece(r + 1, c + 1).getTeamColor() == ChessGame.TeamColor.BLACK) {
+        if (board.getPiece(r + 1, c + 1) != null &&
+            board.getPiece(r + 1, c + 1).getTeamColor() == ChessGame.TeamColor.BLACK) {
+
             ChessPosition endPos = new ChessPosition(r + 1, c + 1);
             ChessMove move = new ChessMove(myPos, endPos);
 
@@ -316,58 +343,68 @@ public class PieceMovesCalculator {
     // KING PIECE MOVES
     // A king piece can move one space into any of the eight spots around it, as long as they are not
     // occupied by another piece of the same color.
-    public static ArrayList<ChessMove> kingMoves(ChessBoard board, ChessPosition myPos) {
-        ArrayList<ChessMove> moves = new ArrayList<>();
+    public static HashSet<ChessMove> kingMoves(ChessBoard board, ChessPosition myPos) {
+        HashSet<ChessMove> moves = new HashSet<>();
 
+        // Use this as a candidate end position object
+        ChessPosition endPos = new ChessPosition(myPos.getRow(), myPos.getColumn());
         int r = myPos.getRow();
         int c = myPos.getColumn();
-        ChessGame.TeamColor sameColor = board.getPiece(myPos).getTeamColor();
+        ChessGame.TeamColor pieceColor = board.getPiece(myPos).getTeamColor();
 
-        if (board.getPiece(r, c - 1).getTeamColor() != sameColor) {
-            ChessPosition endPos = new ChessPosition(r, c - 1);
+
+        // Test space directly to left
+        endPos.setPositionRowColumn(r, c - 1);
+        if (isInBounds(endPos) && isGoodSpot(endPos, board, pieceColor)) {
             ChessMove move = new ChessMove(myPos, endPos);
             moves.add(move);
         }
 
-        if (board.getPiece(r + 1, c - 1).getTeamColor() != sameColor) {
-            ChessPosition endPos = new ChessPosition(r + 1, c - 1);
-            ChessMove move = new ChessMove(myPos, endPos);
-
-            moves.add(move);
-        }
-
-        if (board.getPiece(r + 1, c).getTeamColor() != sameColor) {
-            ChessPosition endPos = new ChessPosition(r + 1, c);
+        // Test space left and up
+        endPos.setPositionRowColumn(r + 1, c - 1);
+        if (isInBounds(endPos) && isGoodSpot(endPos, board, pieceColor)) {
             ChessMove move = new ChessMove(myPos, endPos);
             moves.add(move);
         }
 
-        if (board.getPiece(r + 1, c + 1).getTeamColor() != sameColor) {
-            ChessPosition endPos = new ChessPosition(r + 1, c + 1);
+        // Test space up
+        endPos.setPositionRowColumn(r + 1, c);
+        if (isInBounds(endPos) && isGoodSpot(endPos, board, pieceColor)) {
             ChessMove move = new ChessMove(myPos, endPos);
             moves.add(move);
         }
 
-        if (board.getPiece(r, c + 1).getTeamColor() != sameColor) {
-            ChessPosition endPos = new ChessPosition(r, c + 1);
+        // Test space up and right
+        endPos.setPositionRowColumn(r + 1, c + 1);
+        if (isInBounds(endPos) && isGoodSpot(endPos, board, pieceColor)) {
             ChessMove move = new ChessMove(myPos, endPos);
             moves.add(move);
         }
 
-        if (board.getPiece(r - 1, c + 1).getTeamColor() != sameColor) {
-            ChessPosition endPos = new ChessPosition(r - 1, c + 1);
+        // Test space directly to right
+        endPos.setPositionRowColumn(r, c + 1);
+        if (isInBounds(endPos) && isGoodSpot(endPos, board, pieceColor)) {
             ChessMove move = new ChessMove(myPos, endPos);
             moves.add(move);
         }
 
-        if (board.getPiece(r - 1, c).getTeamColor() != sameColor) {
-            ChessPosition endPos = new ChessPosition(r - 1, c);
+        // Test position right and down
+        endPos.setPositionRowColumn(r - 1, c + 1);
+        if (isInBounds(endPos) && isGoodSpot(endPos, board, pieceColor)) {
             ChessMove move = new ChessMove(myPos, endPos);
             moves.add(move);
         }
 
-        if (board.getPiece(r - 1, c - 1).getTeamColor() != sameColor) {
-            ChessPosition endPos = new ChessPosition(r - 1, c - 1);
+        // Test position directly downward
+        endPos.setPositionRowColumn(r - 1, c);
+        if (isInBounds(endPos) && isGoodSpot(endPos, board, pieceColor)) {
+            ChessMove move = new ChessMove(myPos, endPos);
+            moves.add(move);
+        }
+
+        // Test position down and left
+        endPos.setPositionRowColumn(r - 1, c - 1);
+        if (isInBounds(endPos) && isGoodSpot(endPos, board, pieceColor)) {
             ChessMove move = new ChessMove(myPos, endPos);
             moves.add(move);
         }

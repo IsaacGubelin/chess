@@ -66,6 +66,16 @@ public class ChessMove {
         if (o == null || getClass() != o.getClass()) return false;
         ChessMove chessMove = (ChessMove) o;
 
+        // If either promotionPiece is null but not both of them at same time, moves are not equal
+        if ((promotionPiece == null) ^ (chessMove.promotionPiece == null)) {
+            return false;
+        }
+
+        // If both promotion pieces are null, check positions
+        if (promotionPiece == null && chessMove.promotionPiece == null) {
+            return startPosition.equals(chessMove.startPosition) && endPosition.equals(chessMove.endPosition);
+        }
+        // Otherwise, both moves carry promotion pieces. Compare everything.
         return startPosition.equals(chessMove.startPosition) && endPosition.equals(chessMove.endPosition)
                 && promotionPiece.equals(chessMove.promotionPiece);
     }
