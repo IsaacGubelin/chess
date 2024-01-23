@@ -135,7 +135,7 @@ public class PieceMovesCalculator {
     }
 
     // BLACK PAWN PIECE MOVE CALCULATOR
-    // Checks up to four different squares in front of origin position.
+    // Checks up to four different squares in front of origin position. Includes check for promotion
     // Checks one space ahead
     // Two spaces ahead (If no moves made yet)
     // One forward, one left (Capture only)
@@ -147,11 +147,27 @@ public class PieceMovesCalculator {
         int r = myPos.getRow();     // Current row
         int c = myPos.getColumn();  // Current column
 
+
         // If the pawn hasn't reached its last row and the space in front is empty
         if (r > 0 && board.getPiece(r - 1, c) == null) {
             ChessPosition endPos = new ChessPosition(r - 1, c);
             ChessMove move = new ChessMove(myPos, endPos);
-            moves.add(move); // Add this move to the collection of possible moves
+
+            // If pawn is about to move to last row, add promotion moves
+            if (r == 1) {
+                move.SetPromotionPiece(ChessPiece.PieceType.ROOK);
+                moves.add(move);
+                move.SetPromotionPiece(ChessPiece.PieceType.KNIGHT);
+                moves.add(move);
+                move.SetPromotionPiece(ChessPiece.PieceType.BISHOP);
+                moves.add(move);
+                move.SetPromotionPiece(ChessPiece.PieceType.QUEEN);
+            }
+            else {
+                moves.add(move); // Add this move to the collection of possible moves
+            }
+
+
         }
         // If pawn hasn't moved yet and there is nothing within two spaces ahead
         if (!board.getPiece(myPos).hasMoved && board.getPiece(r - 1, c) == null
@@ -166,13 +182,37 @@ public class PieceMovesCalculator {
         if (board.getPiece(r - 1, c - 1).getTeamColor() == ChessGame.TeamColor.WHITE) {
             ChessPosition endPos = new ChessPosition(r - 1, c - 1);
             ChessMove move = new ChessMove(myPos, endPos);
-            moves.add(move);
+
+            // Also need to check for promotion here
+            if (r == 1) {
+                move.SetPromotionPiece(ChessPiece.PieceType.ROOK);
+                moves.add(move);
+                move.SetPromotionPiece(ChessPiece.PieceType.KNIGHT);
+                moves.add(move);
+                move.SetPromotionPiece(ChessPiece.PieceType.BISHOP);
+                moves.add(move);
+                move.SetPromotionPiece(ChessPiece.PieceType.QUEEN);
+            }
+            else {
+                moves.add(move); // Add this move to the collection of possible moves
+            }
         }
 
         if (board.getPiece(r - 1, c + 1).getTeamColor() == ChessGame.TeamColor.WHITE) {
             ChessPosition endPos = new ChessPosition(r - 1, c + 1);
             ChessMove move = new ChessMove(myPos, endPos);
-            moves.add(move);
+            if (r == 1) {
+                move.SetPromotionPiece(ChessPiece.PieceType.ROOK);
+                moves.add(move);
+                move.SetPromotionPiece(ChessPiece.PieceType.KNIGHT);
+                moves.add(move);
+                move.SetPromotionPiece(ChessPiece.PieceType.BISHOP);
+                moves.add(move);
+                move.SetPromotionPiece(ChessPiece.PieceType.QUEEN);
+            }
+            else {
+                moves.add(move); // Add this move to the collection of possible moves
+            }
         }
 
 
@@ -190,7 +230,22 @@ public class PieceMovesCalculator {
         if (r < 7 && board.getPiece(r + 1, c) == null) {
             ChessPosition endPos = new ChessPosition(r + 1, c);
             ChessMove move = new ChessMove(myPos, endPos);
-            moves.add(move); // Add this move to the collection of possible moves
+
+            // Check if pawn is about to reach its last row
+            if (r == 6) {
+                move.SetPromotionPiece(ChessPiece.PieceType.ROOK);
+                moves.add(move);
+                move.SetPromotionPiece(ChessPiece.PieceType.KNIGHT);
+                moves.add(move);
+                move.SetPromotionPiece(ChessPiece.PieceType.BISHOP);
+                moves.add(move);
+                move.SetPromotionPiece(ChessPiece.PieceType.QUEEN);
+            }
+            else {
+                moves.add(move); // Add this move to the collection of possible moves
+            }
+
+
         }
 
         if (!board.getPiece(myPos).hasMoved && board.getPiece(r + 1, c) == null
@@ -205,13 +260,37 @@ public class PieceMovesCalculator {
         if (board.getPiece(r + 1, c - 1).getTeamColor() == ChessGame.TeamColor.BLACK) {
             ChessPosition endPos = new ChessPosition(r + 1, c - 1);
             ChessMove move = new ChessMove(myPos, endPos);
-            moves.add(move);
+
+            if (r == 6) {
+                move.SetPromotionPiece(ChessPiece.PieceType.ROOK);
+                moves.add(move);
+                move.SetPromotionPiece(ChessPiece.PieceType.KNIGHT);
+                moves.add(move);
+                move.SetPromotionPiece(ChessPiece.PieceType.BISHOP);
+                moves.add(move);
+                move.SetPromotionPiece(ChessPiece.PieceType.QUEEN);
+            }
+            else {
+                moves.add(move);
+            }
         }
 
         if (board.getPiece(r + 1, c + 1).getTeamColor() == ChessGame.TeamColor.BLACK) {
             ChessPosition endPos = new ChessPosition(r + 1, c + 1);
             ChessMove move = new ChessMove(myPos, endPos);
-            moves.add(move);
+
+            if (r == 6) {
+                move.SetPromotionPiece(ChessPiece.PieceType.ROOK);
+                moves.add(move);
+                move.SetPromotionPiece(ChessPiece.PieceType.KNIGHT);
+                moves.add(move);
+                move.SetPromotionPiece(ChessPiece.PieceType.BISHOP);
+                moves.add(move);
+                move.SetPromotionPiece(ChessPiece.PieceType.QUEEN);
+            }
+            else {
+                moves.add(move);
+            }
         }
 
         return moves;
@@ -230,6 +309,69 @@ public class PieceMovesCalculator {
 
 
         //FIXME: Do some stuff
+
+        return moves;
+    }
+
+    // KING PIECE MOVES
+    // A king piece can move one space into any of the eight spots around it, as long as they are not
+    // occupied by another piece of the same color.
+    public static ArrayList<ChessMove> kingMoves(ChessBoard board, ChessPosition myPos) {
+        ArrayList<ChessMove> moves = new ArrayList<>();
+
+        int r = myPos.getRow();
+        int c = myPos.getColumn();
+        ChessGame.TeamColor sameColor = board.getPiece(myPos).getTeamColor();
+
+        if (board.getPiece(r, c - 1).getTeamColor() != sameColor) {
+            ChessPosition endPos = new ChessPosition(r, c - 1);
+            ChessMove move = new ChessMove(myPos, endPos);
+            moves.add(move);
+        }
+
+        if (board.getPiece(r + 1, c - 1).getTeamColor() != sameColor) {
+            ChessPosition endPos = new ChessPosition(r + 1, c - 1);
+            ChessMove move = new ChessMove(myPos, endPos);
+
+            moves.add(move);
+        }
+
+        if (board.getPiece(r + 1, c).getTeamColor() != sameColor) {
+            ChessPosition endPos = new ChessPosition(r + 1, c);
+            ChessMove move = new ChessMove(myPos, endPos);
+            moves.add(move);
+        }
+
+        if (board.getPiece(r + 1, c + 1).getTeamColor() != sameColor) {
+            ChessPosition endPos = new ChessPosition(r + 1, c + 1);
+            ChessMove move = new ChessMove(myPos, endPos);
+            moves.add(move);
+        }
+
+        if (board.getPiece(r, c + 1).getTeamColor() != sameColor) {
+            ChessPosition endPos = new ChessPosition(r, c + 1);
+            ChessMove move = new ChessMove(myPos, endPos);
+            moves.add(move);
+        }
+
+        if (board.getPiece(r - 1, c + 1).getTeamColor() != sameColor) {
+            ChessPosition endPos = new ChessPosition(r - 1, c + 1);
+            ChessMove move = new ChessMove(myPos, endPos);
+            moves.add(move);
+        }
+
+        if (board.getPiece(r - 1, c).getTeamColor() != sameColor) {
+            ChessPosition endPos = new ChessPosition(r - 1, c);
+            ChessMove move = new ChessMove(myPos, endPos);
+            moves.add(move);
+        }
+
+        if (board.getPiece(r - 1, c - 1).getTeamColor() != sameColor) {
+            ChessPosition endPos = new ChessPosition(r - 1, c - 1);
+            ChessMove move = new ChessMove(myPos, endPos);
+            moves.add(move);
+        }
+
 
         return moves;
     }
