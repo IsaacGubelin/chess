@@ -11,12 +11,15 @@ import java.util.Collection;
 public class ChessGame {
 
     public ChessGame() {
-        // TODO: Add the following data members:
-        // Current
+
     }
 
     private TeamColor turn;
     private ChessBoard board;
+
+    // These positions are checked each turn to check if either king is in check
+    private ChessPosition blackKingLocation;
+    private ChessPosition whiteKingLocation;
 
 
     /**

@@ -24,27 +24,28 @@ public class PieceMovesCalculator {
         return (inBounds && goodToClaim); // If both conditions are met, return true.
     }
 
-    //FIXME: remove this junk
-//    private static boolean isValidPawnPosition(int row, int col, ChessBoard board) {
-//        // Get position and color
-//        ChessPosition pos = new ChessPosition(row, col);
-//        ChessGame.TeamColor sameColor = board.getPiece(pos).getTeamColor();
-//
-//        boolean validSpace = (row < 8 && row >= 0 && col < 8 && col >= 0); // Is it out of bounds?
-//
-//
-//    }
 
 
+    // This function is a hub that determines the piece type and calls the corresponding helper function.
+    // It returns an Array List of ChessMove objects that gets returned to the pieceMoves function call
+    // in the ChessPiece class.
     public static ArrayList<ChessMove> calcMoves(ChessBoard board, ChessPosition myPosition) {
 
         ArrayList<ChessMove> moves = new ArrayList<>();
 
         ChessPiece.PieceType type = board.getPiece(myPosition).getPieceType();
+        ChessGame.TeamColor color = board.getPiece(myPosition).getTeamColor();
 
         switch (type) {
+
+            // For a pawn, check which team its on.
             case PAWN:
-                //FIXME
+                if (color == ChessGame.TeamColor.BLACK) {
+                    moves = pawnMovesBlack(board, myPosition);
+                }
+                else {
+                    moves = pawnMovesWhite(board, myPosition);
+                }
             case ROOK:
             //FIXME
             case KNIGHT:
@@ -152,9 +153,26 @@ public class PieceMovesCalculator {
             ChessMove move = new ChessMove(myPos, endPos);
             moves.add(move); // Add this move to the collection of possible moves
         }
-        // If pawn hasn't moved yet and there is nothing directly in front
-        if (!board.getPiece(myPos).hasMoved && board.getPiece(r - 1, c) != null) {
-            
+        // If pawn hasn't moved yet and there is nothing within two spaces ahead
+        if (!board.getPiece(myPos).hasMoved && board.getPiece(r - 1, c) == null
+            && board.getPiece(r - 2, c) == null) {
+
+            ChessPosition endPos = new ChessPosition(r - 2, c);
+            ChessMove move = new ChessMove(myPos, endPos);
+            moves.add(move);
+        }
+
+        // If there are enemy pieces diagonally to either side, those are potential capture moves
+        if (board.getPiece(r - 1, c - 1).getTeamColor() == ChessGame.TeamColor.WHITE) {
+            ChessPosition endPos = new ChessPosition(r - 1, c - 1);
+            ChessMove move = new ChessMove(myPos, endPos);
+            moves.add(move);
+        }
+
+        if (board.getPiece(r - 1, c + 1).getTeamColor() == ChessGame.TeamColor.WHITE) {
+            ChessPosition endPos = new ChessPosition(r - 1, c + 1);
+            ChessMove move = new ChessMove(myPos, endPos);
+            moves.add(move);
         }
 
 
@@ -166,15 +184,35 @@ public class PieceMovesCalculator {
     public static ArrayList<ChessMove> pawnMovesWhite(ChessBoard board, ChessPosition myPos) {
         ArrayList<ChessMove> moves = new ArrayList<>();
 
-        // BLACK pawns are in Row index 6 to start, moving towards row 0.
-        if (board.getPiece(myPos).getTeamColor() == ChessGame.TeamColor.BLACK) {
+        int r = myPos.getRow();
+        int c = myPos.getColumn();
 
-
-
-
-
+        if (r < 7 && board.getPiece(r + 1, c) == null) {
+            ChessPosition endPos = new ChessPosition(r + 1, c);
+            ChessMove move = new ChessMove(myPos, endPos);
+            moves.add(move); // Add this move to the collection of possible moves
         }
-        //FIXME: Do some stuff
+
+        if (!board.getPiece(myPos).hasMoved && board.getPiece(r + 1, c) == null
+                && board.getPiece(r + 2, c) == null) {
+
+            ChessPosition endPos = new ChessPosition(r + 2, c);
+            ChessMove move = new ChessMove(myPos, endPos);
+            moves.add(move);
+        }
+
+        // If there are enemy pieces diagonally to either side, those are potential capture moves
+        if (board.getPiece(r + 1, c - 1).getTeamColor() == ChessGame.TeamColor.BLACK) {
+            ChessPosition endPos = new ChessPosition(r + 1, c - 1);
+            ChessMove move = new ChessMove(myPos, endPos);
+            moves.add(move);
+        }
+
+        if (board.getPiece(r + 1, c + 1).getTeamColor() == ChessGame.TeamColor.BLACK) {
+            ChessPosition endPos = new ChessPosition(r + 1, c + 1);
+            ChessMove move = new ChessMove(myPos, endPos);
+            moves.add(move);
+        }
 
         return moves;
     }

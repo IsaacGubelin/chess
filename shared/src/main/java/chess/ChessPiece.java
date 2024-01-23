@@ -71,19 +71,8 @@ public class ChessPiece {
 
         ArrayList<ChessMove> moves = new ArrayList<>(); // Container to fill with available moves
 
-//        PieceMovesCalculator foo = new PieceMovesCalculator();
-        chess.PieceMovesCalculator.calcMoves(board, myPosition);
-
-
-
-
-//        moves = foo.calcMoves(board, myPosition);
-
-
-
-
-
-        throw new RuntimeException("Not implemented");
+        moves = chess.PieceMovesCalculator.calcMoves(board, myPosition);
+        return moves;
     }
 
 
@@ -115,4 +104,12 @@ public class ChessPiece {
         return Objects.hash(pieceColor, type);
     }
 
+    @Override
+    public String toString() {
+        return "ChessPiece{" +
+                "pieceColor=" + pieceColor +
+                ", type=" + type +
+                ", hasMoved=" + hasMoved +
+                '}';
+    }
 }
