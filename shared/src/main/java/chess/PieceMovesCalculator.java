@@ -54,7 +54,7 @@ public class PieceMovesCalculator {
                 break;
 
             case ROOK:
-            //FIXME
+                moves = rookMoves(board, myPosition);
                 break;
 
             case KNIGHT:
@@ -272,7 +272,7 @@ public class PieceMovesCalculator {
 
         // Check for double forward move (Only possible for first move)
         if (!board.getPiece(myPos).hasMoved && board.getPiece(r + 1, c) == null
-            && board.getPiece(r + 2, c) == null && r == 1) {
+            && board.getPiece(r + 2, c) == null && r == 2) {
 
             ChessPosition endPos = new ChessPosition(r + 2, c);
             ChessMove move = new ChessMove(myPos, endPos);
@@ -331,11 +331,92 @@ public class PieceMovesCalculator {
     // Rook reaches an opponent piece to capture.
     // Repeat to the left, right, and downward.
     // All empty spaces found are valid moves, or first enemy piece to be in path.
-    public static ArrayList<ChessMove> rookMoves(ChessBoard board, ChessPosition myPos) {
-        ArrayList<ChessMove> moves = new ArrayList<>();
+    public static HashSet<ChessMove> rookMoves(ChessBoard board, ChessPosition myPos) {
+        HashSet<ChessMove> moves = new HashSet<>();
+
+        // Record current location and team info to determine valid spaces
+        int r = myPos.getRow();
+        int c = myPos.getColumn();
+        ChessGame.TeamColor pieceColor = board.getPiece(myPos).getTeamColor();
+        ChessPosition endPos = new ChessPosition(myPos.getRow(), myPos.getColumn());
 
 
-        //FIXME: Do some stuff
+
+
+        // Check upward until a piece is in the way or edge is reached
+        for (int newRow = r + 1; newRow < 8; newRow++) {
+            if (!isInBounds(newRow, c)) {
+                break; // There are no spots available above. Break
+            }
+            if (board.getPiece(newRow, c) == null) {
+                endPos.setPositionRowColumn(newRow, c);
+                moves.add(new ChessMove(myPos, endPos)); // Add all empty spaces
+            }
+            else { // If we found a space that isn't null, check if it's an enemy piece.
+                if (isGoodSpot(newRow, c, board, pieceColor)) {
+                    endPos.setPositionRowColumn(newRow, c);
+                    moves.add(new ChessMove(myPos, endPos));
+                }
+                break;
+            }
+        }
+
+
+        // Check downward until a piece is in the way or edge is reached
+        for (int newRow = r - 1; newRow >= 0; newRow--) {
+            if (!isInBounds(newRow, c)) {
+                break; // No spots below
+            }
+            if (board.getPiece(newRow, c) == null) {
+                endPos.setPositionRowColumn(newRow, c);
+                moves.add(new ChessMove(myPos, endPos)); // Add all empty spaces
+            }
+            else { // If we found a space that isn't null, check if it's an enemy piece.
+                if (isGoodSpot(newRow, c, board, pieceColor)) {
+                    endPos.setPositionRowColumn(newRow, c);
+                    moves.add(new ChessMove(myPos, endPos));
+                }
+                break;
+            }
+        }
+
+        // Check left until a piece is in the way or edge is reached
+        for (int newCol = c - 1; newCol >= 0; newCol--) {
+            if (!isInBounds(r, newCol)) {
+                break; // No spots available leftward
+            }
+            if (board.getPiece(r, newCol) == null) {
+                endPos.setPositionRowColumn(r, newCol);
+                moves.add(new ChessMove(myPos, endPos)); // Add all empty spaces
+            }
+            else { // If we found a space that isn't null, check if it's an enemy piece.
+                if (isGoodSpot(r, newCol, board, pieceColor)) {
+                    endPos.setPositionRowColumn(r, newCol);
+                    moves.add(new ChessMove(myPos, endPos));
+                }
+                break;
+            }
+        }
+
+        // Check right until a piece is in the way or edge is reached
+        for (int newCol = c + 1; newCol < 8; newCol++) {
+            if (!isInBounds(r, newCol)) {
+                break; // No spots available rightward
+            }
+            if (board.getPiece(r, newCol) == null) {
+                endPos.setPositionRowColumn(r, newCol);
+                moves.add(new ChessMove(myPos, endPos)); // Add all empty spaces
+            }
+            else { // If we found a space that isn't null, check if it's an enemy piece.
+                if (isGoodSpot(r, newCol, board, pieceColor)) {
+                    endPos.setPositionRowColumn(r, newCol);
+                    moves.add(new ChessMove(myPos, endPos));
+                }
+                break;
+            }
+        }
+
+
 
         return moves;
     }

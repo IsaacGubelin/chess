@@ -68,6 +68,7 @@ public class ChessPiece {
 
         HashSet<ChessMove> moves = new HashSet<>(); // Container to fill with available moves
 
+
         moves = chess.PieceMovesCalculator.calcMoves(board, myPosition);
         return moves;
     }

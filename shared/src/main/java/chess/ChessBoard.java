@@ -33,24 +33,22 @@ public class ChessBoard {
         int r = position.getRow() - 1;
         int c = position.getColumn() - 1;
 
-        // Before adding piece to square, verify that the square is vacant.
-//        if (squares[r][c] == null) {
-            squares[r][c] = piece;
-//        }
+        squares[r][c] = piece;
+
 
     }
 
     // Overload function that takes row and column info as parameters
     public void addPiece(int row, int col, ChessPiece piece) {
 
-            squares[row][col] = piece;
+            squares[row - 1][col - 1] = piece;
     }
 
     // Helper function for removing a piece from the board by setting it to null.
     // Called when a piece is captured.
     public void removePiece(ChessPosition position) {
         squares[position.getRow() - 1][position.getColumn() - 1] = null;
-    }
+    } // TODO:
 
 
 
@@ -67,7 +65,7 @@ public class ChessBoard {
 
     // Overloaded function if user gives row and column parameters instead.
     public ChessPiece getPiece(int row, int column) {
-        return squares[row][column];
+        return squares[row - 1][column - 1];
     }
 
     /**
@@ -99,32 +97,32 @@ public class ChessBoard {
         }
 
         // Add all WHITE PAWNS to board
-        for (int c = 0; c < 8; c++) {
-            addPiece(1, c, whitePawn);
+        for (int c = 1; c < 9; c++) {
+            addPiece(2, c, whitePawn);
         }
         // Add remaining white pieces to board
-        addPiece(0, 0, whiteRook);
-        addPiece(0, 1, whiteKnight);
-        addPiece(0, 2, whiteBishop);
-        addPiece(0, 3, whiteQueen);
-        addPiece(0, 4, whiteKing);
-        addPiece(0, 5, whiteBishop);
-        addPiece(0, 6, whiteKnight);
-        addPiece(0, 7, whiteRook);
+        addPiece(1, 1, whiteRook);
+        addPiece(1, 2, whiteKnight);
+        addPiece(1, 3, whiteBishop);
+        addPiece(1, 4, whiteQueen);
+        addPiece(1, 5, whiteKing);
+        addPiece(1, 6, whiteBishop);
+        addPiece(1, 7, whiteKnight);
+        addPiece(1, 8, whiteRook);
 
         // Add all BLACK PAWNS to board
-        for (int c = 0; c < 8; c++) {
-            addPiece(6, c, blackPawn);
+        for (int c = 1; c < 9; c++) {
+            addPiece(7, c, blackPawn);
         }
         // Remaining black pieces to board
-        addPiece(7, 0, blackRook);
-        addPiece(7, 1, blackKnight);
-        addPiece(7, 2, blackBishop);
-        addPiece(7, 3, blackQueen);
-        addPiece(7, 4, blackKing);
-        addPiece(7, 5, blackBishop);
-        addPiece(7, 6, blackKnight);
-        addPiece(7, 7, blackRook);
+        addPiece(8, 1, blackRook);
+        addPiece(8, 2, blackKnight);
+        addPiece(8, 3, blackBishop);
+        addPiece(8, 4, blackQueen);
+        addPiece(8, 5, blackKing);
+        addPiece(8, 6, blackBishop);
+        addPiece(8, 7, blackKnight);
+        addPiece(8, 8, blackRook);
     }
 
     @Override
