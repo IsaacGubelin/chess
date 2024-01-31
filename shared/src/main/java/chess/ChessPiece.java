@@ -4,7 +4,6 @@ package chess;
 
 import java.util.*;
 
-import chess.PieceMovesCalculator;
 
 
 /**
@@ -66,29 +65,18 @@ public class ChessPiece {
 
     public Collection<ChessMove> pieceMoves(ChessBoard board, ChessPosition myPosition) {
 
-        HashSet<ChessMove> moves = new HashSet<>(); // Container to fill with available moves
-
-
-        moves = chess.PieceMovesCalculator.calcMoves(board, myPosition);
-        return moves;
+       return PieceMovesCalculator.getAvailablePieceMoves(board, myPosition);
     }
 
 
-
-
-
-    // TODO: Fill in these helper methods
     private Collection<ChessMove> pawnMoves(ChessBoard board, ChessPosition myPos) {
 
         ArrayList<ChessMove> moves = new ArrayList<>();
-        //FIXME: Need to add more logic
+
         return moves;
     }
 
-
-
-
-
+    // Overrides for essential object functions
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

@@ -1,6 +1,7 @@
 package chess;
 
 import java.util.Collection;
+import java.util.HashSet;
 
 /**
  * For a class that can manage a chess game, making moves on a board
@@ -12,13 +13,13 @@ public class ChessGame {
 
     public ChessGame() {
 
-        // The white team goes first
-        turn = TeamColor.WHITE;
+        ChessGameInit(); // Initialize the game
 
         //FIXME: Initialize anything else
 
     }
 
+    // Private variables for determining game status
     private TeamColor turn;
     private ChessBoard board;
 
@@ -59,6 +60,13 @@ public class ChessGame {
      * startPosition
      */
     public Collection<ChessMove> validMoves(ChessPosition startPosition) {
+
+        // Get the available moves from the pieceMovesCalculator class
+        HashSet<ChessMove> moves = PieceMovesCalculator.getAvailablePieceMoves(board, startPosition);
+        // TODO: If this is a king, verify which moves will put the king in check and discard those moves.
+        // TODO: If this is any other piece, make sure to discard any moves that leave the king vulnerable
+
+
         throw new RuntimeException("Not implemented");
     }
 
@@ -79,6 +87,18 @@ public class ChessGame {
      * @return True if the specified team is in check
      */
     public boolean isInCheck(TeamColor teamColor) {
+
+        // Check if any knights of the opposing team are a threat to the king.
+//        if ()
+
+        throw new RuntimeException("Not implemented");
+    }
+
+    private boolean blackKingInCheck() {
+        // Check for knights that can move into black king's location
+        int r = blackKingLocation.getRow();
+        int c = blackKingLocation.getColumn();
+//        if (board.hasPieceAt(r + 2, c - 1) && )
         throw new RuntimeException("Not implemented");
     }
 
@@ -103,6 +123,8 @@ public class ChessGame {
         throw new RuntimeException("Not implemented");
     }
 
+
+
     /**
      * Sets this game's chessboard with a given board
      *
@@ -119,5 +141,11 @@ public class ChessGame {
      */
     public ChessBoard getBoard() {
         return board;
+    }
+
+    // Initialize the chess board and set the team turn to the white team to start.
+    private void ChessGameInit() {
+        board.resetBoard();     // Place all pieces in starting positions
+        turn = TeamColor.WHITE; // White team starts the game
     }
 }
