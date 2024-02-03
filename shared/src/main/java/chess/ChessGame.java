@@ -77,6 +77,10 @@ public class ChessGame {
      * @throws InvalidMoveException if move is invalid
      */
     public void makeMove(ChessMove move) throws InvalidMoveException {
+        // TODO: Check and make sure that the move doesn't put their own king in check
+            // If it does, throw invalid move exception
+        // TODO: If the move is valid
+
         throw new RuntimeException("Not implemented");
     }
 
@@ -88,19 +92,13 @@ public class ChessGame {
      */
     public boolean isInCheck(TeamColor teamColor) {
 
-        // Check if any knights of the opposing team are a threat to the king.
-//        if ()
+        // Make a temporary position object that fetches the king piece location for the corresponding color
+        ChessPosition kingPosition = teamColor == TeamColor.BLACK ? blackKingLocation : whiteKingLocation;
 
-        throw new RuntimeException("Not implemented");
+        return KingCheckEvaluator.positionIsInRisk(board, kingPosition);
     }
 
-    private boolean blackKingInCheck() {
-        // Check for knights that can move into black king's location
-        int r = blackKingLocation.getRow();
-        int c = blackKingLocation.getColumn();
-//        if (board.hasPieceAt(r + 2, c - 1) && )
-        throw new RuntimeException("Not implemented");
-    }
+
 
     /**
      * Determines if the given team is in checkmate

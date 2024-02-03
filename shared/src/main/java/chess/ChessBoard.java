@@ -48,6 +48,25 @@ public class ChessBoard {
         return squares[row - 1][column - 1];
     }
 
+    /**
+     * A function to set a board position to a specified Chess piece type and color
+     *
+     * @param position
+     * @param color
+     * @param type
+     */
+    public void setPiece(ChessPosition position, ChessGame.TeamColor color, ChessPiece.PieceType type) {
+        squares[position.getRow() - 1][position.getColumn() - 1] = new ChessPiece(color, type);
+    }
+
+    /**
+     * Remove a piece from the board by setting it to null
+     *
+     */
+    public void removePiece(ChessPosition position) {
+        squares[position.getRow() - 1][position.getColumn() - 1] = null;
+    }
+
     // Function to check if a square is null. Useful to use before trying to access a Chess piece data member.
     public boolean hasNoPieceAt(int row, int column) {
         return (squares[row - 1][column - 1] == null);

@@ -187,7 +187,7 @@ public class PieceMovesCalculator {
     }
 
     // ROOK MOVES
-    private static HashSet<ChessMove> getRookMoves(ChessBoard board, ChessPosition oldPos) {
+    protected static HashSet<ChessMove> getRookMoves(ChessBoard board, ChessPosition oldPos) {
         HashSet<ChessMove> moves = new HashSet<>();
 
         // Get current row, column, and piece color info
@@ -298,7 +298,7 @@ public class PieceMovesCalculator {
 
     // BISHOP MOVES
     // Very similar to rook move calculating logic, but diagonal.
-    private static HashSet<ChessMove> getBishopMoves(ChessBoard board, ChessPosition oldPos) {
+    protected static HashSet<ChessMove> getBishopMoves(ChessBoard board, ChessPosition oldPos) {
         HashSet<ChessMove> moves = new HashSet<>();
 
         // Get current row, column, and piece color info
