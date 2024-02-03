@@ -109,7 +109,7 @@ public class PieceMovesCalculator {
             }
         }
         // Check down and right for enemy white piece. Check that pawn is not at far right of board.
-        if (c < 9 && r > 1 && board.hasPieceAt(r - 1, c + 1) &&
+        if (c < 8 && r > 1 && board.hasPieceAt(r - 1, c + 1) &&
                 board.getPiece(r - 1, c + 1).getTeamColor() == ChessGame.TeamColor.WHITE) {
             // Check for promotion possibility
             if (r == 2) {
@@ -169,7 +169,7 @@ public class PieceMovesCalculator {
             }
         }
         // Check up and right for enemy black piece. Check that pawn is not at far right of board.
-        if (c < 9 && r < 8 && board.hasPieceAt(r + 1, c + 1) &&
+        if (c < 8 && r < 8 && board.hasPieceAt(r + 1, c + 1) &&
                 board.getPiece(r + 1, c + 1).getTeamColor() == ChessGame.TeamColor.BLACK) {
             // Check for promotion possibility
             if (r == 7) {
