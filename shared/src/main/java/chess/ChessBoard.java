@@ -48,6 +48,23 @@ public class ChessBoard {
         return squares[row - 1][column - 1];
     }
 
+    // Temporarily being used to get a king's location
+    public ChessPosition tempGetKingLoc(ChessGame.TeamColor color) {
+        ChessPosition kingLoc = new ChessPosition(1, 1);
+        for (int r = 0; r < 8; r++) {
+            for (int c = 0; c < 8; c++) {
+                if (squares[r][c] != null) {
+                    if (squares[r][c].getPieceType() == ChessPiece.PieceType.KING
+                        && squares[r][c].getTeamColor() == color) {
+                        kingLoc.setPositionRowColumn(r + 1, c + 1);
+                    }
+                }
+            }
+        }
+        return kingLoc;
+    }
+
+
     /**
      * A function to set a board position to a specified Chess piece type and color
      *
@@ -115,6 +132,21 @@ public class ChessBoard {
         for (int col = 0; col < 8; col++) {
             squares[1][col] = new ChessPiece(ChessGame.TeamColor.WHITE, ChessPiece.PieceType.PAWN);
             squares[6][col] = new ChessPiece(ChessGame.TeamColor.BLACK, ChessPiece.PieceType.PAWN);
+        }
+    }
+
+    public void printBoard() {
+        for (int r = 8; r > 0; r--) {
+            for (int c = 1; c < 9; c++) {
+                System.out.print("|");
+                if (hasPieceAt(r, c)) {
+                    System.out.print(squares[r - 1][c - 1].getPieceType());
+                }
+                else {
+                    System.out.print("       ");
+                }
+            }
+            System.out.print("\n");
         }
     }
 

@@ -8,6 +8,12 @@ import java.util.HashSet;
 public class KingCheckEvaluator {
 
     public static boolean positionIsInRisk(ChessBoard board, ChessPosition position) {
+
+        // If the given position is empty, position is clearly not at risk.
+        if (board.hasNoPieceAt(position.getRow(), position.getColumn())) {
+            return false;
+        }
+
         // Determine the team color of the piece at the position of interest
         ChessGame.TeamColor pieceColor = board.getPiece(position).getTeamColor();
 

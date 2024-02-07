@@ -28,38 +28,42 @@ public class PieceMovesCalculator {
     public static HashSet<ChessMove> getAvailablePieceMoves(ChessBoard board, ChessPosition position) {
         HashSet<ChessMove> moves = new HashSet<>();
 
-        ChessPiece.PieceType type = board.getPiece(position).getPieceType(); // Determine the type of piece
+        // Only calculate moves for this position if it contains a chess piece.
+        if (board.hasPieceAt(position.getRow(), position.getColumn())) {
 
-        switch (type) {
-            // The pawn is the only piece where the piece moves depend on its color.
-            case PAWN:
-                if (board.getPiece(position).getTeamColor() == ChessGame.TeamColor.BLACK)
-                    moves = getPawnMovesBlack(board, position); // Calculate moves for black pawn
-                else
-                    moves = getPawnMovesWhite(board, position); // Calculate moves for white pawn
-                break;
+            ChessPiece.PieceType type = board.getPiece(position).getPieceType(); // Determine the type of piece
 
-            case ROOK:
-                moves = getRookMoves(board, position);
-                break;
+            switch (type) {
+                // The pawn is the only piece where the piece moves depend on team color.
+                case PAWN:
+                    if (board.getPiece(position).getTeamColor() == ChessGame.TeamColor.BLACK)
+                        moves = getPawnMovesBlack(board, position); // Calculate moves for black pawn
+                    else
+                        moves = getPawnMovesWhite(board, position); // Calculate moves for white pawn
+                    break;
 
-            case KNIGHT:
-                moves = getKnightMoves(board, position);
-                break;
+                case ROOK:
+                    moves = getRookMoves(board, position);
+                    break;
 
-            case BISHOP:
-                moves = getBishopMoves(board, position);
-                break;
+                case KNIGHT:
+                    moves = getKnightMoves(board, position);
+                    break;
 
-            // The queen's move abilities are a union of the available moves for a bishop and rook.
-            case QUEEN:
-                moves = getRookMoves(board, position);
-                moves.addAll(getBishopMoves(board, position));
-                break;
+                case BISHOP:
+                    moves = getBishopMoves(board, position);
+                    break;
 
-            case KING:
-                moves = getKingMoves(board, position);
-                break;
+                // The queen's move abilities are a union of the available moves for a bishop and rook.
+                case QUEEN:
+                    moves = getRookMoves(board, position);
+                    moves.addAll(getBishopMoves(board, position));
+                    break;
+
+                case KING:
+                    moves = getKingMoves(board, position);
+                    break;
+            }
         }
 
 
