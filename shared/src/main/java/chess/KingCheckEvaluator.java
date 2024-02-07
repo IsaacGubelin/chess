@@ -20,14 +20,13 @@ public class KingCheckEvaluator {
         // First, check if position is at risk of being captured by an enemy knight piece.
         if (isThreatenedByKnight(board, position, pieceColor))
             return true;
-        // Check if position can be captured by a pawn.
-        else if (isThreatenedByPawn(board, position, pieceColor))
+        else if (isThreatenedByKing(board, position, pieceColor))   // Check for king attacks
             return true;
-        // Check if position can be captured by a rook or queen from an orthogonal direction.
-        else if (isAtRiskOrthogonally(board, position, pieceColor))
+        else if (isThreatenedByPawn(board, position, pieceColor))   // Check for pawn attacks
             return true;
-        // Check if position can be captured by a bishop or queen from a diagonal direction.
-        else if (isAtRiskDiagonally(board, position, pieceColor))
+        else if (isAtRiskOrthogonally(board, position, pieceColor)) // Check for queen or rook attacks
+            return true;
+        else if (isAtRiskDiagonally(board, position, pieceColor))   // Check for queen or bishop attacks
             return true;
 
         // King is safe if none of the above boolean methods return true.
@@ -72,11 +71,48 @@ public class KingCheckEvaluator {
         return false;
     }
 
+    // Check if the given position is adjacent to or touching a king's square.
+    private static boolean isThreatenedByKing(ChessBoard board, ChessPosition position, ChessGame.TeamColor color) {
+        // Get row and column of position
+        int r = position.getRow();
+        int c = position.getColumn();
+
+        // Check all eight squares around the given position.
+        // Position is safe from enemy king if none of the squares has an enemy king.
+        if (isInBounds(r + 1, c) && hasEnemyKing(board, r + 1, c, color))
+            return true;
+        else if (isInBounds(r + 1, c + 1) && hasEnemyKing(board, r + 1, c + 1, color))
+            return true;
+        else if (isInBounds(r, c + 1) && hasEnemyKing(board, r, c + 1, color))
+            return true;
+        else if (isInBounds(r - 1, c + 1) && hasEnemyKing(board, r - 1, c + 1, color))
+            return true;
+        else if (isInBounds(r - 1, c) && hasEnemyKing(board, r - 1, c, color))
+            return true;
+        else if (isInBounds(r - 1, c - 1) && hasEnemyKing(board, r - 1, c - 1, color))
+            return true;
+        else if (isInBounds(r, c - 1) && hasEnemyKing(board, r, c - 1, color))
+            return true;
+        else if (isInBounds(r + 1, c - 1) && hasEnemyKing(board, r + 1, c - 1, color))
+            return true;
+        // If none of the eight positions around the given position have an enemy king, return false
+        return false;
+    }
+
+
     // This method takes the position of the possible attack piece and the color of the piece at risk.
     // If there is a knight of the opposing color at the given position, returns true.
     private static boolean hasEnemyKnight(ChessBoard board, int r, int c, ChessGame.TeamColor color) {
         return (board.hasPieceAt(r, c)
                 && board.getPiece(r, c).getPieceType() == ChessPiece.PieceType.KNIGHT
+                && board.getPiece(r, c).getTeamColor() != color);
+    }
+
+    // This method takes the position to be scouted out and the color of the piece at risk.
+    // If there is a king of the opposing color at the given position, returns true.
+    private static boolean hasEnemyKing(ChessBoard board, int r, int c, ChessGame.TeamColor color) {
+        return (board.hasPieceAt(r, c)
+                && board.getPiece(r, c).getPieceType() == ChessPiece.PieceType.KING
                 && board.getPiece(r, c).getTeamColor() != color);
     }
 
