@@ -114,11 +114,6 @@ public class ChessGame {
             }
         }
 
-        // Lastly, add possible castling moves if applicable.
-        // MakeMove will take care of carrying out this move.
-        validMoves.addAll(PieceMovesCalculator.getCastlingMoves(board, startPosition));
-
-
         // All valid moves are now collected. Return collection of valid chess moves.
         return validMoves;
     }
@@ -142,32 +137,6 @@ public class ChessGame {
         // If the given move is not available, or it isn't the team's turn, throw invalid move exception.
         if (!availableMoves.contains(move) || turn != pieceColor) {
             throw new InvalidMoveException();
-        }
-
-        // Check if this is a king-side castling move.
-        // Evaluate if the piece is a king and if it is trying to castle to the right
-        if (type == ChessPiece.PieceType.KING
-            && move.getStartPosition().getColumn() == 5
-            && move.getEndPosition().getColumn() == 7) {
-
-            int kingRow = move.getStartPosition().getRow(); // Check which row we are in
-            // Move rook to be next to king
-            board.addPiece(new ChessPosition(kingRow, 6), new ChessPiece(pieceColor, ChessPiece.PieceType.ROOK));
-            board.removePiece(new ChessPosition(kingRow, 8)); // Remove rook from old position
-            board.getPiece(kingRow, 6).setMoveFlagHigh();  // Rook has now been moved
-        }
-
-        // Check if this is a queen-side castling move.
-        // Evaluate if the piece is a king and if it is trying to castle to the right
-        if (type == ChessPiece.PieceType.KING
-                && move.getStartPosition().getColumn() == 5
-                && move.getEndPosition().getColumn() == 3) {
-
-            int kingRow = move.getStartPosition().getRow(); // Check which row we are in
-            // Move rook to be next to king
-            board.addPiece(new ChessPosition(kingRow, 4), new ChessPiece(pieceColor, ChessPiece.PieceType.ROOK));
-            board.removePiece(new ChessPosition(kingRow, 1)); // Remove rook from old position
-            board.getPiece(kingRow, 4).setMoveFlagHigh();  // Rook has now been moved
         }
 
         // Move the piece to its desired end position.
@@ -203,50 +172,6 @@ public class ChessGame {
         return KingCheckEvaluator.positionIsInRisk(board, kingPosition);
     }
 
-    // Validate a potential castling move
-    // Takes in a ChessMove and confirms that it is a king piece that hasn't moved yet
-    // Verifies that the move is trying to move the king two spaces to the left or right
-    // Checks all necessary conditions required for castling
-    //FIXME: make separate class for checking valid castling
-//    private boolean isValidCastlingMove(ChessMove move) {
-//        // Get starting row and column and piece color
-//        int rStart = move.getStartPosition().getRow();
-//        int cStart = move.getStartPosition().getColumn();
-//
-//        // Before proceeding with validation, check if the start position is empty or doesn't have a king.
-//        if (board.hasNoPieceAt(rStart, cStart) ||
-//            board.getPiece(rStart, cStart).getPieceType() != ChessPiece.PieceType.KING) {
-//            return false;
-//        }
-//
-//        // Get team color for piece being moved
-//        TeamColor color = board.getPiece(rStart, cStart).getTeamColor();
-//
-//        // Check if the king hasn't moved and if its desired end position is two spaces away.
-//        // FIXME: Add logic for non queen side castling
-//
-//    }
-
-    // Validate a potential queen-side castling move
-    // Checks all necessary conditions required for castling towards the queen's side of board
-//    private boolean isValidCastlingMoveQueenSide(ChessMove move) {
-//        // Get starting row and column and piece color
-//        int rStart = move.getStartPosition().getRow();
-//        int cStart = move.getStartPosition().getColumn();
-//
-//        // Before proceeding with validation, check if the start position is empty or doesn't have a king.
-//        if (board.hasNoPieceAt(rStart, cStart) ||
-//                board.getPiece(rStart, cStart).getPieceType() != ChessPiece.PieceType.KING) {
-//            return false;
-//        }
-//
-//        // Get team color for piece being moved
-//        TeamColor color = board.getPiece(rStart, cStart).getTeamColor();
-//
-//        // Check if the king hasn't moved and if its desired end position is two spaces away.
-//        // FIXME: Add logic
-//
-//    }
 
 
 

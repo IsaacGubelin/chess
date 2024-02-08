@@ -107,6 +107,7 @@ public class PieceMovesCalculator {
         return castlingMoves;
     }
 
+    // TODO: Rework these castling functions so they are totally error-free
     // A helper method that checks available castling on king's side.
     public static boolean canCastleKingSide(ChessBoard board, ChessPosition kingPos) {
 
