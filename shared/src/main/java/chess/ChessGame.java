@@ -13,11 +13,7 @@ import java.util.Objects;
 public class ChessGame {
 
     public ChessGame() {
-
         ChessGameInit(); // Initialize the game
-
-        //FIXME: Initialize anything else
-
     }
 
     // Private variables for determining game status
@@ -73,9 +69,10 @@ public class ChessGame {
             return moves;
         }
 
-        // Get piece type and color
+        // Get piece type, color, and if it has been moved
         TeamColor color = board.getPiece(startPosition).getTeamColor();
         ChessPiece.PieceType type = board.getPiece(startPosition).getPieceType();
+        boolean moved = board.getPiece(startPosition).hasBeenMoved();
 
         // Create a temporary chess piece for pieces occupying prospective end positions
         ChessPiece tempPiece = null;
@@ -93,6 +90,9 @@ public class ChessGame {
             if (isInCheck(color)) {
                 board.addPiece(startPosition, new ChessPiece(color, type)); // Move piece back to old position
                 board.removePiece(move.getEndPosition());
+                if (moved) {                                                // Restore move boolean
+                    board.getPiece(startPosition).setMoveFlagHigh();
+                }
                 if (tempPiece != null) {
                     // Put back piece captured (if applicable)
                     ChessPiece oldPiece = new ChessPiece(tempPiece.getTeamColor(), tempPiece.getPieceType());
@@ -104,11 +104,21 @@ public class ChessGame {
             validMoves.add(move);                                   // Otherwise, add to valid moves collection.
             board.addPiece(startPosition, new ChessPiece(color, type)); // Then put back in original position.
             board.removePiece(move.getEndPosition());
+            if (moved) {                                                // Restore move boolean
+                board.getPiece(startPosition).setMoveFlagHigh();
+            }
+
             if (tempPiece != null) {                            // Put back piece captured (if applicable)
                 board.addPiece(move.getEndPosition(),
                         new ChessPiece(tempPiece.getTeamColor(), tempPiece.getPieceType()));
             }
         }
+
+        // Lastly, add possible castling moves if applicable.
+        // MakeMove will take care of carrying out this move.
+        validMoves.addAll(PieceMovesCalculator.getCastlingMoves(board, startPosition));
+
+
         // All valid moves are now collected. Return collection of valid chess moves.
         return validMoves;
     }
@@ -120,8 +130,6 @@ public class ChessGame {
      * @throws InvalidMoveException if move is invalid
      */
     public void makeMove(ChessMove move) throws InvalidMoveException {
-
-        // TODO: Set piece.hasMoved to true for castling
 
         // Get type and color for piece being moved
         ChessPiece.PieceType type = board.getPiece(move.getStartPosition()).getPieceType();
@@ -136,14 +144,44 @@ public class ChessGame {
             throw new InvalidMoveException();
         }
 
+        // Check if this is a king-side castling move.
+        // Evaluate if the piece is a king and if it is trying to castle to the right
+        if (type == ChessPiece.PieceType.KING
+            && move.getStartPosition().getColumn() == 5
+            && move.getEndPosition().getColumn() == 7) {
+
+            int kingRow = move.getStartPosition().getRow(); // Check which row we are in
+            // Move rook to be next to king
+            board.addPiece(new ChessPosition(kingRow, 6), new ChessPiece(pieceColor, ChessPiece.PieceType.ROOK));
+            board.removePiece(new ChessPosition(kingRow, 8)); // Remove rook from old position
+            board.getPiece(kingRow, 6).setMoveFlagHigh();  // Rook has now been moved
+        }
+
+        // Check if this is a queen-side castling move.
+        // Evaluate if the piece is a king and if it is trying to castle to the right
+        if (type == ChessPiece.PieceType.KING
+                && move.getStartPosition().getColumn() == 5
+                && move.getEndPosition().getColumn() == 3) {
+
+            int kingRow = move.getStartPosition().getRow(); // Check which row we are in
+            // Move rook to be next to king
+            board.addPiece(new ChessPosition(kingRow, 4), new ChessPiece(pieceColor, ChessPiece.PieceType.ROOK));
+            board.removePiece(new ChessPosition(kingRow, 1)); // Remove rook from old position
+            board.getPiece(kingRow, 4).setMoveFlagHigh();  // Rook has now been moved
+        }
+
         // Move the piece to its desired end position.
         board.addPiece(move.getEndPosition(), new ChessPiece(pieceColor, type)); // Place piece
         board.removePiece(move.getStartPosition());                              // Remove from old spot
+
 
         // Promote if the piece was a pawn.
         if (type == ChessPiece.PieceType.PAWN && move.getPromotionPiece() != null) { // Check for valid promotion
             board.addPiece(move.getEndPosition(), new ChessPiece(pieceColor, move.getPromotionPiece()));
         }
+
+        // Raise the hasMoved flag
+        board.getPiece(move.getEndPosition()).setMoveFlagHigh();
 
         // Switch team turn.
         turn = (turn == TeamColor.BLACK) ? TeamColor.WHITE : TeamColor.BLACK;
@@ -165,6 +203,51 @@ public class ChessGame {
         return KingCheckEvaluator.positionIsInRisk(board, kingPosition);
     }
 
+    // Validate a potential castling move
+    // Takes in a ChessMove and confirms that it is a king piece that hasn't moved yet
+    // Verifies that the move is trying to move the king two spaces to the left or right
+    // Checks all necessary conditions required for castling
+    //FIXME: make separate class for checking valid castling
+//    private boolean isValidCastlingMove(ChessMove move) {
+//        // Get starting row and column and piece color
+//        int rStart = move.getStartPosition().getRow();
+//        int cStart = move.getStartPosition().getColumn();
+//
+//        // Before proceeding with validation, check if the start position is empty or doesn't have a king.
+//        if (board.hasNoPieceAt(rStart, cStart) ||
+//            board.getPiece(rStart, cStart).getPieceType() != ChessPiece.PieceType.KING) {
+//            return false;
+//        }
+//
+//        // Get team color for piece being moved
+//        TeamColor color = board.getPiece(rStart, cStart).getTeamColor();
+//
+//        // Check if the king hasn't moved and if its desired end position is two spaces away.
+//        // FIXME: Add logic for non queen side castling
+//
+//    }
+
+    // Validate a potential queen-side castling move
+    // Checks all necessary conditions required for castling towards the queen's side of board
+//    private boolean isValidCastlingMoveQueenSide(ChessMove move) {
+//        // Get starting row and column and piece color
+//        int rStart = move.getStartPosition().getRow();
+//        int cStart = move.getStartPosition().getColumn();
+//
+//        // Before proceeding with validation, check if the start position is empty or doesn't have a king.
+//        if (board.hasNoPieceAt(rStart, cStart) ||
+//                board.getPiece(rStart, cStart).getPieceType() != ChessPiece.PieceType.KING) {
+//            return false;
+//        }
+//
+//        // Get team color for piece being moved
+//        TeamColor color = board.getPiece(rStart, cStart).getTeamColor();
+//
+//        // Check if the king hasn't moved and if its desired end position is two spaces away.
+//        // FIXME: Add logic
+//
+//    }
+
 
 
     /**
@@ -176,7 +259,7 @@ public class ChessGame {
     public boolean isInCheckmate(TeamColor teamColor) {
 
         // A checkmate happens when the king is in check and there are no available valid moves.
-        return (isInCheck(teamColor) && isInStalemate(teamColor));
+        return (isInCheck(teamColor) && hasNoValidMovesLeft(teamColor));
     }
 
     /**
@@ -188,6 +271,12 @@ public class ChessGame {
      */
     public boolean isInStalemate(TeamColor teamColor) {
 
+        // A stalemate happens when the king is safe, but there are no available valid moves.
+        return (!isInCheck(teamColor) && hasNoValidMovesLeft(teamColor));
+    }
+
+    // Helper method that tells if the given team has no valid moves.
+    private boolean hasNoValidMovesLeft(TeamColor teamColor) {
         // Get all available moves for the team
         HashSet<ChessMove> availableMoves = new HashSet<>();
 
@@ -200,8 +289,6 @@ public class ChessGame {
                 }
             }
         }
-
-        // A stalemate happens when there are no available valid moves.
         return availableMoves.isEmpty();
     }
 

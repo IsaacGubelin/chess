@@ -89,10 +89,18 @@ public class ChessBoard {
         return (squares[row - 1][column - 1] == null);
     }
 
+    // Overloaded function that takes in position parameter
+    public boolean hasNoPieceAt(ChessPosition pos) { return (squares[pos.getRow() - 1][pos.getColumn() - 1] == null); }
+
     // Function to check if a square has a piece.
     public boolean hasPieceAt(int row, int column) {
         return (squares[row - 1][column - 1] != null);
     }
+
+    // Overloaded function for position parameter
+    public boolean hasPieceAt(ChessPosition pos) { return (squares[pos.getRow() - 1][pos.getColumn() - 1] != null); }
+
+
 
 
 
@@ -135,6 +143,8 @@ public class ChessBoard {
         }
     }
 
+    //TODO: Make this printBoard function better
+    // A very primitive, unformatted chessboard printer
     public void printBoard() {
         for (int r = 8; r > 0; r--) {
             for (int c = 1; c < 9; c++) {

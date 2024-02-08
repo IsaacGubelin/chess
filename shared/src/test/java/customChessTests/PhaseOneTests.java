@@ -26,45 +26,6 @@ public class PhaseOneTests {
 
     @Test
     @DisplayName("Check potential risk")
-    public void myTestFunc() {
-
-    /*  |r|n|b|q| |b|n|r|
-        |p|p|p|p|p|p|p|p|
-        | | | | | | | |R|
-        | | | |k| | | |R|
-        | | | | | | | | |
-        | | | |R| | | | |
-        |P|P|P|P|P|P|P|P|
-        |R|N|B|Q|K|B|N|R|   */
-
-        ChessPosition position = getNewPosition(5, 4);
-        var game = getNewGame();
-        System.out.println(game.getBoard().getPiece(8, 5).toString());
-        game.getBoard().removePiece(new ChessPosition(8, 5));
-
-        game.getBoard().addPiece(position, new ChessPiece(ChessGame.TeamColor.BLACK, ChessPiece.PieceType.KING));
-        game.getBoard().addPiece(5, 8, new ChessPiece(ChessGame.TeamColor.WHITE, ChessPiece.PieceType.ROOK));
-        game.getBoard().addPiece(6, 8, new ChessPiece(ChessGame.TeamColor.WHITE, ChessPiece.PieceType.ROOK));
-//        game.getBoard().addPiece(4, 8, new ChessPiece(ChessGame.TeamColor.WHITE, ChessPiece.PieceType.ROOK));
-        game.getBoard().addPiece(3, 4, new ChessPiece(ChessGame.TeamColor.WHITE, ChessPiece.PieceType.ROOK));
-
-//        game.getBoard().addPiece(4, 4, new ChessPiece(ChessGame.TeamColor.WHITE, ChessPiece.PieceType.PAWN));
-
-        game.getBoard().printBoard();
-
-        HashSet<ChessMove> moves = (HashSet<ChessMove>) game.validMoves(position);
-
-        System.out.println("Valid moves: " + moves.size());
-        for (ChessMove move : moves) {
-            System.out.println(move.toString());
-        }
-
-
-
-    }
-
-    @Test
-    @DisplayName("Check potential risk")
     public void testCasesFunc() {
 
     /*  |r|n|b|q| |b|n|r|
@@ -98,9 +59,6 @@ public class PhaseOneTests {
             System.out.println(move.toString());
         }
         System.out.println("Check: " + game.isInCheck(ChessGame.TeamColor.BLACK));
-
-
-
 
     }
 
