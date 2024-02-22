@@ -11,6 +11,11 @@ public class MemoryGameDAO implements GameDAO {
     private HashMap<String, GameData> gamesTable = new HashMap<>();
 
 
+    // Clear all GameData entries from database
+    public void clearGamesDataBase() {
+        gamesTable.clear();
+    }
+
     // TODO: createGame
 
     // Returns the chess game object associated with the given ID

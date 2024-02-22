@@ -1,19 +1,17 @@
 package dataAccess;
 
 import java.util.HashMap;
+import java.util.UUID;
+
 public class MemoryAuthDAO implements AuthDAO {
 
     private HashMap<String, String> authDataTable = new HashMap<>();
     // FIXME: Check how to properly initialize this data structure
 
-
-
-    // TODO:
-
-    // Create
-    // Read
-    // Update
-    // Delete
+    // Generate an authToken
+    private String generateToken() {
+        return UUID.randomUUID().toString();
+    }
 
 
     /**
@@ -25,13 +23,14 @@ public class MemoryAuthDAO implements AuthDAO {
 
     // Add these methods:
 
-    // createGame
-    // getGame
-    // listGames
-    // updateGame
+
     // createAuth
     // getAuth
     // deleteAuth
+
+    public void createAuth() {
+
+    }
 
     // Use DataAccessException if user tries to plug in something that already exists
     // Or removes something that doesn't exist
