@@ -4,7 +4,7 @@ import java.util.HashMap;
 public class MemoryAuthDAO implements AuthDAO {
 
     private HashMap<String, String> authDataTable = new HashMap<>();
-    // FIXME: Check how to properly initialize this data sturcture
+    // FIXME: Check how to properly initialize this data structure
 
 
 
@@ -25,8 +25,6 @@ public class MemoryAuthDAO implements AuthDAO {
 
     // Add these methods:
 
-    // createUser
-    // getUser
     // createGame
     // getGame
     // listGames
