@@ -1,9 +1,10 @@
 package dataAccess;
 
-import java.util.HashSet;
+import java.util.HashMap;
 public class MemoryAuthDAO implements AuthDAO {
 
-    private Hashset<AuthData> authTokenTable;
+    private HashMap<String, String> authDataTable = new HashMap<>();
+    // FIXME: Check how to properly initialize this data sturcture
 
 
 
@@ -19,7 +20,7 @@ public class MemoryAuthDAO implements AuthDAO {
      * Clears the authToken data structure
      */
     public void clearAuthTable() {
-        authTokenTable.clear();
+         authDataTable.clear();
     }
 
     // Add these methods:
