@@ -3,14 +3,16 @@ package server;
 import dataAccess.MemoryAuthDAO;
 import dataAccess.MemoryGameDAO;
 import dataAccess.MemoryUserDAO;
+import handler.ClearHandler;
 import spark.*;
 
 public class Server {
 
     // These are the DAOs used by the endpoints of the server.
-    private MemoryAuthDAO memAuthDAO = new MemoryAuthDAO();
-    private MemoryUserDAO memUserDAO = new MemoryUserDAO();
-    private MemoryGameDAO memGameDAO = new MemoryGameDAO();
+    // TODO: SQL will go here eventually
+    private MemoryUserDAO userDAO = new MemoryUserDAO();
+    private MemoryGameDAO gameDAO = new MemoryGameDAO();
+    private MemoryAuthDAO authDAO = new MemoryAuthDAO();
 
     public int run(int desiredPort) {
         Spark.port(desiredPort);
@@ -18,8 +20,15 @@ public class Server {
         Spark.staticFiles.location("web");
 
         // Register your endpoints and handle exceptions here.
-        // Take out when other methods are available
-        Spark.init();
+
+        // FIXME: Take out this init statement once endpoints are available
+//        Spark.init();
+
+        // CLEAR APPLICATION
+        Spark.delete("/db", (req, res) -> new ClearHandler().clearDatabases(req, res, userDAO, gameDAO, authDAO));
+
+        // REGISTER USER
+//        Spark.post("/user", (req, res) -> new /* Handler goes here */ );
 
         Spark.awaitInitialization();
         return Spark.port();
@@ -29,4 +38,5 @@ public class Server {
         Spark.stop();
         Spark.awaitStop();
     }
+
 }
