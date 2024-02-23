@@ -20,8 +20,10 @@ public class MemoryUserDAO implements UserDAO {
         userTable.clear();
     }
 
-    //TODO: Make a createUser function
+    //FIXME: Finish createUser function
+    public void createUser(UserData userData) throws DataAccessException {
 
+    }
 
     // Get a user from a given username
     public UserData getUser(String username) throws DataAccessException {

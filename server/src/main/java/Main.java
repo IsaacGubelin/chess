@@ -1,5 +1,5 @@
 import chess.*;
-import org.eclipse.jetty.server.Server;
+import server.Server;
 
 
 public class Main {
@@ -10,6 +10,7 @@ public class Main {
         // Generic server object
         Server server = new Server();
 
-        // FIXME: Need to run server
+        // Run the server
+        server.run(8080);
     }
 }
