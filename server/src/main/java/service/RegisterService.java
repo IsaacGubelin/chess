@@ -1,12 +1,20 @@
 package service;
 
 
+import dataAccess.BadRequestException;
 import dataAccess.DataAccessException;
 import dataAccess.MemoryAuthDAO;
 import dataAccess.MemoryUserDAO;
 
 public class RegisterService {
-    public static String register(model.UserData user, MemoryUserDAO uDAO, MemoryAuthDAO aDAO) throws DataAccessException {
+    public static String register(model.UserData user, MemoryUserDAO uDAO, MemoryAuthDAO aDAO)
+            throws DataAccessException, BadRequestException {
+
+        // Check for bad request (if any field is null)
+        if (user.username() == null || user.password() == null || user.email() == null) {
+            throw new BadRequestException("Bad Request: missing info field in user data.");
+        }
+
 
         // Check that username is valid
         if (uDAO.hasThisUsername(user.username())) {

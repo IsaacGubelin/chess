@@ -1,10 +1,12 @@
 package handler;
 
 import com.google.gson.Gson;
+import dataAccess.BadRequestException;
 import dataAccess.DataAccessException;
 import dataAccess.MemoryAuthDAO;
 import dataAccess.MemoryUserDAO;
 import model.AuthData;
+import model.MessageData;
 import model.UserData;
 import service.RegisterService;
 import spark.Request;
@@ -23,8 +25,12 @@ public class RegisterHandler {
             String authToken = RegisterService.register(user, uDAO, aDAO);
             res.status(200);                                                      // Success code
             return new Gson().toJson(new AuthData(authToken, user.username()));  // Make response body
-        } catch (DataAccessException ex) {
-            // TODO: This is where failure codes are set to res
+        } catch (BadRequestException badEx) {
+            res.status(400);
+            return new Gson().toJson(new MessageData("Error: bad request"));
+        } catch (DataAccessException dataEx) {
+            res.status(403);
+            return new Gson().toJson(new MessageData("Error: already taken"));
         }
 
         return registerResBody;
