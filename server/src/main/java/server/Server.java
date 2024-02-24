@@ -4,6 +4,7 @@ import dataAccess.MemoryAuthDAO;
 import dataAccess.MemoryGameDAO;
 import dataAccess.MemoryUserDAO;
 import handler.ClearHandler;
+import handler.RegisterHandler;
 import spark.*;
 
 public class Server {
@@ -28,7 +29,7 @@ public class Server {
         Spark.delete("/db", (req, res) -> new ClearHandler().clearDatabases(req, res, userDAO, gameDAO, authDAO));
 
         // REGISTER USER
-//        Spark.post("/user", (req, res) -> new /* Handler goes here */ );
+        Spark.post("/user", (req, res) -> new RegisterHandler().registerHandle(req, res, userDAO, authDAO));
 
         Spark.awaitInitialization();
         return Spark.port();
