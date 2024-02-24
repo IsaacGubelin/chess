@@ -22,9 +22,6 @@ public class Server {
 
         // Register your endpoints and handle exceptions here.
 
-        // FIXME: Take out this init statement once endpoints are available
-//        Spark.init();
-
         // CLEAR APPLICATION
         Spark.delete("/db", (req, res) -> new ClearHandler().clearDatabases(req, res, userDAO, gameDAO, authDAO));
 
