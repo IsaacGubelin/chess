@@ -34,11 +34,24 @@ public class MemoryGameDAO implements GameDAO {
         // Make new game ID
         int id = generateID();
 
-        // FIXME: Change GameData to record
         // TODO: Construct a GameData object and insert into map with ID as key.
-
-//        gamesTable.put(game.gameID(), game);
+        GameData game = new GameData(id, null, null, gameName, new ChessGame());
+        gamesTable.put(game.gameID(), game);
         return id;
+    }
+
+    // Use to update the white team with a new user
+    public void updateWhiteUsername(int gameID, String whiteUsername) {
+        String blackUsername = gamesTable.get(gameID).blackUsername();  // Use for updated game record
+        String gameName = gamesTable.get(gameID).gameName();            // Use for updated game record
+        GameData game = new GameData(gameID, whiteUsername, blackUsername, gameName, gamesTable.get(gameID).game());
+    }
+
+    // Use to update a new user for the black team
+    public void updateBlackUsername(int gameID, String blackUsername) {
+        String whiteUsername = gamesTable.get(gameID).whiteUsername();  // Use for updated game record
+        String gameName = gamesTable.get(gameID).gameName();            // Use for updated game record
+        GameData game = new GameData(gameID, whiteUsername, blackUsername, gameName, gamesTable.get(gameID).game());
     }
 
     // Returns the chess game object associated with the given ID
