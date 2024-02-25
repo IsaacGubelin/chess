@@ -28,19 +28,18 @@ public class MemoryAuthDAO implements AuthDAO {
         return token;                                               // Return new authToken
     }
 
+    // Check if the database contains an authToken
+    public boolean hasAuth(String authToken) {
+        return authDataTable.containsKey(authToken);
+    }
+
     // Retrieve auth data from a given authToken
-    public AuthData getAuth(String authToken) throws DataAccessException {
-        if (!authDataTable.containsKey(authToken)) {
-            throw new DataAccessException("Error: Cannot retrieve auth data, token doesn't exist.");
-        }
+    public AuthData getAuth(String authToken) {
         return authDataTable.get(authToken);
     }
 
     // Remove an authData object from the database, given the corresponding token
-    public void deleteAuth(String authToken) throws DataAccessException {
-        if (!authDataTable.containsKey(authToken)) {
-            throw new DataAccessException("Error: auth data does not exist. Cannot delete auth.");
-        }
+    public void deleteAuth(String authToken) {
         authDataTable.remove(authToken);
     }
 

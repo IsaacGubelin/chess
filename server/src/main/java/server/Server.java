@@ -4,6 +4,7 @@ import dataAccess.MemoryAuthDAO;
 import dataAccess.MemoryGameDAO;
 import dataAccess.MemoryUserDAO;
 import handler.ClearHandler;
+import handler.LoginOutHandler;
 import handler.RegisterHandler;
 import spark.*;
 
@@ -27,6 +28,16 @@ public class Server {
 
         // REGISTER USER
         Spark.post("/user", (req, res) -> new RegisterHandler().registerHandle(req, res, userDAO, authDAO));
+
+        // LOGIN USER
+        Spark.post("/session", (req, res) -> new LoginOutHandler().loginHandle(req, res, userDAO, authDAO) );
+
+        // LOGOUT USER
+        Spark.delete("/session", (req, res) -> new LoginOutHandler().logoutHandle(req, res, authDAO));
+
+        //TODO:
+        // Make remaining endpoints for other functions
+
 
         Spark.awaitInitialization();
         return Spark.port();

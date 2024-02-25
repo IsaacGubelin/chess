@@ -9,4 +9,10 @@ public class Config {
 
     public static final int GAME_ID_MIN = 1;    // Smallest value of game ID
     public static final int GAME_ID_MAX = 999;  // MAXIMUM ALLOWED GAMES (And highest game ID value)
+
+
+    // Strings
+
+    // Name of header that holds authToken in logout requests
+    public static final String LOGOUT_REQ_HEADER = "authorization";
 }
