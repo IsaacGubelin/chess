@@ -35,6 +35,8 @@ public class Server {
         // LOGOUT USER
         Spark.delete("/session", (req, res) -> new LoginOutHandler().logoutHandle(req, res, authDAO));
 
+        // CREATE GAME
+
         //TODO:
         // Make remaining endpoints for other functions
 

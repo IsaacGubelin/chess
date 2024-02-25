@@ -18,7 +18,7 @@ public class LoginOutService {
             throw new BadRequestException("Error: Missing data field(s) in login.");
         }
 
-        // Check that user exists
+        // Check that authToken exists
         if (!uDAO.hasThisUsername(user.username())) {
             throw new UnauthorizedException("Error: User not registered in database.");
         }

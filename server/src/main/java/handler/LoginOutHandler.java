@@ -34,6 +34,12 @@ public class LoginOutHandler {
     public Object logoutHandle(Request req, Response res, MemoryAuthDAO aDAO) {
         String authToken = req.headers(Config.LOGOUT_REQ_HEADER);
 
+        // Verify the authToken for authorization
+        if (!aDAO.hasAuth(authToken)) { // If authToken isn't in database, return error status message
+            res.status(401);
+            return new Gson().toJson(new MessageData("Error: unauthorized"));
+        }
+
         try {
             LoginOutService.logout(authToken, aDAO);
             res.status(200); // Success
