@@ -36,13 +36,14 @@ public class Server {
         // LOGOUT USER
         Spark.delete("/session", (req, res) -> new LoginOutHandler().logoutHandle(req, res, authDAO));
 
+        // CREATE GAME
         Spark.post("/game", (req, res) -> new GameHandler().createGameHandle(req, res, authDAO, gameDAO));
 
-        // LIST GAMES //FIXME: Change format of games list to match requested json
+        // LIST GAMES
         Spark.get("/game", (req, res) -> new GameHandler().listGamesHandle(req, res, authDAO, gameDAO));
 
-        //TODO:
-        // Make remaining endpoints for other functions
+        // TODO: Spark.put("")
+
 
 
         Spark.awaitInitialization();

@@ -3,6 +3,7 @@ package service;
 import chess.ChessGame;
 import dataAccess.DataAccessException;
 import dataAccess.MemoryGameDAO;
+import model.GameData;
 
 import javax.xml.crypto.Data;
 import java.util.Collection;
@@ -12,10 +13,10 @@ public class GameService {
 
 
     // Makes a list of all games in the games database and returns a collection
-    public static Collection<ChessGame> getGames(MemoryGameDAO gDAO) {
-        HashSet<ChessGame> games = new HashSet<>(); // Fill this container with all games
+    public static Collection<GameData> getGames(MemoryGameDAO gDAO) {
+        HashSet<GameData> games = new HashSet<>(); // Fill this container with all games
         for (int id : gDAO.getGameDatabase().keySet()) { // Iterate through each key
-            games.add(gDAO.getGameDatabase().get(id).game()); // Fetch game from current key and add to list
+            games.add(gDAO.getGameDatabase().get(id)); // Fetch game from current key and add to list
         }
         return games;   // Return the collection of games
     }

@@ -5,13 +5,12 @@ import config.Config;
 import dataAccess.DataAccessException;
 import dataAccess.MemoryAuthDAO;
 import dataAccess.MemoryGameDAO;
-import model.GameIDData;
-import model.GameNameData;
-import model.ListGamesData;
-import model.MessageData;
+import model.*;
 import service.GameService;
 import spark.Request;
 import spark.Response;
+
+import java.util.HashMap;
 
 public class GameHandler {
 

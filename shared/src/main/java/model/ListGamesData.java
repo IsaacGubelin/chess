@@ -4,5 +4,5 @@ import chess.ChessGame;
 
 import java.util.Collection;
 
-public record ListGamesData(Collection<ChessGame> games) {
+public record ListGamesData(Collection<GameData> games) {
 }

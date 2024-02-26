@@ -64,7 +64,7 @@ public class ChessGame {
         HashSet<ChessMove> moves = PieceMovesCalculator.getAvailablePieceMoves(board, startPosition);
         HashSet<ChessMove> validMoves = new HashSet<>(); // This will store the valid moves
 
-        // If the position is empty, return empty collection
+        // If the position is empty, return empty collection (edge case)
         if (board.hasNoPieceAt(startPosition.getRow(), startPosition.getColumn())) {
             return moves;
         }
@@ -93,8 +93,7 @@ public class ChessGame {
                 if (moved) {                                                // Restore move boolean
                     board.getPiece(startPosition).setMoveFlagHigh();
                 }
-                if (tempPiece != null) {
-                    // Put back piece captured (if applicable)
+                if (tempPiece != null) {    // Put back piece captured (if applicable)
                     ChessPiece oldPiece = new ChessPiece(tempPiece.getTeamColor(), tempPiece.getPieceType());
                     board.addPiece(move.getEndPosition(), oldPiece);
                 }
