@@ -40,6 +40,11 @@ public class MemoryGameDAO implements GameDAO {
         return id;
     }
 
+    // A getter for retrieving the games database
+    public HashMap<Integer, GameData> getGameDatabase() {
+        return gamesTable;
+    }
+
     // Use to update the white team with a new user
     public void updateWhiteUsername(int gameID, String whiteUsername) {
         String blackUsername = gamesTable.get(gameID).blackUsername();  // Use for updated game record

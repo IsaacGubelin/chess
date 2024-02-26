@@ -2,9 +2,14 @@ package handler;
 
 import com.google.gson.Gson;
 import config.Config;
+import dataAccess.DataAccessException;
 import dataAccess.MemoryAuthDAO;
 import dataAccess.MemoryGameDAO;
+import model.GameIDData;
+import model.GameNameData;
+import model.ListGamesData;
 import model.MessageData;
+import service.GameService;
 import spark.Request;
 import spark.Response;
 
@@ -19,9 +24,9 @@ public class GameHandler {
             res.status(401);
             return new Gson().toJson(new MessageData("Error: unauthorized"));
         }
-
-        //FIXME:
-        return null;
+        // If authorized, return games list
+        res.status(200);
+        return new Gson().toJson(new ListGamesData(GameService.getGames(gDAO)));
     }
 
     public Object createGameHandle(Request req, Response res, MemoryAuthDAO aDAO, MemoryGameDAO gDAO) {
@@ -33,9 +38,15 @@ public class GameHandler {
             res.status(401);
             return new Gson().toJson(new MessageData("Error: unauthorized"));
         }
-        // FIXME:
-
-        return null;
+        GameNameData name = new Gson().fromJson(req.body(), GameNameData.class);
+        try {
+            int gameID = GameService.createGame(name.gameName(), gDAO);
+            res.status(200);
+            return new Gson().toJson(new GameIDData(gameID));
+        } catch (DataAccessException dataEx) {
+            res.status(403);
+            return new Gson().toJson(new MessageData("Error: No more available games"));
+        }
     }
 
     public Object joinGameHandle(Request req, Response res, MemoryAuthDAO aDAO, MemoryGameDAO gDAO) {

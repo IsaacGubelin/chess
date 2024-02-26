@@ -4,6 +4,7 @@ import dataAccess.MemoryAuthDAO;
 import dataAccess.MemoryGameDAO;
 import dataAccess.MemoryUserDAO;
 import handler.ClearHandler;
+import handler.GameHandler;
 import handler.LoginOutHandler;
 import handler.RegisterHandler;
 import spark.*;
@@ -35,7 +36,10 @@ public class Server {
         // LOGOUT USER
         Spark.delete("/session", (req, res) -> new LoginOutHandler().logoutHandle(req, res, authDAO));
 
-        // CREATE GAME
+        Spark.post("/game", (req, res) -> new GameHandler().createGameHandle(req, res, authDAO, gameDAO));
+
+        // LIST GAMES //FIXME: Change format of games list to match requested json
+        Spark.get("/game", (req, res) -> new GameHandler().listGamesHandle(req, res, authDAO, gameDAO));
 
         //TODO:
         // Make remaining endpoints for other functions
