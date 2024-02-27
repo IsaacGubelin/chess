@@ -31,10 +31,8 @@ public class MemoryGameDAO implements GameDAO {
 
     // Create and add a new chess game to the database
     public int createGame(String gameName) {
-        // Make new game ID
-        int id = generateID();
+        int id = generateID(); // Make new game ID
 
-        // TODO: Construct a GameData object and insert into map with ID as key.
         GameData game = new GameData(id, null, null, gameName, new ChessGame());
         gamesTable.put(game.gameID(), game);
         return id;
@@ -50,6 +48,7 @@ public class MemoryGameDAO implements GameDAO {
         String blackUsername = gamesTable.get(gameID).blackUsername();  // Use for updated game record
         String gameName = gamesTable.get(gameID).gameName();            // Use for updated game record
         GameData game = new GameData(gameID, whiteUsername, blackUsername, gameName, gamesTable.get(gameID).game());
+        gamesTable.put(gameID, game);   // Overwrite old game data with new data
     }
 
     // Use to update a new user for the black team
@@ -57,6 +56,7 @@ public class MemoryGameDAO implements GameDAO {
         String whiteUsername = gamesTable.get(gameID).whiteUsername();  // Use for updated game record
         String gameName = gamesTable.get(gameID).gameName();            // Use for updated game record
         GameData game = new GameData(gameID, whiteUsername, blackUsername, gameName, gamesTable.get(gameID).game());
+        gamesTable.put(gameID, game);   // Overwrite old data with new data
     }
 
     // Returns the chess game object associated with the given ID

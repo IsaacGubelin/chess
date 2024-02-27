@@ -19,10 +19,7 @@ public class Server {
 
     public int run(int desiredPort) {
         Spark.port(desiredPort);
-
         Spark.staticFiles.location("web");
-
-        // Register your endpoints and handle exceptions here.
 
         // CLEAR APPLICATION
         Spark.delete("/db", (req, res) -> new ClearHandler().clearDatabases(req, res, userDAO, gameDAO, authDAO));
@@ -42,8 +39,8 @@ public class Server {
         // LIST GAMES
         Spark.get("/game", (req, res) -> new GameHandler().listGamesHandle(req, res, authDAO, gameDAO));
 
-        // TODO: Spark.put("")
-
+        // JOIN GAME
+        Spark.put("/game", (req, res) -> new GameHandler().joinGameHandle(req, res, authDAO, gameDAO));
 
 
         Spark.awaitInitialization();
@@ -54,5 +51,4 @@ public class Server {
         Spark.stop();
         Spark.awaitStop();
     }
-
 }

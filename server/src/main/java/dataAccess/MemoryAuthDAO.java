@@ -10,9 +10,12 @@ public class MemoryAuthDAO implements AuthDAO {
 
     private HashMap<String, AuthData> authDataTable = new HashMap<>();
 
-    // Generate an authToken
+    // Generate a unique authToken
     private String generateToken() {
-        return UUID.randomUUID().toString();
+        String token = UUID.randomUUID().toString();    // Make an authToken
+        while (authDataTable.containsKey(token))
+            token = UUID.randomUUID().toString();       // If the token already exists, make a new one
+        return token;
     }
 
 
