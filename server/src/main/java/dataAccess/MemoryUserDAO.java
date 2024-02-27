@@ -20,9 +20,9 @@ public class MemoryUserDAO implements UserDAO {
         userTable.clear();
     }
 
-    public void createUser(UserData userData) throws DataAccessException {
+    public void createUser(UserData userData) throws AlreadyTakenException {
         if (hasThisUsername(userData.username())) {
-            throw new DataAccessException("Error: Cannot create new user. User already exists");
+            throw new AlreadyTakenException("Error: Cannot create new user. User already exists");
         }
         userTable.put(userData.username(), userData);
     }
@@ -30,6 +30,11 @@ public class MemoryUserDAO implements UserDAO {
     // Get a user from a given username
     public UserData getUser(String username) {
         return userTable.get(username);
+    }
+
+    // Get database of users
+    public HashMap<String, UserData> getUserTable() {
+        return userTable;
     }
 
 }

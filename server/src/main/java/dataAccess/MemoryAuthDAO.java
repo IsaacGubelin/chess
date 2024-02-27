@@ -41,6 +41,8 @@ public class MemoryAuthDAO implements AuthDAO {
         return authDataTable.get(authToken);
     }
 
+    public HashMap<String, AuthData> getAuthDataTable() { return authDataTable; }
+
     // Remove an authData object from the database, given the corresponding token
     public void deleteAuth(String authToken) {
         authDataTable.remove(authToken);

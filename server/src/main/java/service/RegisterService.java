@@ -1,14 +1,11 @@
 package service;
 
 
-import dataAccess.BadRequestException;
-import dataAccess.DataAccessException;
-import dataAccess.MemoryAuthDAO;
-import dataAccess.MemoryUserDAO;
+import dataAccess.*;
 
 public class RegisterService {
     public static String register(model.UserData user, MemoryUserDAO uDAO, MemoryAuthDAO aDAO)
-            throws DataAccessException, BadRequestException {
+            throws AlreadyTakenException, BadRequestException {
 
         // Check for bad request (if any field is null)
         if (user.username() == null || user.password() == null || user.email() == null) {
@@ -18,7 +15,7 @@ public class RegisterService {
 
         // Check that username is valid
         if (uDAO.hasThisUsername(user.username())) {
-            throw new DataAccessException("Error: Username already taken.");
+            throw new AlreadyTakenException("Error: Username already taken.");
         }
         // Create and add user to database
         uDAO.createUser(user);

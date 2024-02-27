@@ -1,10 +1,7 @@
 package handler;
 
 import com.google.gson.Gson;
-import dataAccess.BadRequestException;
-import dataAccess.DataAccessException;
-import dataAccess.MemoryAuthDAO;
-import dataAccess.MemoryUserDAO;
+import dataAccess.*;
 import model.AuthData;
 import model.MessageData;
 import model.UserData;
@@ -26,7 +23,7 @@ public class RegisterHandler {
         } catch (BadRequestException badEx) {     // Bad requests are requests that are missing data
             res.status(400);            // Set status value to error code
             return new Gson().toJson(new MessageData("Error: bad request"));    // Return error message
-        } catch (DataAccessException dataEx) {    // This exception happens when a username is already used
+        } catch (AlreadyTakenException dataEx) {    // This exception happens when a username is already used
             res.status(403);            // Set status to error code
             return new Gson().toJson(new MessageData("Error: already taken")); // Return error message
         }
