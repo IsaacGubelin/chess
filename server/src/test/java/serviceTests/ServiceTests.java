@@ -5,6 +5,7 @@ import chess.InvalidMoveException;
 import dataAccess.*;
 import model.AuthData;
 import model.UserData;
+import org.eclipse.jetty.util.log.Log;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -195,6 +196,38 @@ public class ServiceTests {
         // Should throw unauthorized exception when given wrong password
         Assertions.assertThrows(UnauthorizedException.class, () ->
                 LoginOutService.login(new UserData(name, wrongWord, email), userDAO, authDAO));
+    }
+    @Test
+    @DisplayName("Check for successful logout")
+    public void logoutSuccess() {
+        MemoryAuthDAO authDAO = new MemoryAuthDAO();    // Make an auth database
+        String name = "Benjamin";
+        String token = authDAO.createAuth(name);        // Add new auth data and retrieve token
+
+        Assertions.assertEquals(authDAO.getAuth(token).username(), name);   // Verify if auth data was made
+
+        // Attempt logout
+        try {
+            LoginOutService.logout(token, authDAO);
+        } catch (UnauthorizedException unEx) {
+            Assertions.fail("Logout test failed.");
+        }
+
+        Assertions.assertTrue(authDAO.getAuthDataTable().isEmpty());    // Check that auth data is gone
+    }
+
+    @Test
+    @DisplayName("Test failed logout")
+    public void logoutWithWrongAuthToken() {
+        MemoryAuthDAO authDAO = new MemoryAuthDAO();    // Make an auth database
+        String name = "Benjamin";
+        String wrongToken = "3aWRONG-TOKEN9tr4k";       // Make a token with wrong format and value
+        String correctToken = authDAO.createAuth(name); // Add new auth data and retrieve correct token
+        
+        Assertions.assertEquals(authDAO.getAuth(correctToken).username(), name);   // Verify if auth data was made
+
+        // Attempt logout with incorrect authToken
+        Assertions.assertThrows(UnauthorizedException.class, () -> LoginOutService.logout(wrongToken, authDAO));
     }
 
 
