@@ -212,7 +212,6 @@ public class ServiceTests {
         } catch (UnauthorizedException unEx) {
             Assertions.fail("Logout test failed.");
         }
-
         Assertions.assertTrue(authDAO.getAuthDataTable().isEmpty());    // Check that auth data is gone
     }
 
@@ -223,12 +222,18 @@ public class ServiceTests {
         String name = "Benjamin";
         String wrongToken = "3aWRONG-TOKEN9tr4k";       // Make a token with wrong format and value
         String correctToken = authDAO.createAuth(name); // Add new auth data and retrieve correct token
-        
+
         Assertions.assertEquals(authDAO.getAuth(correctToken).username(), name);   // Verify if auth data was made
 
         // Attempt logout with incorrect authToken
         Assertions.assertThrows(UnauthorizedException.class, () -> LoginOutService.logout(wrongToken, authDAO));
     }
 
+
+
+    // TODO:
+    //  listGames() positive and negative tests
+    //  createGame() positive and negative tests
+    //  joinGame() positive and negative tests
 
 }
