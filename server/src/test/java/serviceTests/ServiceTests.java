@@ -1,23 +1,19 @@
 package serviceTests;
 
-import chess.ChessBoardPrint;
-import chess.InvalidMoveException;
+
 import dataAccess.*;
 import model.AuthData;
+import model.GameData;
 import model.UserData;
-import org.eclipse.jetty.util.log.Log;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import service.ClearService;
+import service.GameService;
 import service.LoginOutService;
 import service.RegisterService;
-import spark.utils.Assert;
 
-import javax.xml.crypto.Data;
-
-import static passoffTests.TestFactory.*;
-import static passoffTests.TestFactory.getNewPosition;
+import java.util.Collection;
 
 public class ServiceTests {
 
@@ -227,6 +223,55 @@ public class ServiceTests {
 
         // Attempt logout with incorrect authToken
         Assertions.assertThrows(UnauthorizedException.class, () -> LoginOutService.logout(wrongToken, authDAO));
+    }
+
+    @Test
+    @DisplayName("Test successful request for listGames service")
+    public void listGamesSuccess() {
+        MemoryAuthDAO authDAO = new MemoryAuthDAO();    // Make an auth database
+        MemoryGameDAO gameDAO = new MemoryGameDAO();    // Make games database
+        gameDAO.createGame("ChessGame1");       // Create chess game
+        String name = "Benjamin";                       // Start making new auth data
+        String correctToken = authDAO.createAuth(name); // Add new auth data and retrieve correct token
+        Assertions.assertEquals(authDAO.getAuth(correctToken).username(), name);   // Verify if auth data was made
+
+        Collection<GameData> listOfGames = GameService.getGames(gameDAO);   // Retrieve games
+        Assertions.assertTrue(!listOfGames.isEmpty());  // Verify that the container is not empty
+    }
+
+    @Test
+    @DisplayName("Test listGames rejection from wrong authToken")
+    public void listGamesWrongAuthToken() {
+        MemoryAuthDAO authDAO = new MemoryAuthDAO();    // Make an auth database
+
+        //FIXME:
+        // Add negative case test
+    }
+
+    @Test
+    @DisplayName("Test successfully created game")
+    public void createGameServiceSuccess() {
+        MemoryGameDAO gameDAO = new MemoryGameDAO();    // Create games database
+        int gameID = 0;
+        try {
+            gameID = GameService.createGame("Game1", gameDAO); // Create a game
+        } catch (DataAccessException dataEx) {
+            Assertions.fail("Error: failed to create game");
+        } catch (BadRequestException badEx) {
+            Assertions.fail("Error: bad request");
+        }
+
+        // Verify that game was created and returned a nonzero id
+        Assertions.assertTrue(!gameDAO.getGameDatabase().isEmpty());
+        Assertions.assertTrue(gameID != 0);
+    }
+
+    @Test
+    @DisplayName("Test for when name parameter is missing data")
+    public void createGameFailureTest() {
+        MemoryGameDAO gameDAO = new MemoryGameDAO();    // Create games database
+        String gameName = null;
+        Assertions.assertThrows(BadRequestException.class, () -> GameService.createGame(gameName, gameDAO));
     }
 
 

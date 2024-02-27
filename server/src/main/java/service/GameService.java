@@ -20,7 +20,10 @@ public class GameService {
         return games;   // Return the collection of games
     }
 
-    public static int createGame(String gameName, MemoryGameDAO gDAO) throws DataAccessException {
+    public static int createGame(String gameName, MemoryGameDAO gDAO) throws DataAccessException, BadRequestException {
+        if (gameName == null) {     // Make sure gameName parameter has data
+            throw new BadRequestException("Error: bad request");
+        }
         int gameID = gDAO.createGame(gameName); // This function returns the game ID when it makes a new game
         if (gameID == -1) {
             throw new DataAccessException("Error: Games are full");

@@ -37,13 +37,6 @@ public class GameHandler {
         }
         // Gather needed information from json request body
         GameRequestData name = gs.fromJson(req.body(), GameRequestData.class);
-
-        // If game name parameter is null, this is a bad request.
-        if (name.gameName() == null) {
-            res.status(400);
-            return gs.toJson(new MessageData("Error: bad request"));
-        }
-
         try {
             int gameID = GameService.createGame(name.gameName(), gDAO);
             res.status(200);
@@ -51,6 +44,9 @@ public class GameHandler {
         } catch (DataAccessException dataEx) {
             res.status(403);
             return gs.toJson(new MessageData("Error: No more available games"));
+        } catch (BadRequestException badEx) {
+            res.status(400);
+            return gs.toJson(new MessageData("Error: bad request"));
         }
     }
 
