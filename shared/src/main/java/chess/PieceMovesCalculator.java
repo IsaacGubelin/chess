@@ -307,48 +307,48 @@ public class PieceMovesCalculator {
 
         // Uses for-loops with two iterators that increment in parallel. (One for row, one for column)
         // Start checking up and to the right
-        for (int newRow = r + 1, newCol = c + 1; (newRow < 9 && newCol < 9); newRow++, newCol++) {
+        for (int newRowDown = r + 1, newCol = c + 1; (newRowDown < 9 && newCol < 9); newRowDown++, newCol++) {
             // Rook cannot keep moving if it finds a piece in the way.
-            if (board.hasPieceAt(newRow, newCol)) {
+            if (board.hasPieceAt(newRowDown, newCol)) {
                 // If rook encounters a piece it can capture, store the move and break the loop.
-                if (isClaimable(newRow, newCol, board, color)) {
-                    moves.add(new ChessMove(oldPos, new ChessPosition(newRow, newCol)));
+                if (isClaimable(newRowDown, newCol, board, color)) {
+                    moves.add(new ChessMove(oldPos, new ChessPosition(newRowDown, newCol)));
                 }
                 // No more moves in this direction to check for
                 break;
             }
             // Space must be empty. Add to collection and keep checking for more available moves.
-            moves.add(new ChessMove(oldPos, new ChessPosition(newRow, newCol)));
+            moves.add(new ChessMove(oldPos, new ChessPosition(newRowDown, newCol)));
         }
 
         // Check down and to the right
-        for (int newRow = r - 1, newCol = c + 1; (newRow >= 1 && newCol < 9); newRow--, newCol++) {
+        for (int rowDown = r - 1, colRight = c + 1; (rowDown >= 1 && colRight < 9); rowDown--, colRight++) {
             // Rook cannot keep moving if it finds a piece in the way.
-            if (board.hasPieceAt(newRow, newCol)) {
+            if (board.hasPieceAt(rowDown, colRight)) {
                 // If rook encounters a piece it can capture, store the move and break the loop.
-                if (isClaimable(newRow, newCol, board, color)) {
-                    moves.add(new ChessMove(oldPos, new ChessPosition(newRow, newCol)));
+                if (isClaimable(rowDown, colRight, board, color)) {
+                    moves.add(new ChessMove(oldPos, new ChessPosition(rowDown, colRight)));
                 }
                 // No more moves in this direction to check for
                 break;
             }
             // Space must be empty. Add to collection and keep checking for more available moves.
-            moves.add(new ChessMove(oldPos, new ChessPosition(newRow, newCol)));
+            moves.add(new ChessMove(oldPos, new ChessPosition(rowDown, colRight)));
         }
 
         // Start checking down and to the left
-        for (int newRow = r - 1, newCol = c - 1; (newRow >= 1 && newCol >= 1); newRow--, newCol--) {
+        for (int newRow = r - 1, columnLeft = c - 1; (newRow >= 1 && columnLeft >= 1); newRow--, columnLeft--) {
             // Rook cannot keep moving if it finds a piece in the way.
-            if (board.hasPieceAt(newRow, newCol)) {
+            if (board.hasPieceAt(newRow, columnLeft)) {
                 // If rook encounters a piece it can capture, store the move and break the loop.
-                if (isClaimable(newRow, newCol, board, color)) {
-                    moves.add(new ChessMove(oldPos, new ChessPosition(newRow, newCol)));
+                if (isClaimable(newRow, columnLeft, board, color)) {
+                    moves.add(new ChessMove(oldPos, new ChessPosition(newRow, columnLeft)));
                 }
                 // No more moves in this direction to check for
                 break;
             }
             // Space must be empty. Add to collection and keep checking for more available moves.
-            moves.add(new ChessMove(oldPos, new ChessPosition(newRow, newCol)));
+            moves.add(new ChessMove(oldPos, new ChessPosition(newRow, columnLeft)));
         }
 
         // Start checking up and to the left
