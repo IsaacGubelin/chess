@@ -12,8 +12,10 @@ import service.ClearService;
 import service.GameService;
 import service.LoginOutService;
 import service.RegisterService;
+import spark.utils.Assert;
 
 import java.util.Collection;
+import java.util.HashSet;
 
 public class ServiceTests {
 
@@ -243,9 +245,19 @@ public class ServiceTests {
     @DisplayName("Test listGames rejection from wrong authToken")
     public void listGamesWrongAuthToken() {
         MemoryAuthDAO authDAO = new MemoryAuthDAO();    // Make an auth database
+        MemoryGameDAO gameDAO = new MemoryGameDAO();    // Make games database
+        gameDAO.createGame("Game1");            // Create game and add to database
+        String token = authDAO.createAuth("Bob");   // Add auth data and get token
+        String wrongToken = "notRealToken";             // Make a fake token
 
-        //FIXME:
-        // Add negative case test
+        HashSet<GameData> games = new HashSet<>();
+
+        // Will NOT retrieve games if auth database doesn't have authToken.
+        if (authDAO.hasAuth(wrongToken)) {
+            games = (HashSet<GameData>) GameService.getGames(gameDAO);
+            Assertions.fail("Error: retrieved games with incorrect authToken");
+        }
+        Assertions.assertTrue(games.isEmpty()); // Should be empty
     }
 
     @Test
@@ -275,10 +287,59 @@ public class ServiceTests {
     }
 
 
+    @Test
+    @DisplayName("Test successful joining into chess game for white team")
+    public void joinWhiteTeamSuccess() {
+        MemoryGameDAO gameDAO = new MemoryGameDAO();    // New games database
+        MemoryAuthDAO authDAO = new MemoryAuthDAO();    // New auth database
+        String gameName = "Game1";                      // Name for new chess game
+        String userName = "Freddy";                     // Username for client
 
-    // TODO:
-    //  listGames() positive and negative tests
-    //  createGame() positive and negative tests
-    //  joinGame() positive and negative tests
+        String token = authDAO.createAuth(userName);        // Make auth data for user and get token
+        int gameID = gameDAO.createGame("Game1"); // Create new game and retrieve game ID
+
+        gameDAO.updateWhiteUsername(gameID, userName);      // Add user to white team of chess game
+        String whiteTeamName = gameDAO.getGameDatabase().get(gameID).whiteUsername(); // Retrieve newly added data
+        Assertions.assertTrue(whiteTeamName.equals(userName));  // Check if username was succesfully added
+    }
+
+    @Test
+    @DisplayName("Test alreadyTaken exception for joinGame request")
+    public void joinWhiteTeamReject() {
+        MemoryGameDAO gameDAO = new MemoryGameDAO();    // New games database
+        MemoryAuthDAO authDAO = new MemoryAuthDAO();    // New auth database
+        String gameName = "Game1";                      // Name for new chess game
+        String userName = "Freddy";                     // Username for client
+        String otherUser = "Bonnie";                    // User trying to join already-taken team
+        String requestedTeam = "WHITE";                 // Team that second user will try to join
+
+        authDAO.createAuth(userName);                   // Add both users to auth table
+        String token = authDAO.createAuth(otherUser);   // Keep second user's token for test
+        int gameID = gameDAO.createGame(gameName);      // Create new game and retrieve game ID
+
+        gameDAO.updateWhiteUsername(gameID, userName);  // Add first user to white team of chess game
+
+        // Adding second user to the same game's white game should throw an exception.
+        Assertions.assertThrows(AlreadyTakenException.class, () ->
+                GameService.joinGame(gameID, requestedTeam, token, gameDAO, authDAO));
+    }
+
+    @Test
+    @DisplayName("Test bad request exception for joining a nonexistent game")
+    public void joinGameWithWrongID() {
+        MemoryGameDAO gameDAO = new MemoryGameDAO();    // New games database
+        MemoryAuthDAO authDAO = new MemoryAuthDAO();    // New auth database
+        String gameName = "Game1";                      // Name for new chess game
+        String userName = "Freddy";                     // Username for client
+        String requestedTeam = "WHITE";                 // Team that second user will try to join
+
+        String token = authDAO.createAuth(userName);                   // Add user to auth table
+        int gameID = gameDAO.createGame(gameName);      // Create new game and retrieve game ID
+
+        int wrongID = gameID + 1;                       // Make an incorrect game ID
+        // Adding second user to the same game's white game should throw an exception.
+        Assertions.assertThrows(BadRequestException.class, () ->
+                GameService.joinGame(wrongID, requestedTeam, token, gameDAO, authDAO));
+    }
 
 }
