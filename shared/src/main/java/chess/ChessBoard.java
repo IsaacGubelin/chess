@@ -11,10 +11,8 @@ import java.util.Arrays;
 public class ChessBoard {
 
     public ChessBoard() {
-
         // Initialize the squares (chess board)
         squares = new ChessPiece[8][8];
-        
     }
 
     private ChessPiece[][] squares; // A 2D array for chess pieces. Empty locations are set to null.
@@ -29,9 +27,6 @@ public class ChessBoard {
         squares[position.getRow() - 1][position.getColumn() - 1] = piece;
     }
 
-    public void addPiece(int row, int column, ChessPiece piece) {
-        squares[row - 1][column - 1] = piece;
-    }
 
     /**
      * Gets a chess piece on the chessboard
@@ -48,15 +43,15 @@ public class ChessBoard {
         return squares[row - 1][column - 1];
     }
 
-    // Temporarily being used to get a king's location
+    // Used to get a king's location
     public ChessPosition tempGetKingLoc(ChessGame.TeamColor color) {
         ChessPosition kingLoc = new ChessPosition(1, 1);
-        for (int r = 0; r < 8; r++) {
-            for (int c = 0; c < 8; c++) {
-                if (squares[r][c] != null) {
-                    if (squares[r][c].getPieceType() == ChessPiece.PieceType.KING
-                        && squares[r][c].getTeamColor() == color) {
-                        kingLoc.setPositionRowColumn(r + 1, c + 1);
+        for (int r = 0; r < 8; r++) {                       // Search through each row
+            for (int c = 0; c < 8; c++) {                   // Search through each column
+                if (squares[r][c] != null) {                // If a square contains a chess piece
+                    if (squares[r][c].getPieceType() == ChessPiece.PieceType.KING   // Verify if it's a king
+                        && squares[r][c].getTeamColor() == color) {             // Verify it's the correct team color
+                        kingLoc.setPositionRowColumn(r + 1, c + 1); // Record position and return
                     }
                 }
             }
@@ -65,16 +60,6 @@ public class ChessBoard {
     }
 
 
-    /**
-     * A function to set a board position to a specified Chess piece type and color
-     *
-     * @param position
-     * @param color
-     * @param type
-     */
-    public void setPiece(ChessPosition position, ChessGame.TeamColor color, ChessPiece.PieceType type) {
-        squares[position.getRow() - 1][position.getColumn() - 1] = new ChessPiece(color, type);
-    }
 
     /**
      * Remove a piece from the board by setting it to null
