@@ -13,7 +13,7 @@ import java.util.Objects;
 public class ChessGame {
 
     public ChessGame() {
-        ChessGameInit(); // Initialize the game
+        chessGameInit(); // Initialize the game
     }
 
     // Private variables for determining game status
@@ -230,7 +230,7 @@ public class ChessGame {
     }
 
     // Initialize the chess board and set the team turn to the white team to start.
-    private void ChessGameInit() {
+    private void chessGameInit() {
         blackKingLocation = new ChessPosition(8, 5); // Construct and initialize king locations
         whiteKingLocation = new ChessPosition(1, 5);
 

@@ -45,11 +45,6 @@ public class ChessMove {
     }
 
 
-    // Set promotion piece type
-    public void SetPromotionPiece(ChessPiece.PieceType piece) {
-        promotionPiece = piece;
-    }
-
     /**
      * Gets the type of piece to promote a pawn to if pawn promotion is part of this
      * chess move

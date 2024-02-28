@@ -12,7 +12,5 @@ public interface GameDAO {
 
     int createGame(String gameName);
 
-    ChessGame getGame(String id) throws DataAccessException;
-
 //    Collection<ChessGame> listGames();
 }

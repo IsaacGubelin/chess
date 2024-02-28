@@ -9,6 +9,9 @@ import java.util.HashMap;
 
 public class MemoryGameDAO implements GameDAO {
 
+    // Games database
+    private HashMap<Integer, GameData> gamesTable = new HashMap<>();
+
     // A game ID generator that automatically finds available ID numbers.
     private int generateID() {
         int id = Config.GAME_ID_MIN;    // Starting ID value
@@ -19,10 +22,6 @@ public class MemoryGameDAO implements GameDAO {
         }
         return id;
     }
-
-    // Games database
-    private HashMap<Integer, GameData> gamesTable = new HashMap<>();
-
 
     // Clear all GameData entries from database
     public void clearGamesDataBase() {
@@ -58,15 +57,4 @@ public class MemoryGameDAO implements GameDAO {
         GameData game = new GameData(gameID, whiteUsername, blackUsername, gameName, gamesTable.get(gameID).game());
         gamesTable.put(gameID, game);   // Overwrite old data with new data
     }
-
-    // Returns the chess game object associated with the given ID
-    public ChessGame getGame(String id) throws DataAccessException {
-        // Handle case where game ID is not in database
-        if (!gamesTable.containsKey(id)) {
-            throw new DataAccessException("Error: game ID does not exist.");
-        }
-        return gamesTable.get(id).game();
-    }
-
-
 }
