@@ -1,10 +1,5 @@
 package chess;
-
-
-
 import java.util.*;
-
-
 
 /**
  * Represents a single chess piece

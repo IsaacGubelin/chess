@@ -1,7 +1,6 @@
 package handler;
 
 import dataAccess.*;
-import org.eclipse.jetty.server.Authentication;
 import service.ClearService;
 import spark.Request;
 import spark.Response;

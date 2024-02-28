@@ -1,8 +1,6 @@
 package serviceTests;
 
-
 import dataAccess.*;
-import model.AuthData;
 import model.GameData;
 import model.UserData;
 import org.junit.jupiter.api.Assertions;
@@ -12,7 +10,6 @@ import service.ClearService;
 import service.GameService;
 import service.LoginOutService;
 import service.RegisterService;
-import spark.utils.Assert;
 
 import java.util.Collection;
 import java.util.HashSet;

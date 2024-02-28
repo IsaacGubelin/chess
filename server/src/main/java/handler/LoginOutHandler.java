@@ -7,7 +7,6 @@ import model.AuthData;
 import model.MessageData;
 import model.UserData;
 import service.LoginOutService;
-import service.RegisterService;
 import spark.Request;
 import spark.Response;
 public class LoginOutHandler {

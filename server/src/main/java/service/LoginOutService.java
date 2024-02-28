@@ -3,8 +3,6 @@ package service;
 import dataAccess.*;
 import model.AuthData;
 
-import javax.xml.crypto.Data;
-
 public class LoginOutService {
     public static AuthData login(model.UserData user, MemoryUserDAO uDAO, MemoryAuthDAO aDAO)
             throws UnauthorizedException, BadRequestException {

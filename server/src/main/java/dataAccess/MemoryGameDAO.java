@@ -4,7 +4,6 @@ import chess.ChessGame;
 import config.Config;
 import model.GameData;
 
-import javax.xml.crypto.Data;
 import java.util.HashMap;
 
 public class MemoryGameDAO implements GameDAO {

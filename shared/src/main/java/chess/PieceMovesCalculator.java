@@ -2,7 +2,6 @@ package chess;
 
 import java.util.HashSet;
 
-
 public class PieceMovesCalculator {
 
     // Returns true if a position is within the bounds of the 8x8 Chessboard.
