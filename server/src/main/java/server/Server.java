@@ -12,7 +12,7 @@ import spark.*;
 public class Server {
 
     // These are the DAOs used by the endpoints of the server.
-    // TODO: SQL will go here eventually
+    // SQL will go here eventually
     private MemoryUserDAO userDAO = new MemoryUserDAO();
     private MemoryGameDAO gameDAO = new MemoryGameDAO();
     private MemoryAuthDAO authDAO = new MemoryAuthDAO();

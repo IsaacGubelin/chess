@@ -77,14 +77,6 @@ public class ChessPiece {
        return PieceMovesCalculator.getAvailablePieceMoves(board, myPosition);
     }
 
-
-    private Collection<ChessMove> pawnMoves(ChessBoard board, ChessPosition myPos) {
-
-        ArrayList<ChessMove> moves = new ArrayList<>();
-
-        return moves;
-    }
-
     // Overrides for essential object functions
     @Override
     public boolean equals(Object o) {

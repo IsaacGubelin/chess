@@ -6,10 +6,6 @@ import model.AuthData;
 import javax.xml.crypto.Data;
 
 public class LoginOutService {
-
-    //TODO:
-    // Handler gets the json. Converts into object. Sends to this service.
-
     public static AuthData login(model.UserData user, MemoryUserDAO uDAO, MemoryAuthDAO aDAO)
             throws UnauthorizedException, BadRequestException {
 

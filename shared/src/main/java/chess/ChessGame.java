@@ -162,16 +162,9 @@ public class ChessGame {
      * @return True if the specified team is in check
      */
     public boolean isInCheck(TeamColor teamColor) {
-
-        // Make a temporary position object that fetches the king piece location for the corresponding color
-        //FIXME: use this in future
-//        ChessPosition kingPosition = (teamColor == TeamColor.BLACK) ? blackKingLocation : whiteKingLocation;
         ChessPosition kingPosition = board.tempGetKingLoc(teamColor);
-
         return KingCheckEvaluator.positionIsInRisk(board, kingPosition);
     }
-
-
 
 
     /**

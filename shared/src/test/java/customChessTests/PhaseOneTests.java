@@ -25,7 +25,7 @@ import static passoffTests.TestFactory.*;
 public class PhaseOneTests {
 
     @Test
-    @DisplayName("Check potential risk")
+    @DisplayName("Check print board")
     public void testCasesFunc() {
 
     /*  |r|n|b|q|k|b|n|r|
@@ -45,49 +45,6 @@ public class PhaseOneTests {
 
     }
 
-
-    @Test
-    @DisplayName("Check if current position is at risk")
-    public void testRookCheck() {
-
-    /*  | | | | | | | | |
-        | | | |k| | | | |
-        | | | | | | |r| |
-        | | | |R| | | | |
-        | | |R| |R| | | |
-        | | | |R| | | | |
-        | | | | | | | | |
-        | | | | | | | | |   */
-
-        var game = getNewGame();
-
-        game.setBoard(getNewBoard());
-
-        ChessPosition kingPos = getNewPosition(7, 4);
-
-
-
-        ChessPiece kingPiece = getNewPiece(ChessGame.TeamColor.BLACK, ChessPiece.PieceType.KING);
-        ChessPiece rookPiece = getNewPiece(ChessGame.TeamColor.WHITE, ChessPiece.PieceType.ROOK);
-
-        game.getBoard().removePiece(new ChessPosition(8, 5));
-        game.getBoard().addPiece(kingPos, kingPiece);
-        game.getBoard().addPiece(new ChessPosition(4, 3), rookPiece);
-        game.getBoard().addPiece(new ChessPosition(3, 4), rookPiece);
-        game.getBoard().addPiece(new ChessPosition(4, 5), rookPiece);
-        game.getBoard().addPiece(new ChessPosition(5, 4), rookPiece);
-        game.getBoard().addPiece(new ChessPosition(6,7), new ChessPiece(ChessGame.TeamColor.BLACK, ChessPiece.PieceType.ROOK));
-        game.getBoard().printBoard();
-
-
-//        Assertions.assertTrue(game.isInCheckmate(ChessGame.TeamColor.BLACK),
-//                "Attack by rook was false.");
-        HashSet<ChessMove> moves = (HashSet<ChessMove>) game.validMoves(new ChessPosition(6, 7));
-        for (ChessMove move : moves) {
-            System.out.println(move.toString());
-        }
-
-    }
 
     // Test the function that evaluates if a knight could attack the king
     @Test

@@ -1,11 +1,9 @@
 package chess;
 
-import javax.imageio.stream.ImageOutputStream;
 import java.util.HashSet;
 
 
 public class PieceMovesCalculator {
-
 
     // Returns true if a position is within the bounds of the 8x8 Chessboard.
     private static boolean isInBounds(int row, int col) {
@@ -67,138 +65,6 @@ public class PieceMovesCalculator {
 
         return moves;
     }
-
-    // Takes in a position and evaluates possible castling moves.
-    // CRITERIA FOR CASTLING:
-    // 1. King is NOT currently in check
-    // 2. No pieces between king and rook
-    // 3. Neither the king nor rook has been moved
-    // 4. The king does not pass through nor finish on a space that is in check.
-    public static HashSet<ChessMove> getCastlingMoves(ChessBoard board, ChessPosition kingPos) {
-        HashSet<ChessMove> castlingMoves = new HashSet<>();
-
-        // Get current row and column
-        int r = kingPos.getRow();
-        int c = kingPos.getColumn();
-
-        // Before checking requirements, verify that the king has not been moved.
-        if (board.hasNoPieceAt(kingPos) || board.getPiece(kingPos).hasBeenMoved()) {
-            return castlingMoves;   // If space is empty or not a king, return empty moves set.
-        }
-
-        // Make sure king is not in check
-        if (KingCheckEvaluator.positionIsInRisk(board, kingPos)) {
-            return castlingMoves;   // If in check, return empty moves set.
-        }
-
-
-        // CHECK FOR KING'S SIDE CASTLING
-        if (canCastleKingSide(board, kingPos)) {
-            // This is a chess move in which the king moves two spaces to the right.
-            castlingMoves.add(new ChessMove(kingPos, new ChessPosition(r, c + 2)));
-        }
-
-        // CHECK FOR QUEEN'S SIDE CASTLING
-        if (canCastleQueenSide(board, kingPos)) {
-            // This is a chess move in which the king moves two spaces to the left.
-            castlingMoves.add(new ChessMove(kingPos, new ChessPosition(r, c - 2)));
-        }
-
-        return castlingMoves;
-    }
-
-    // TODO: Rework these castling functions so they are totally error-free
-    // A helper method that checks available castling on king's side.
-    public static boolean canCastleKingSide(ChessBoard board, ChessPosition kingPos) {
-
-        // Determine which row we are evaluating a castling move in
-        ChessGame.TeamColor pieceColor = board.getPiece(kingPos).getTeamColor();
-        int r = pieceColor == ChessGame.TeamColor.WHITE ? 1 : 8;
-
-        // Check if there is an unmoved rook to the far right of the king (in its same row)
-        if (board.hasNoPieceAt(r, 8)                    // Verify if there is a piece to far right.
-                || board.getPiece(r, 8).hasBeenMoved()  // Verify it hasn't moved. (this means it's a rook)
-                || board.getPiece(kingPos).hasBeenMoved()) {       // Make sure king hasn't been moved.
-            return false;
-        }
-
-        // Check if there are any pieces between the king and rook.
-        if (board.hasPieceAt(r, 6) || board.hasPieceAt(r, 7)) {
-            return false;
-        }
-
-        // Move king one space to right. If in check, move it back
-        board.addPiece(r, 6, new ChessPiece(pieceColor, ChessPiece.PieceType.KING));
-        board.removePiece(kingPos);
-        if (KingCheckEvaluator.positionIsInRisk(board, new ChessPosition(r, 6))) {  // If in check
-            board.addPiece(kingPos, new ChessPiece(pieceColor, ChessPiece.PieceType.KING)); // Place king back
-            board.removePiece(new ChessPosition(r, 6));
-            return false;       // The king would pass through check. Cannot do castling on king side.
-        }
-
-        // Move king one more space to right. If in check, place it back
-        board.addPiece(r, 7, new ChessPiece(pieceColor, ChessPiece.PieceType.KING));
-        board.removePiece(new ChessPosition(r, 6));
-        if (KingCheckEvaluator.positionIsInRisk(board, new ChessPosition(r, 7))) {  // If in check
-            board.addPiece(kingPos, new ChessPiece(pieceColor, ChessPiece.PieceType.KING)); // Place king back
-            board.removePiece(new ChessPosition(r, 7));
-            return false;
-        }
-
-        // King is now verified to pass through and end in safety. Return to original position
-        board.addPiece(kingPos, new ChessPiece(pieceColor, ChessPiece.PieceType.KING));
-        board.removePiece(new ChessPosition(r, 7));
-
-        // All required criteria met for king-side castling. Return true
-        return true;
-    }
-
-    // A helper method that returns available castling moves on queen's side.
-    private static boolean canCastleQueenSide(ChessBoard board, ChessPosition kingPos) {
-        // Get the row and column of the position and the team color
-        int r = kingPos.getRow(); // Used to access rook on same row
-
-        ChessGame.TeamColor pieceColor = board.getPiece(kingPos).getTeamColor();
-
-        // Check if there is an unmoved rook to the far left of the king (in its same row)
-        if (board.hasNoPieceAt(r, 1)                    // Verify if there is a piece to far right.
-                || board.getPiece(r, 1).hasBeenMoved()  // Verify it hasn't moved. (this means it's a rook)
-                || board.getPiece(kingPos).hasBeenMoved()) {       // Make sure king hasn't been moved.
-            return false;
-        }
-
-        // Check if there are any pieces between the king and rook.
-        if (board.hasPieceAt(r, 2) || board.hasPieceAt(r, 3) || board.hasPieceAt(r, 4)) {
-            return false;
-        }
-
-        // Move king one space to left. If in check, move it back
-        board.addPiece(r, 4, new ChessPiece(pieceColor, ChessPiece.PieceType.KING));
-        board.removePiece(kingPos);
-        if (KingCheckEvaluator.positionIsInRisk(board, new ChessPosition(r, 4))) {  // If in check
-            board.addPiece(kingPos, new ChessPiece(pieceColor, ChessPiece.PieceType.KING)); // Place king back
-            board.removePiece(new ChessPosition(r, 4));
-            return false;       // The king would pass through check. Cannot do castling on king side.
-        }
-
-        // Move king one more space to left. If in check, place it back
-        board.addPiece(r, 3, new ChessPiece(pieceColor, ChessPiece.PieceType.KING));
-        board.removePiece(new ChessPosition(r, 4));
-        if (KingCheckEvaluator.positionIsInRisk(board, new ChessPosition(r, 3))) {  // If in check
-            board.addPiece(kingPos, new ChessPiece(pieceColor, ChessPiece.PieceType.KING)); // Place king back
-            board.removePiece(new ChessPosition(r, 3));
-            return false;
-        }
-
-        // King is now verified to pass through and end in safety. Return to original position
-        board.addPiece(kingPos, new ChessPiece(pieceColor, ChessPiece.PieceType.KING));
-        board.removePiece(new ChessPosition(r, 3));
-
-        // All required criteria met for queen-side castling. Return true
-        return true;
-
-    }
-
 
     // PAWN MOVES (Black) These pawns start in row 7 and move downward.
     private static HashSet<ChessMove> getPawnMovesBlack(ChessBoard board, ChessPosition oldPos) {

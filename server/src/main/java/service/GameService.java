@@ -43,7 +43,7 @@ public class GameService {
 
         // SPECTATE: If color is null, user wants to join game as spectator
         if (color == null) {
-            // TODO: Add logic in future for spectating
+            // Add logic here for spectating
         }
         // Join user to black team of specified game
         else if (color.equals(Config.BLACK_TEAM_REQ)) {

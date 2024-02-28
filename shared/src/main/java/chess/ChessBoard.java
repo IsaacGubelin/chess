@@ -143,22 +143,6 @@ public class ChessBoard {
         }
     }
 
-    //TODO: Make this printBoard function better
-    // A very primitive, unformatted chessboard printer
-    public void printBoard() {
-        for (int r = 8; r > 0; r--) {
-            for (int c = 1; c < 9; c++) {
-                System.out.print("|");
-                if (hasPieceAt(r, c)) {
-                    System.out.print(squares[r - 1][c - 1].getPieceType());
-                }
-                else {
-                    System.out.print("       ");
-                }
-            }
-            System.out.print("\n");
-        }
-    }
 
     @Override
     public boolean equals(Object o) {
