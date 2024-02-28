@@ -18,32 +18,8 @@ import static passoffTests.TestFactory.*;
  */
 
 
-// TODO: FOCUS ON CHESSGAME
-    // TODO: FIX BUGS WITH REMAINING SEVEN TESTS
-
-
 public class PhaseOneTests {
 
-    @Test
-    @DisplayName("Check print board")
-    public void testCasesFunc() {
-
-    /*  |r|n|b|q|k|b|n|r|
-        |p|p|p|p|p|p|p|p|
-        | | | | | | | | |
-        | | | | | | | | |
-        | | | | | | | | |
-        | | | | | | | | |
-        |P|P|P|P|P|P|P|P|
-        |R|N|B|Q|K|B|N|R|   */
-
-
-        var game = getNewGame();
-
-
-        ChessBoardPrint.printChessBoard(game.getBoard());
-
-    }
 
 
     // Test the function that evaluates if a knight could attack the king
