@@ -39,14 +39,14 @@ public class ServiceTests {
 
         // All databases should now contain data
         Assertions.assertFalse(gDAO.getGameDatabase().isEmpty() ||
-                aDAO.getAuthDataTable().isEmpty() ||
-                uDAO.getUserTable().isEmpty());
+                aDAO.authDataTable.isEmpty() ||
+                uDAO.userTable.isEmpty());
 
         // TESTING CLEAR ENDPOINT
         ClearService.clearService(uDAO, gDAO, aDAO);
         Assertions.assertTrue(gDAO.getGameDatabase().isEmpty() &&
-                                aDAO.getAuthDataTable().isEmpty() &&
-                                uDAO.getUserTable().isEmpty());
+                                aDAO.authDataTable.isEmpty() &&
+                                uDAO.userTable.isEmpty());
     }
 
     @Test
@@ -207,7 +207,7 @@ public class ServiceTests {
         } catch (UnauthorizedException unEx) {
             Assertions.fail("Logout test failed.");
         }
-        Assertions.assertTrue(authDAO.getAuthDataTable().isEmpty());    // Check that auth data is gone
+        Assertions.assertTrue(authDAO.authDataTable.isEmpty());    // Check that auth data is gone
     }
 
     @Test

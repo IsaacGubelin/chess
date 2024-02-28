@@ -7,7 +7,7 @@ import java.util.HashMap;
 public class MemoryUserDAO implements UserDAO {
 
     // DATABASE OF USERS
-    HashMap<String, UserData> userTable = new HashMap<>();
+    public HashMap<String, UserData> userTable = new HashMap<>();
 
     // Evaluates if a given username exists
     public boolean hasThisUsername(String username) {
@@ -32,9 +32,5 @@ public class MemoryUserDAO implements UserDAO {
         return userTable.get(username);
     }
 
-    // Get database of users
-    public HashMap<String, UserData> getUserTable() {
-        return userTable;
-    }
 
 }

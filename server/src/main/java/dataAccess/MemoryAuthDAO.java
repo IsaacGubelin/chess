@@ -6,7 +6,7 @@ import java.util.UUID;
 
 public class MemoryAuthDAO implements AuthDAO {
 
-    private HashMap<String, AuthData> authDataTable = new HashMap<>();
+    public HashMap<String, AuthData> authDataTable = new HashMap<>();
 
     // Generate a unique authToken
     private String generateToken() {
@@ -39,7 +39,6 @@ public class MemoryAuthDAO implements AuthDAO {
         return authDataTable.get(authToken);
     }
 
-    public HashMap<String, AuthData> getAuthDataTable() { return authDataTable; }
 
     // Remove an authData object from the database, given the corresponding token
     public void deleteAuth(String authToken) {
