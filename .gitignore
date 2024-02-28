@@ -6,5 +6,9 @@ out/
 !**/src/main/**/out/
 !**/src/test/**/out/
 
+### Extra Java classes ###
+shared/src/main/java/chess/ChessBoardPrint.java
+
 ### Mac OS ###
 .DS_Store
+
