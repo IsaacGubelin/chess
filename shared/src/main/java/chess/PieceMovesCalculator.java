@@ -195,61 +195,61 @@ public class PieceMovesCalculator {
         ChessGame.TeamColor color = board.getPiece(oldPos).getTeamColor();
 
         // Start checking moves upwards for empty available spots
-        for (int newRow = r + 1; newRow < 9; newRow++) {
+        for (int newRowUp = r + 1; newRowUp < 9; newRowUp++) {
             // Rook cannot keep moving if it finds a piece in the way.
-            if (board.hasPieceAt(newRow, c)) {
+            if (board.hasPieceAt(newRowUp, c)) {
                 // If rook encounters a piece it can capture, store the move and break the loop.
-                if (isClaimable(newRow, c, board, color)) {
-                    moves.add(new ChessMove(oldPos, new ChessPosition(newRow, c)));
+                if (isClaimable(newRowUp, c, board, color)) {
+                    moves.add(new ChessMove(oldPos, new ChessPosition(newRowUp, c)));
                 }
                 // No more moves in this direction to check for
                 break;
             }
 
-            moves.add(new ChessMove(oldPos, new ChessPosition(newRow, c)));
+            moves.add(new ChessMove(oldPos, new ChessPosition(newRowUp, c)));
         }
         // Repeat for downwards positions
-        for (int newRow = r - 1; newRow >= 1; newRow--) {
+        for (int newRowDown = r - 1; newRowDown >= 1; newRowDown--) {
             // Rook cannot keep moving if it finds a piece in the way.
-            if (board.hasPieceAt(newRow, c)) {
+            if (board.hasPieceAt(newRowDown, c)) {
                 // If rook encounters a piece it can capture, store the move and break the loop.
-                if (isClaimable(newRow, c, board, color)) {
-                    moves.add(new ChessMove(oldPos, new ChessPosition(newRow, c)));
+                if (isClaimable(newRowDown, c, board, color)) {
+                    moves.add(new ChessMove(oldPos, new ChessPosition(newRowDown, c)));
                 }
                 // No more moves in this direction to check for
                 break;
             }
 
-            moves.add(new ChessMove(oldPos, new ChessPosition(newRow, c)));
+            moves.add(new ChessMove(oldPos, new ChessPosition(newRowDown, c)));
         }
 
         // Check leftwards. Now column is the changing variable.
-        for (int newCol = c - 1; newCol >= 1; newCol--) {
+        for (int newColLeft = c - 1; newColLeft >= 1; newColLeft--) {
             // Rook cannot keep moving if it finds a piece in the way.
-            if (board.hasPieceAt(r, newCol)) {
+            if (board.hasPieceAt(r, newColLeft)) {
                 // If rook encounters a piece it can capture, store the move and break the loop.
-                if (isClaimable(r, newCol, board, color)) {
-                    moves.add(new ChessMove(oldPos, new ChessPosition(r, newCol)));
+                if (isClaimable(r, newColLeft, board, color)) {
+                    moves.add(new ChessMove(oldPos, new ChessPosition(r, newColLeft)));
                 }
                 // No more moves in this direction to check for
                 break;
             }
 
-            moves.add(new ChessMove(oldPos, new ChessPosition(r, newCol)));
+            moves.add(new ChessMove(oldPos, new ChessPosition(r, newColLeft)));
         }
         // Check Right.
-        for (int newCol = c + 1; newCol < 9; newCol++) {
+        for (int newColRight = c + 1; newColRight < 9; newColRight++) {
             // Rook cannot keep moving if it finds a piece in the way.
-            if (board.hasPieceAt(r, newCol)) {
+            if (board.hasPieceAt(r, newColRight)) {
                 // If rook encounters a piece it can capture, store the move and break the loop.
-                if (isClaimable(r, newCol, board, color)) {
-                    moves.add(new ChessMove(oldPos, new ChessPosition(r, newCol)));
+                if (isClaimable(r, newColRight, board, color)) {
+                    moves.add(new ChessMove(oldPos, new ChessPosition(r, newColRight)));
                 }
                 // No more moves in this direction to check for
                 break;
             }
 
-            moves.add(new ChessMove(oldPos, new ChessPosition(r, newCol)));
+            moves.add(new ChessMove(oldPos, new ChessPosition(r, newColRight)));
         }
 
         return moves;
