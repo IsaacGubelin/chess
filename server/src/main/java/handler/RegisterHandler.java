@@ -26,6 +26,6 @@ public class RegisterHandler {
         } catch (AlreadyTakenException dataEx) {    // This exception happens when a username is already used
             res.status(403);            // Set status to error code
             return new Gson().toJson(new MessageData("Error: already taken")); // Return error message
-        }
+        } // TODO: Catch dataaccessException from SQL
     }
 }
