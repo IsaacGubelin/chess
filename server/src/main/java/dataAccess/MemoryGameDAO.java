@@ -4,11 +4,14 @@ import chess.ChessGame;
 import config.Config;
 import model.GameData;
 
+import javax.xml.crypto.Data;
+import java.sql.SQLDataException;
+import java.sql.SQLException;
 import java.util.HashMap;
 
 public class MemoryGameDAO implements GameDAO {
 
-    // Games database
+    //TODO: Remove when SQL implementation is complete
     private HashMap<Integer, GameData> gamesTable = new HashMap<>();
 
     // A game ID generator that automatically finds available ID numbers.
@@ -56,4 +59,33 @@ public class MemoryGameDAO implements GameDAO {
         GameData game = new GameData(gameID, whiteUsername, blackUsername, gameName, gamesTable.get(gameID).game());
         gamesTable.put(gameID, game);   // Overwrite old data with new data
     }
+
+
+    // For creating game table in chess database
+    private final String[] createGameTableStatements = { // FIXME: Change statements
+            """
+            CREATE TABLE IF NOT EXISTS  games
+            (
+              `gameID` int NOT NULL AUTO_INCREMENT,
+              `whiteUsername` varchar(256),
+              `blackUsername` varchar(256),
+              `gameName` varchar(256),
+              `game` varchar(8192),
+              PRIMARY KEY (`gameID`)
+            );
+            """
+    };
+
+    public MemoryGameDAO() throws SQLDataException {
+        try (var conn = DatabaseManager.getConnection()) {
+            for (var statement : createGameTableStatements) {
+                try (var preparedStatement = conn.prepareStatement(statement)) {
+                    preparedStatement.executeUpdate();
+                }
+            }
+        } catch (SQLException | DataAccessException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
 }

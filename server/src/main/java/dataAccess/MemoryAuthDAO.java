@@ -1,6 +1,9 @@
 package dataAccess;
 
 import model.AuthData;
+
+import java.sql.SQLDataException;
+import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.UUID;
 
@@ -43,6 +46,40 @@ public class MemoryAuthDAO implements AuthDAO {
     // Remove an authData object from the database, given the corresponding token
     public void deleteAuth(String authToken) {
         authDataTable.remove(authToken);
+    }
+
+
+
+    //
+    // SQL IMPLEMENTATION
+    //
+
+    // For creating game table in chess database
+    private final String[] createAuthTableStatements = { // FIXME: Change statements
+            """
+            CREATE TABLE IF NOT EXISTS  auths
+            (
+              `authToken` varchar(256),
+              `username` varchar(256),
+              `gameName` varchar(256),
+              PRIMARY KEY (`authToken`)
+            );
+            """
+    };
+
+    // Constructor for AuthDAO
+    public MemoryAuthDAO() throws SQLDataException {
+        try (var conn = DatabaseManager.getConnection()) {
+            for (var statement : createAuthTableStatements) {
+                try (var preparedStatement = conn.prepareStatement(statement)) {
+                    preparedStatement.executeUpdate();
+                }
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        } catch (DataAccessException e) {
+            throw new RuntimeException(e);
+        }
     }
 
 }
