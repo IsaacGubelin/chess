@@ -8,40 +8,16 @@ import java.util.HashMap;
 
 public class MemoryUserDAO implements UserDAO {
 
-
-    /**
-     * SQL statements for generating new table called "users"
-     */
-    private final String[] createUserTableStatements = {
-            """
-            CREATE TABLE IF NOT EXISTS  users
-            (
-              `username` varchar(256),
-              `password` varchar(256),
-              `email` varchar(256),
-              PRIMARY KEY (`username`)
-            );
-            """
-    };
+    // DATABASE OF USERS
+    public HashMap<String, UserData> userTable = new HashMap<>();
 
     /**
      * This constructor builds the user table in the SQL chess database.
      * @throws SQLDataException
      */
-    public MemoryUserDAO() throws SQLDataException {
-        try (var conn = DatabaseManager.getConnection()) {
-            for (var statement : createUserTableStatements) {
-                try (var preparedStatement = conn.prepareStatement(statement)) {
-                    preparedStatement.executeUpdate();
-                }
-            }
-        } catch (SQLException | DataAccessException e) {
-            throw new RuntimeException(e);
-        }
-    }
 
-    // DATABASE OF USERS
-    public HashMap<String, UserData> userTable = new HashMap<>();
+
+
 
     // FIXME: MAKE SQL
     // Evaluates if a given username exists
@@ -52,6 +28,9 @@ public class MemoryUserDAO implements UserDAO {
     // FIXME: MAKE SQL
     // Clear the user database
     public void clearUserDatabase() {
+
+        String statement = "TRUNCATE users"; // For erasing users table in SQL
+
 
         userTable.clear();
     }

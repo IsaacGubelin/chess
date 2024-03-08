@@ -9,15 +9,14 @@ import handler.LoginOutHandler;
 import handler.RegisterHandler;
 import spark.*;
 
-import java.sql.SQLDataException;
-
 public class Server {
 
     // These are the DAOs used by the endpoints of the server.
     // SQL will go here eventually
-    private MemoryUserDAO userDAO;
-    private MemoryGameDAO gameDAO;
-    private MemoryAuthDAO authDAO;
+    private MemoryUserDAO userDAO = new MemoryUserDAO();
+    private MemoryGameDAO gameDAO = new MemoryGameDAO();
+    private MemoryAuthDAO authDAO = new MemoryAuthDAO();
+
 
     public int run(int desiredPort) {
         Spark.port(desiredPort);
@@ -54,10 +53,4 @@ public class Server {
         Spark.awaitStop();
     }
 
-    // Init the DAOs
-    public void initializeDAOs() throws SQLDataException {
-        userDAO = new MemoryUserDAO();
-        gameDAO = new MemoryGameDAO();
-        authDAO = new MemoryAuthDAO();
-    }
 }

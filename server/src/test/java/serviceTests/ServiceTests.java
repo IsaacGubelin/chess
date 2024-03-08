@@ -288,14 +288,8 @@ public class ServiceTests {
     @Test
     @DisplayName("Test successful joining into chess game for white team")
     public void joinWhiteTeamSuccess() {
-        MemoryGameDAO gameDAO = null;    // New games database
-        MemoryAuthDAO authDAO = null;    // New auth database
-        try {
-            gameDAO = new MemoryGameDAO();
-            authDAO = new MemoryAuthDAO();
-        } catch (SQLDataException e) {
-            throw new RuntimeException(e);
-        }
+        MemoryGameDAO gameDAO = new MemoryGameDAO();    // New games database
+        MemoryAuthDAO authDAO = new MemoryAuthDAO();    // New auth database
 
         String gameName = "Game1";                      // Name for new chess game
         String userName = "Freddy";                     // Username for client

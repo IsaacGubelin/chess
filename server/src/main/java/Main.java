@@ -11,20 +11,15 @@ public class Main {
         var piece = new ChessPiece(ChessGame.TeamColor.WHITE, ChessPiece.PieceType.PAWN);
         System.out.println("♕ 240 Chess Server: " + piece);
 
-        Server server = new Server();
+        Server server = new Server();   // Generic server object
 
-        // Build database and tables if not made already
-        try {
-            server.initializeDAOs();
+        try {                           // Build database and tables if not made already
+            server.run(8080);
             DatabaseManager.createDatabase();
-        } catch (SQLDataException e) {
-            System.out.println("Unable to initialize DAOs.");
         } catch (DataAccessException e) {
             System.out.println("Unable to create database.");
         }
 
-        // Run the server
-        server.run(8080);
     }
 
 }

@@ -22,7 +22,8 @@ public class MemoryAuthDAO implements AuthDAO {
 
     // Clear the auth database
     public void clearAuthDatabase() {
-         authDataTable.clear();
+
+        authDataTable.clear();
     }
 
     // Add a new authToken and auth data into database
@@ -55,31 +56,21 @@ public class MemoryAuthDAO implements AuthDAO {
     //
 
     // For creating game table in chess database
-    private final String[] createAuthTableStatements = { // FIXME: Change statements
-            """
-            CREATE TABLE IF NOT EXISTS  auths
-            (
-              `authToken` varchar(256),
-              `username` varchar(256),
-              `gameName` varchar(256),
-              PRIMARY KEY (`authToken`)
-            );
-            """
-    };
 
-    // Constructor for AuthDAO
-    public MemoryAuthDAO() throws SQLDataException {
+
+    /**
+     * Execute SQL statements with given string
+     */
+    public void executeSqlLine(String stmt) throws Exception {
         try (var conn = DatabaseManager.getConnection()) {
-            for (var statement : createAuthTableStatements) {
-                try (var preparedStatement = conn.prepareStatement(statement)) {
-                    preparedStatement.executeUpdate();
-                }
+            try (var preparedStatement = conn.prepareStatement(stmt)) {
+                var rs = preparedStatement.executeQuery();
+                rs.next();
+                System.out.println(rs.getInt(1));
             }
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        } catch (DataAccessException e) {
-            throw new RuntimeException(e);
         }
     }
+
+
 
 }
