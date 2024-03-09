@@ -17,7 +17,6 @@ public class PieceMovesCalculator {
     }
 
 
-
     // This function takes a board and position and determines all possible moves for the chess piece at
     // the given position. Each chess piece type has a helper function that specifically looks for its moves.
     public static HashSet<ChessMove> getAvailablePieceMoves(ChessBoard board, ChessPosition position) {
