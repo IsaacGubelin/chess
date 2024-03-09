@@ -1,6 +1,8 @@
 package service;
 
 import dataAccess.*;
+import exception.BadRequestException;
+import exception.UnauthorizedException;
 import model.AuthData;
 
 public class LoginOutService {

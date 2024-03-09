@@ -1,5 +1,7 @@
 package dataAccess;
 
+import exception.DataAccessException;
+
 import java.sql.SQLException;
 
 public class SQLGameDAO implements GameDAO{

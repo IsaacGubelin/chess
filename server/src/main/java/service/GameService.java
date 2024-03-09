@@ -1,8 +1,10 @@
 package service;
 
-
 import config.Config;
 import dataAccess.*;
+import exception.AlreadyTakenException;
+import exception.BadRequestException;
+import exception.DataAccessException;
 import model.GameData;
 
 import java.util.Collection;

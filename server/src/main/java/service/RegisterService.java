@@ -2,6 +2,8 @@ package service;
 
 
 import dataAccess.*;
+import exception.AlreadyTakenException;
+import exception.BadRequestException;
 
 public class RegisterService {
     public static String register(model.UserData user, MemoryUserDAO uDAO, MemoryAuthDAO aDAO)

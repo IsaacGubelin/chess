@@ -1,5 +1,7 @@
 package dataAccess;
 
+import exception.AlreadyTakenException;
+import exception.DataAccessException;
 import model.UserData;
 
 import java.sql.SQLException;
@@ -29,7 +31,7 @@ public class SQLUserDAO implements UserDAO{
                     preparedStatement.executeUpdate();
                 }
             }
-        } catch (SQLException | DataAccessException e) {
+        } catch (SQLException | exception.DataAccessException e) {
             System.out.println("Error: could not create users database.");
         }
     }

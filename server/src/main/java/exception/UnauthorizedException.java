@@ -1,4 +1,4 @@
-package dataAccess;
+package exception;
 
 public class UnauthorizedException extends Exception {
     public UnauthorizedException(String message) {

@@ -1,5 +1,6 @@
 package dataAccess;
 
+import exception.DataAccessException;
 import model.AuthData;
 
 import java.sql.SQLException;
@@ -28,7 +29,7 @@ public class SQLAuthDAO implements AuthDAO{
             }
         } catch (SQLException e) {
             throw new RuntimeException(e);
-        } catch (DataAccessException e) {
+        } catch (exception.DataAccessException e) {
             System.out.println("Error: could not create auths database.");
         }
     }
@@ -39,12 +40,12 @@ public class SQLAuthDAO implements AuthDAO{
     }
 
     @Override
-    public String createAuth(String username) throws DataAccessException {
+    public String createAuth(String username) throws exception.DataAccessException {
         return null;
     }
 
     @Override
-    public AuthData getAuth(String authToken) throws DataAccessException {
+    public AuthData getAuth(String authToken) throws exception.DataAccessException {
         return null;
     }
 

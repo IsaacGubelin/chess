@@ -3,6 +3,8 @@ package handler;
 import com.google.gson.Gson;
 import config.Config;
 import dataAccess.*;
+import exception.BadRequestException;
+import exception.UnauthorizedException;
 import model.AuthData;
 import model.MessageData;
 import model.UserData;

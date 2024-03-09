@@ -1,9 +1,7 @@
 import chess.*;
-import dataAccess.DataAccessException;
+import exception.DataAccessException;
 import dataAccess.DatabaseManager;
 import server.Server;
-
-import java.sql.SQLDataException;
 
 
 public class Main {
