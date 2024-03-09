@@ -7,7 +7,7 @@ import java.sql.SQLException;
 public class SQLGameDAO implements GameDAO{
 
     // For creating game table in chess database
-    private final String[] createGameTableStatements = { // FIXME: Change statements
+    private final String[] createGameTableStatements = {
             """
             CREATE TABLE IF NOT EXISTS  games
             (

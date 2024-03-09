@@ -24,11 +24,13 @@ public class MemoryGameDAO implements GameDAO {
     }
 
     // Clear all GameData entries from database
+    @Override
     public void clearGamesDataBase() {
         gamesTable.clear();
     }
 
     // Create and add a new chess game to the database
+    @Override
     public int createGame(String gameName) {
         int id = generateID(); // Make new game ID
 

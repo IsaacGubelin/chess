@@ -53,4 +53,19 @@ public class SQLAuthDAO implements AuthDAO{
     public void deleteAuth(String authToken) throws DataAccessException {
 
     }
+
+
+    /**
+     * Execute SQL statements with given string
+     */
+    public void executeSqlLine(String stmt) throws Exception {
+        try (var conn = DatabaseManager.getConnection()) {
+            try (var preparedStatement = conn.prepareStatement(stmt)) {
+                var rs = preparedStatement.executeQuery();
+                rs.next();
+                System.out.println(rs.getInt(1));
+            }
+        }
+    }
+
 }

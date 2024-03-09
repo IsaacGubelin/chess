@@ -16,10 +16,12 @@ public class MemoryUserDAO implements UserDAO {
     }
 
     // Clear the user database
+    @Override
     public void clearUserDatabase() {
         userTable.clear();
     }
 
+    @Override
     public void createUser(UserData userData) throws AlreadyTakenException {
         if (hasThisUsername(userData.username())) {
             throw new AlreadyTakenException("Error: Cannot create new user. User already exists");
@@ -28,6 +30,7 @@ public class MemoryUserDAO implements UserDAO {
     }
 
     // Get a user from a given username
+    @Override
     public UserData getUser(String username) {
         return userTable.get(username);
     }

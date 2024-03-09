@@ -19,12 +19,14 @@ public class MemoryAuthDAO implements AuthDAO {
 
 
     // Clear the auth database
+    @Override
     public void clearAuthDatabase() {
 
         authDataTable.clear();
     }
 
     // Add a new authToken and auth data into database
+    @Override
     public String createAuth(String username) {
         String token = generateToken();                             // Make a new authToken
         authDataTable.put(token, new AuthData(token, username));    // Add new authData into database
@@ -37,12 +39,14 @@ public class MemoryAuthDAO implements AuthDAO {
     }
 
     // Retrieve auth data from a given authToken
+    @Override
     public AuthData getAuth(String authToken) {
         return authDataTable.get(authToken);
     }
 
 
     // Remove an authData object from the database, given the corresponding token
+    @Override
     public void deleteAuth(String authToken) {
         authDataTable.remove(authToken);
     }
@@ -56,18 +60,6 @@ public class MemoryAuthDAO implements AuthDAO {
     // For creating game table in chess database
 
 
-    /**
-     * Execute SQL statements with given string
-     */
-    public void executeSqlLine(String stmt) throws Exception {
-        try (var conn = DatabaseManager.getConnection()) {
-            try (var preparedStatement = conn.prepareStatement(stmt)) {
-                var rs = preparedStatement.executeQuery();
-                rs.next();
-                System.out.println(rs.getInt(1));
-            }
-        }
-    }
 
 
 
