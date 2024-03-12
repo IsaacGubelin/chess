@@ -108,4 +108,14 @@ public class SQLUserDAO implements UserDAO{
 
         return new UserData(name, password, email);
     }
+
+    @Override
+    public void deleteUser(String username) {
+        String deleteStmt = "DELETE FROM " + Config.USER_TABLE_NAME + " WHERE username=?";
+        try {
+            ExecuteSQL.executeUpdate(deleteStmt, username);
+        } catch (Exception e) {
+            System.out.println("Error: could not delete user.");
+        }
+    }
 }

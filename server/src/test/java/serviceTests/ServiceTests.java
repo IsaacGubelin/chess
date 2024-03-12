@@ -25,13 +25,6 @@ import java.util.HashSet;
 
 public class ServiceTests {
 
-    @Test
-    @DisplayName("Check functionality of key-checker function")
-    public void testKeyVerifier() {
-//        String key = "PUT_KEY_HERE";
-//        boolean hasKey = authHasKey(key);
-//        Assertions.assertTrue(hasKey);
-    }
 
     @Test
     @DisplayName("Check if clear endpoint empties all databases")
@@ -116,51 +109,63 @@ public class ServiceTests {
     @Test
     @DisplayName("Check if register service rejects an incorrectly registered user")
     public void testRegisterRejectNullValues() {
-//        MemoryAuthDAO aDAO = new MemoryAuthDAO();   // Create databases required by registration endpoint
-//        MemoryUserDAO uDAO = new MemoryUserDAO();
+        SQLAuthDAO aDAO = new SQLAuthDAO();   // Create databases required by registration endpoint
+        SQLUserDAO uDAO = new SQLUserDAO();
 
         String name = null;     // Simulate missing name
         String password = "Swordfish";
         String email = "another@yahmail.com";
 
         // Test thrown exception for null username
-//        Assertions.assertThrows(BadRequestException.class, () ->
-//                RegisterService.register(new UserData(name, password, email), uDAO, aDAO));
+        Assertions.assertThrows(BadRequestException.class, () ->
+                RegisterService.register(new UserData(name, password, email), uDAO, aDAO));
 
         String newName = "Bob";   // Give name variable a non-null value
         String newMail = null;   // Make email variable null
 
         // Test thrown exception for null email
-//        Assertions.assertThrows(BadRequestException.class, () ->
-//                RegisterService.register(new UserData(newName, password, newMail), uDAO, aDAO));
+        Assertions.assertThrows(BadRequestException.class, () ->
+                RegisterService.register(new UserData(newName, password, newMail), uDAO, aDAO));
 
     }
 
     @Test
     @DisplayName("Check if register service rejects an incorrectly registered user")
     public void testRegisterRejectTakenName() {
-//        MemoryAuthDAO aDAO = new MemoryAuthDAO();   // Create databases required by registration endpoint
-//        MemoryUserDAO uDAO = new MemoryUserDAO();
+        SQLAuthDAO aDAO = new SQLAuthDAO();   // Create databases required by registration endpoint
+        SQLUserDAO uDAO = new SQLUserDAO();
 
         String name = "Bob";     // Simulate missing name
         String password = "Swordfish";
         String email = "another@yahmail.com";
+        String token = "";
+        String deleteUserStmt = "DELETE FROM " + Config.USER_TABLE_NAME + " WHERE username =?";
+        String deleteAuthStmt = "DELETE FROM " + Config.AUTH_TABLE_NAME + " WHERE authToken =?";
 
-//        try {
-//            RegisterService.register(new UserData(name, password, email), uDAO, aDAO);
-//        } catch (AlreadyTakenException alrEx) {
-//        } catch (BadRequestException badEx) {
-//        }
-//
-//        // Test thrown exception for null username
-//        Assertions.assertThrows(AlreadyTakenException.class, () ->
-//                RegisterService.register(new UserData(name, password, email), uDAO, aDAO));
+        try {
+            token = RegisterService.register(new UserData(name, password, email), uDAO, aDAO);
+        } catch (AlreadyTakenException alrEx) {
+            Assertions.fail("Already taken exception triggered.");
+        } catch (SQLException | BadRequestException sqlEx) {
+
+        }
+
+        // Test thrown exception for null username
+        Assertions.assertThrows(AlreadyTakenException.class, () ->
+                RegisterService.register(new UserData(name, password, email), uDAO, aDAO));
+        try {
+            ExecuteSQL.executeUpdate(deleteUserStmt, name);
+            ExecuteSQL.executeUpdate(deleteAuthStmt, token);
+        } catch (SQLException ex) {
+            System.out.println("Error: could not undo changes made to database.");
+        }
     }
 
     @Test
     @DisplayName("Check for successful login")
     public void loginSuccess() {
-        DatabaseDAOCollection daos = new DatabaseDAOCollection(); // Create new database
+        SQLAuthDAO aDao = new SQLAuthDAO(); // Create new tables
+        SQLUserDAO uDao = new SQLUserDAO();
 
         String name = "Joe";    // Username and other needed data for this test
         String password = "beans123";
@@ -169,21 +174,21 @@ public class ServiceTests {
 
         // Add new user to database and make auth data
         try {
-            daos.sqlUserDAO.createUser(new UserData(name, password, email));
-            token = daos.sqlAuthDAO.createAuth(name);
+            uDao.createUser(new UserData(name, password, email));
+            token = aDao.createAuth(name);
         } catch (SQLException sqlEx) {
             Assertions.fail("Exception thrown.");
         }
 
         try {
-            Assertions.assertEquals(daos.sqlAuthDAO.getAuth(token).username(), name); // Verify that auth data was added
+            Assertions.assertEquals(aDao.getAuth(token).username(), name); // Verify that auth data was added
 
-            daos.sqlAuthDAO.clearAuthDatabase();    // Simulate a logout by clearing authTokens
-            String newToken = "";            // Use to retrieve new authToken from login
+            aDao.deleteAuth(token);         // Simulate a logout by clearing recently added auth
+            String newToken = "";           // Use to retrieve new authToken from login
 
             // Attempt to log same user back in
             try {
-                newToken = LoginOutService.login(new UserData(name, password, email), daos.sqlUserDAO, daos.sqlAuthDAO).authToken();
+                newToken = LoginOutService.login(new UserData(name, password, email), uDao, aDao).authToken();
             } catch (BadRequestException badEx) {
                 Assertions.fail("Login failed, bad request exception thrown.");
             } catch (UnauthorizedException unEx) {
@@ -193,7 +198,12 @@ public class ServiceTests {
             }
 
             // Check if username is in auth database
-            Assertions.assertEquals(daos.sqlAuthDAO.getAuth(newToken).username(), name);
+            Assertions.assertEquals(aDao.getAuth(newToken).username(), name);
+
+            // Undo changes made to database
+            aDao.deleteAuth(newToken);
+            uDao.deleteUser(name);
+
         } catch (DataAccessException dEx) {
             Assertions.fail("Data access exception.");
         }
@@ -202,36 +212,37 @@ public class ServiceTests {
     @Test
     @DisplayName("Check for rejected login from wrong password")
     public void loginUnauthorized() {
-//        MemoryAuthDAO authDAO = new MemoryAuthDAO();    // Create new databases
-//        MemoryUserDAO userDAO = new MemoryUserDAO();
-//
+        SQLAuthDAO aDao = new SQLAuthDAO(); // Create new tables
+        SQLUserDAO uDao = new SQLUserDAO();
+
         String name = "Joe";    // Username and other needed data for this test
         String password = "beans123";
         String wrongWord = "321beans";
         String email = "mail";
-//
-//        // Add new user to database and make auth data
-//        try {
-//            userDAO.createUser(new UserData(name, password, email));
-//            authDAO.createAuth(name);
-//        } catch (AlreadyTakenException dataEx) {
-//            Assertions.fail("AlreayTakenException thrown.");
-//        }
+        String token = "";
 
-//        authDAO.clearAuthDatabase();    // Simulate a logout by clearing authTokens
-//
-//        // Attempt to log same user back in
-//        try {
-//            LoginOutService.login(new UserData(name, password, email), userDAO, authDAO);
-//        } catch (BadRequestException badEx) {
-//            Assertions.fail("Login failed, bad request exception thrown.");
-//        } catch (UnauthorizedException unEx) {
-//            Assertions.fail("Login failed, unauthorized exception thrown.");
-//        }
-//
-//        // Should throw unauthorized exception when given wrong password
-//        Assertions.assertThrows(UnauthorizedException.class, () ->
-//                LoginOutService.login(new UserData(name, wrongWord, email), userDAO, authDAO));
+        // Add new user to database and make auth data
+        try {
+            uDao.createUser(new UserData(name, password, email));
+            token = aDao.createAuth(name);
+        } catch (SQLException ex) {
+            Assertions.fail("SQL exception thrown.");
+        }
+
+        aDao.deleteAuth(token);    // Simulate a logout
+
+        // Attempt to log same user back in
+        try {
+            LoginOutService.login(new UserData(name, password, email), uDao, aDao);
+        } catch (BadRequestException | DataAccessException ex) {
+            Assertions.fail("Login failed, exception thrown.");
+        } catch (UnauthorizedException unEx) {
+            Assertions.fail("Login failed, unauthorized exception thrown.");
+        }
+
+        // Should throw unauthorized exception when given wrong password
+        Assertions.assertThrows(UnauthorizedException.class, () ->
+                LoginOutService.login(new UserData(name, wrongWord, email), uDao, aDao));
     }
     @Test
     @DisplayName("Check for successful logout")

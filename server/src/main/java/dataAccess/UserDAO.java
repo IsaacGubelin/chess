@@ -10,9 +10,11 @@ public interface UserDAO {
 
     void clearUserDatabase();
 
-    void createUser(UserData userData) throws AlreadyTakenException, SQLException;
+    void createUser(UserData userData) throws SQLException;
 
     UserData getUser(String username);
+
+    void deleteUser(String username) throws DataAccessException;
 
     boolean hasThisUsername(String username);
 
