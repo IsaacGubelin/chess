@@ -5,12 +5,12 @@ import dataAccess.*;
 public class DatabaseDAOCollection {
 
     // Collection of regular memory DAOs. These erase when the server stops.
-    private MemoryUserDAO memUserDAO = new MemoryUserDAO();
-    private MemoryGameDAO memGameDAO = new MemoryGameDAO();
-    private MemoryAuthDAO memAuthDAO = new MemoryAuthDAO();
+    public MemoryUserDAO memUserDAO = new MemoryUserDAO();
+    public MemoryGameDAO memGameDAO = new MemoryGameDAO();
+    public MemoryAuthDAO memAuthDAO = new MemoryAuthDAO();
 
     // Collection of SQL DAOs. These retain data even when server is offline.
-    private SQLUserDAO sqlUserDAO = new SQLUserDAO();
-    private SQLGameDAO sqlGameDAO = new SQLGameDAO();
-    private SQLAuthDAO sqlAuthDAO = new SQLAuthDAO();
+    public SQLUserDAO sqlUserDAO = new SQLUserDAO();
+    public SQLGameDAO sqlGameDAO = new SQLGameDAO();
+    public SQLAuthDAO sqlAuthDAO = new SQLAuthDAO();
 }

@@ -1,6 +1,7 @@
 package handler;
 
 import dataAccess.*;
+import server.DatabaseDAOCollection;
 import service.ClearService;
 import spark.Request;
 import spark.Response;
@@ -8,9 +9,9 @@ import spark.Response;
 public class ClearHandler {
 
     // The handler method for deleting all entries from all databases
-    public Object clearDatabases(Request req, Response res, MemoryUserDAO uDAO, MemoryGameDAO gDAO, MemoryAuthDAO aDAO){
+    public Object clearDatabases(Request req, Response res, GameDAO gDao, UserDAO uDao, AuthDAO aDao) {
 
-        ClearService.clearService(uDAO, gDAO, aDAO); // Call the clear service
+        ClearService.clearService(gDao, uDao,aDao); // Call the clear service
         res.status(200); // Success
         return "{}";
     }

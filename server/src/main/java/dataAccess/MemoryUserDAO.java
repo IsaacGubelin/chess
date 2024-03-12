@@ -11,6 +11,7 @@ public class MemoryUserDAO implements UserDAO {
     public HashMap<String, UserData> userTable = new HashMap<>();
 
     // Evaluates if a given username exists
+    @Override
     public boolean hasThisUsername(String username) {
         return userTable.containsKey(username);
     }

@@ -7,41 +7,44 @@ import exception.AlreadyTakenException;
 import exception.BadRequestException;
 import exception.DataAccessException;
 import model.*;
+import server.DatabaseDAOCollection;
 import service.GameService;
 import spark.Request;
 import spark.Response;
+
+import java.sql.SQLException;
 
 public class GameHandler {
 
     Gson gs = new Gson();   // Gson object for serialization/deserialization
 
-    public Object listGamesHandle(Request req, Response res, MemoryAuthDAO aDAO, MemoryGameDAO gDAO) {
+    public Object listGamesHandle(Request req, Response res, DatabaseDAOCollection daos) {
 
         String authToken = req.headers(Config.LOGOUT_REQ_HEADER);   // Get authToken for verification
 
         // Verify the authToken for authorization
-        if (!aDAO.hasAuth(authToken)) { // If authToken isn't in database, return error status message
+        if (!daos.memAuthDAO.hasAuth(authToken)) { // If authToken isn't in database, return error status message
             res.status(401);
             return gs.toJson(new MessageData("Error: unauthorized"));
         }
         // If authorized, return games list
         res.status(200);
-        return gs.toJson(new ListGamesData(GameService.getGames(gDAO)));
+        return gs.toJson(new ListGamesData(GameService.getGames(daos)));
     }
 
-    public Object createGameHandle(Request req, Response res, MemoryAuthDAO aDAO, MemoryGameDAO gDAO) {
+    public Object createGameHandle(Request req, Response res, AuthDAO aDao, GameDAO gDao) {
 
         String authToken = req.headers(Config.LOGOUT_REQ_HEADER);   // Get authToken for verification
 
         // Verify the authToken for authorization
-        if (!aDAO.hasAuth(authToken)) { // If authToken isn't in database, return error status message
+        if (!aDao.hasAuth(authToken)) { // If authToken isn't in database, return error status message
             res.status(401);
             return gs.toJson(new MessageData("Error: unauthorized"));
         }
         // Gather needed information from json request body
         GameRequestData name = gs.fromJson(req.body(), GameRequestData.class);
         try {
-            int gameID = GameService.createGame(name.gameName(), gDAO);
+            int gameID = GameService.createGame(name.gameName(), gDao);
             res.status(200);
             return gs.toJson(new GameIDData(gameID));
         } catch (DataAccessException dataEx) {
@@ -50,15 +53,18 @@ public class GameHandler {
         } catch (BadRequestException badEx) {
             res.status(400);
             return gs.toJson(new MessageData("Error: bad request"));
+        } catch (SQLException e) {
+            res.status(500);
+            return gs.toJson(new MessageData("Error: SQL malfunction."));
         }
     }
 
-    public Object joinGameHandle(Request req, Response res, MemoryAuthDAO aDAO, MemoryGameDAO gDAO) {
+    public Object joinGameHandle(Request req, Response res, DatabaseDAOCollection daos) {
 
         String authToken = req.headers(Config.LOGOUT_REQ_HEADER);   // Get authToken for verification
 
         // Verify the authToken for authorization
-        if (!aDAO.hasAuth(authToken)) { // If authToken isn't in database, return error status message
+        if (!daos.memAuthDAO.hasAuth(authToken)) { // If authToken isn't in database, return error status message
             res.status(401);
             return gs.toJson(new MessageData("Error: unauthorized"));
         }
@@ -66,7 +72,7 @@ public class GameHandler {
         GameRequestData joinGameData = gs.fromJson(req.body(), GameRequestData.class);
 
         try {
-            GameService.joinGame(joinGameData.gameID(), joinGameData.playerColor(), authToken, gDAO, aDAO);
+            GameService.joinGame(joinGameData.gameID(), joinGameData.playerColor(), authToken, daos);
             res.status(200);
             return "{}";    // No return body, give empty json
         } catch (BadRequestException badEx) {   // If gameID didn't exist or color was invalid

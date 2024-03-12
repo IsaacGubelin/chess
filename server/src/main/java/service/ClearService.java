@@ -1,15 +1,16 @@
 package service;
 
-import dataAccess.MemoryAuthDAO;
-import dataAccess.MemoryGameDAO;
-import dataAccess.MemoryUserDAO;
+import dataAccess.*;
+import server.DatabaseDAOCollection;
 
 public class ClearService {
 
     // Clears all three databases: Auth, Games, and Users
-    public static void clearService(MemoryUserDAO uDAO, MemoryGameDAO gDAO, MemoryAuthDAO aDAO) {
-        uDAO.clearUserDatabase();
-        gDAO.clearGamesDataBase();
-        aDAO.clearAuthDatabase();
+    public static void clearService(GameDAO gDao, UserDAO uDao, AuthDAO aDao) {
+
+        gDao.clearGamesDataBase();
+        uDao.clearUserDatabase();
+        aDao.clearAuthDatabase();
     }
+
 }

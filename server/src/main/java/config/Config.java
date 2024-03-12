@@ -17,4 +17,13 @@ public class Config {
     public static final String LOGOUT_REQ_HEADER = "authorization";
     public static final String BLACK_TEAM_REQ = "BLACK";
     public static final String WHITE_TEAM_REQ = "WHITE";
+
+    // SQL NAMES FOR TABLES AND DATABASES
+    public static final String AUTH_TABLE_NAME = "auths";
+    public static final String AUTH_TABLE_KEY_COL = "authToken";
+    public static final String USER_TABLE_NAME = "users";
+    public static final String USER_TABLE_KEY_COL = "username";
+    public static final String GAME_TABLE_NAME = "games";
+    public static final String WHITE_TEAM_COL = "whiteUsername";
+    public static final String BLACK_TEAM_COL = "blackUsername";
 }

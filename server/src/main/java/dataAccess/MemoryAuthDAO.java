@@ -21,7 +21,6 @@ public class MemoryAuthDAO implements AuthDAO {
     // Clear the auth database
     @Override
     public void clearAuthDatabase() {
-
         authDataTable.clear();
     }
 
@@ -34,6 +33,7 @@ public class MemoryAuthDAO implements AuthDAO {
     }
 
     // Check if the database contains an authToken
+    @Override
     public boolean hasAuth(String authToken) {
         return authDataTable.containsKey(authToken);
     }
@@ -51,15 +51,10 @@ public class MemoryAuthDAO implements AuthDAO {
         authDataTable.remove(authToken);
     }
 
-
-
-    //
-    // SQL IMPLEMENTATION
-    //
-
-    // For creating game table in chess database
-
-
+    @Override
+    public boolean isEmpty() {
+        return authDataTable.isEmpty();
+    }
 
 
 

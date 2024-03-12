@@ -4,7 +4,6 @@ import chess.ChessGame;
 import config.Config;
 import model.GameData;
 
-import java.sql.SQLException;
 import java.util.HashMap;
 
 public class MemoryGameDAO implements GameDAO {
@@ -45,6 +44,7 @@ public class MemoryGameDAO implements GameDAO {
     }
 
     // Use to update the white team with a new user
+    @Override
     public void updateWhiteUsername(int gameID, String whiteUsername) {
         String blackUsername = gamesTable.get(gameID).blackUsername();  // Use for updated game record
         String gameName = gamesTable.get(gameID).gameName();            // Use for updated game record
@@ -53,6 +53,7 @@ public class MemoryGameDAO implements GameDAO {
     }
 
     // Use to update a new user for the black team
+    @Override
     public void updateBlackUsername(int gameID, String blackUsername) {
         String whiteUsername = gamesTable.get(gameID).whiteUsername();  // Use for updated game record
         String gameName = gamesTable.get(gameID).gameName();            // Use for updated game record
@@ -60,4 +61,8 @@ public class MemoryGameDAO implements GameDAO {
         gamesTable.put(gameID, game);   // Overwrite old data with new data
     }
 
+    @Override
+    public boolean isEmpty() {
+        return gamesTable.isEmpty();
+    }
 }
