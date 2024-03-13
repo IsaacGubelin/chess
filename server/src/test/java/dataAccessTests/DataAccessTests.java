@@ -1,4 +1,4 @@
-package serviceTests;
+package dataAccessTests;
 
 import config.Config;
 import dataAccess.*;
@@ -17,15 +17,11 @@ import service.GameService;
 import service.LoginOutService;
 import service.RegisterService;
 
-import javax.xml.crypto.Data;
-import java.sql.ResultSet;
-import java.sql.SQLDataException;
 import java.sql.SQLException;
-import java.util.AbstractList;
 import java.util.Collection;
 import java.util.ArrayList;
 
-public class ServiceTests {
+public class DataAccessTests {
 
 
     @Test
