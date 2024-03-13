@@ -2,8 +2,11 @@ package dataAccess;
 
 import chess.ChessGame;
 import config.Config;
+import exception.DataAccessException;
 import model.GameData;
 
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.HashMap;
 
 public class MemoryGameDAO implements GameDAO {
@@ -62,7 +65,21 @@ public class MemoryGameDAO implements GameDAO {
     }
 
     @Override
+    public boolean hasGame(int gameID) {
+        return gamesTable.containsKey(gameID);
+    }
+    @Override
     public boolean isEmpty() {
         return gamesTable.isEmpty();
+    }
+
+    @Override
+    public boolean hasAvailableTeam(int gameID, String team) {
+        if (team.equals(Config.BLACK_TEAM_COL)) {   // If black is requested, check if black team username is null
+            return gamesTable.get(gameID).blackUsername() == null;
+        } else if (team.equals(Config.WHITE_TEAM_COL)) {    // Check same condition for white team
+            return gamesTable.get(gameID).whiteUsername() == null;
+        }
+        return false;   // Irregular team name input will return false by default
     }
 }

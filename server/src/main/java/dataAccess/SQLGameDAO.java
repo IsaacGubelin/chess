@@ -22,7 +22,7 @@ public class SQLGameDAO implements GameDAO{
               `whiteUsername` varchar(256),
               `blackUsername` varchar(256),
               `gameName` varchar(256) NOT NULL,
-              `game` varchar(8192) NOT NULL,
+              `game` json NOT NULL,
               PRIMARY KEY (`gameID`)
             );
             """
@@ -92,6 +92,31 @@ public class SQLGameDAO implements GameDAO{
     }
 
     @Override
+    public boolean hasGame(int gameID) {
+        try (var conn = DatabaseManager.getConnection()) {
+            // Make query statement to count instances of key
+            String queryStmt = "SELECT COUNT(*) FROM " + Config.GAME_TABLE_NAME + " WHERE "
+                    + Config.GAME_TABLE_KEY_COL + " = ?";
+            try (var ps = conn.prepareStatement(queryStmt)) {
+                ps.setInt(1, gameID);    // Replace '?' with key value
+
+                // Executing the query and retrieving the result set
+                ResultSet resultSet = ps.executeQuery();
+
+                // Checking if the result set has any rows
+                if (resultSet.next()) {
+                    int count = resultSet.getInt(1);
+                    // If count is greater than 0, key exists; otherwise, it does not exist
+                    return count > 0;
+                }
+            }
+        } catch (DataAccessException | SQLException e) {
+            System.out.println("Could not look for game id!");
+        }
+        return false;
+    }
+
+    @Override
     public boolean isEmpty() throws DataAccessException {
         try (var conn = DatabaseManager.getConnection()) {
             // Make query statement to count entries
@@ -114,6 +139,7 @@ public class SQLGameDAO implements GameDAO{
         return false;
     }
 
+    @Override
     public boolean hasAvailableTeam(int gameID, String team) throws DataAccessException {
         try (var conn = DatabaseManager.getConnection()) {
             // Make query statement to verify if the requested team is available for game with given ID

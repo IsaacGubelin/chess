@@ -59,12 +59,12 @@ public class GameHandler {
         }
     }
 
-    public Object joinGameHandle(Request req, Response res, DatabaseDAOCollection daos) {
+    public Object joinGameHandle(Request req, Response res, AuthDAO aDao, GameDAO gDao) {
 
         String authToken = req.headers(Config.LOGOUT_REQ_HEADER);   // Get authToken for verification
 
         // Verify the authToken for authorization
-        if (!daos.memAuthDAO.hasAuth(authToken)) { // If authToken isn't in database, return error status message
+        if (!aDao.hasAuth(authToken)) { // If authToken isn't in database, return error status message
             res.status(401);
             return gs.toJson(new MessageData("Error: unauthorized"));
         }
@@ -72,7 +72,7 @@ public class GameHandler {
         GameRequestData joinGameData = gs.fromJson(req.body(), GameRequestData.class);
 
         try {
-            GameService.joinGame(joinGameData.gameID(), joinGameData.playerColor(), authToken, daos);
+            GameService.joinGame(joinGameData.gameID(), joinGameData.playerColor(), authToken, aDao, gDao);
             res.status(200);
             return "{}";    // No return body, give empty json
         } catch (BadRequestException badEx) {   // If gameID didn't exist or color was invalid
@@ -81,6 +81,9 @@ public class GameHandler {
         } catch (AlreadyTakenException alrEx) { // If requested team color is already claimed
             res.status(403); // Set error code for already-taken exception
             return gs.toJson(new MessageData("Error: already taken"));
+        } catch (SQLException e) {
+            res.status(500);
+            return gs.toJson(new MessageData("Error: SQL problem in joinGame."));
         }
     }
 }

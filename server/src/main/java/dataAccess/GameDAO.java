@@ -14,5 +14,9 @@ public interface GameDAO {
 
     void updateBlackUsername(int gameID, String whiteUsername) throws SQLException, AlreadyTakenException;
 
+    boolean hasGame(int gameID);
+
+    boolean hasAvailableTeam(int gameID, String team) throws DataAccessException;
+
     boolean isEmpty() throws DataAccessException;
 }

@@ -54,7 +54,7 @@ public class Server {
         Spark.get("/game", (req, res) -> new GameHandler().listGamesHandle(req, res, dataObjects));
 
         // JOIN GAME // FIXME: instantiate sql
-        Spark.put("/game", (req, res) -> new GameHandler().joinGameHandle(req, res, dataObjects));
+        Spark.put("/game", (req, res) -> new GameHandler().joinGameHandle(req, res, dataObjects.sqlAuthDAO, dataObjects.sqlGameDAO));
 
 
         Spark.awaitInitialization();

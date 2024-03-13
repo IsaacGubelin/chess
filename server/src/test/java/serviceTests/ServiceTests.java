@@ -18,8 +18,10 @@ import service.LoginOutService;
 import service.RegisterService;
 
 import javax.xml.crypto.Data;
+import java.sql.ResultSet;
 import java.sql.SQLDataException;
 import java.sql.SQLException;
+import java.util.AbstractList;
 import java.util.Collection;
 import java.util.HashSet;
 
@@ -247,48 +249,39 @@ public class ServiceTests {
     @Test
     @DisplayName("Check for successful logout")
     public void logoutSuccess() {
-        DatabaseDAOCollection daos = new DatabaseDAOCollection();
+        SQLAuthDAO aDao = new SQLAuthDAO();
         String name = "Benjamin";
         try {
-            String token = daos.sqlAuthDAO.createAuth(name);        // Add new auth data and retrieve token
+            String token = aDao.createAuth(name);        // Add new auth data and retrieve token
 
-            Assertions.assertEquals(daos.sqlAuthDAO.getAuth(token).username(), name);   // Verify if auth data was made
+            Assertions.assertEquals(aDao.getAuth(token).username(), name);   // Verify if auth data was made
 
             // Attempt logout
-            try {
-                LoginOutService.logout(token, daos.sqlAuthDAO);
-            } catch (UnauthorizedException unEx) {
-                Assertions.fail("Logout test failed.");
-            }
-        } catch (SQLException ex) {
+            LoginOutService.logout(token, aDao);
+
+            Assertions.assertFalse(aDao.hasAuth(token));    // Check that auth data is gone
+        } catch (SQLException | DataAccessException ex) {
             Assertions.fail("SQL error.");
-        } catch (DataAccessException e) {
-            Assertions.fail("SQL error.");
+        } catch (UnauthorizedException unEx) {
+            Assertions.fail("Logout test failed.");
         }
-        Assertions.assertTrue(daos.memAuthDAO.authDataTable.isEmpty());    // Check that auth data is gone
     }
 
     @Test
     @DisplayName("Test failed logout")
     public void logoutWithWrongAuthToken() {
-//        DatabaseDAOCollection daos = new DatabaseDAOCollection();    // Make an auth database
-//        String name = "Benjamin";
-//        String wrongToken = "3aWRONG-TOKEN9tr4k";       // Make a token with wrong format and value
-//
-//        try {
-//            String correctToken = daos.sqlAuthDAO.createAuth(name); // Add new auth data and retrieve correct token
-//            Assertions.assertEquals(daos.sqlAuthDAO.getAuth(correctToken).username(), name); // Verify auth data creation
-//        } catch (DataAccessException | SQLException e) {
-//            Assertions.fail("SQL error.");
-//        }
-//        // Attempt logout with incorrect authToken
-//        Assertions.assertThrows(UnauthorizedException.class, () -> LoginOutService.logout(wrongToken, daos.sqlAuthDAO));
-        SQLAuthDAO aDao = new SQLAuthDAO();
-        String token = "ead92e06-9666-4750-919a-5243b846ad8b";
+        SQLAuthDAO aDao = new SQLAuthDAO();    // Make an auth table
+        String name = "Benjamin";
+        String wrongToken = "3aWRONG-TOKEN9tr4k";       // Make a token with wrong format and value
         try {
-            LoginOutService.logout(token, aDao);
-        } catch (UnauthorizedException | DataAccessException e) {
-            Assertions.fail("Wah wah");
+            String correctToken = aDao.createAuth(name); // Add new auth data and retrieve correct token
+            Assertions.assertEquals(aDao.getAuth(correctToken).username(), name); // Verify auth data creation
+            // Attempt logout with incorrect authToken
+            Assertions.assertThrows(UnauthorizedException.class, () -> LoginOutService.logout(wrongToken, aDao));
+            // Undo change to table
+            aDao.deleteAuth(correctToken);
+        } catch (DataAccessException | SQLException e) {
+            Assertions.fail("SQL error.");
         }
     }
 
@@ -327,83 +320,77 @@ public class ServiceTests {
     @Test
     @DisplayName("Test successfully created game")
     public void createGameServiceSuccess() {
-        DatabaseDAOCollection daos = new DatabaseDAOCollection();    // Create games database
+        SQLGameDAO gDao = new SQLGameDAO();    // Create games database
         int gameID = 0;
         try {
-            gameID = GameService.createGame("Game1", daos.sqlGameDAO); // Create a game
+            gameID = GameService.createGame("Game1", gDao); // Create a game
+            Assertions.assertFalse(gDao.isEmpty()); // Verify that game was created and returned a nonzero id
         } catch (DataAccessException | SQLException dataEx) {
             Assertions.fail("Error: failed to create game");
         } catch (BadRequestException badEx) {
             Assertions.fail("Error: bad request");
         }
 
-        // Verify that game was created and returned a nonzero id
-//        Assertions.assertTrue(!daos.sqlGameDAO.getGameDatabase().isEmpty());
         Assertions.assertTrue(gameID != 0);
     }
 
     @Test
     @DisplayName("Test for when name parameter is missing data")
     public void createGameFailureTest() {
-        DatabaseDAOCollection daos = new DatabaseDAOCollection();    // Create games database
+        SQLGameDAO gDao = new SQLGameDAO();    // Create games database
         String gameName = null;
-        Assertions.assertThrows(BadRequestException.class, () -> GameService.createGame(gameName, daos.sqlGameDAO));
+        Assertions.assertThrows(BadRequestException.class, () -> GameService.createGame(gameName, gDao));
     }
 
 
     @Test
     @DisplayName("Test successful joining into chess game for white team")
     public void joinWhiteTeamSuccess() {
-        DatabaseDAOCollection daos = new DatabaseDAOCollection();    // New database
+        SQLGameDAO gDao = new SQLGameDAO();    // New tables
+        SQLAuthDAO aDao = new SQLAuthDAO();
 
         String gameName = "Game1";                      // Name for new chess game
         String userName = "Freddy";                     // Username for client
 
-        String token = daos.memAuthDAO.createAuth(userName);        // Make auth data for user and get token
-        int gameID = daos.memGameDAO.createGame("Game1"); // Create new game and retrieve game ID
+        try {
+            String token = aDao.createAuth(userName);        // Make auth data for user and get token
+            int gameID = gDao.createGame("Game1"); // Create new game and retrieve game ID
 
-        daos.memGameDAO.updateWhiteUsername(gameID, userName);      // Add user to white team of chess game
-        String whiteTeamName = daos.memGameDAO.getGameDatabase().get(gameID).whiteUsername(); // Retrieve added data
-        Assertions.assertTrue(whiteTeamName.equals(userName));  // Check if username was succesfully added
+            Assertions.assertTrue(gDao.hasAvailableTeam(gameID, Config.WHITE_TEAM_COL));
+
+            gDao.updateWhiteUsername(gameID, userName);      // Add user to white team of chess game
+
+            Assertions.assertFalse(gDao.hasAvailableTeam(gameID, Config.WHITE_TEAM_COL));
+        } catch (DataAccessException | SQLException e) {
+            Assertions.fail("SQL error.");
+        } catch (AlreadyTakenException alrEx) {
+            Assertions.fail("Failed: already taken exception thrown.");
+        }
     }
 
-    @Test
-    @DisplayName("Test successful joining into chess game for white team")
-    public void joinWhiteTeamSuccessSQL() {
-        DatabaseDAOCollection daos = new DatabaseDAOCollection();    // New database
-//
-//        String gameName = "Game1";                      // Name for new chess game
-//        String userName = "Freddy";                     // Username for client
-//
-//        String token = daos.memAuthDAO.createAuth(userName);        // Make auth data for user and get token
-//        int gameID = daos.memGameDAO.createGame("Game1"); // Create new game and retrieve game ID
-
-        int gameID = 1;
-
-//        daos.sqlGameDAO.updateWhiteUsername(gameID, "white");      // Add user to white team of chess game
-//        String whiteTeamName = daos.sqlGameDAO.getGameDatabase().get(gameID).whiteUsername(); // Retrieve added data
-//        Assertions.assertTrue(whiteTeamName.equals(userName));  // Check if username was succesfully added
-    }
 
     @Test
     @DisplayName("Test alreadyTaken exception for joinGame request")
     public void joinWhiteTeamReject() {
-//        MemoryGameDAO gameDAO = new MemoryGameDAO();    // New games database
-//        MemoryAuthDAO authDAO = new MemoryAuthDAO();    // New auth database
+        SQLGameDAO gDao = new SQLGameDAO();    // New tables
+        SQLAuthDAO aDao = new SQLAuthDAO();
         String gameName = "Game1";                      // Name for new chess game
         String userName = "Freddy";                     // Username for client
         String otherUser = "Bonnie";                    // User trying to join already-taken team
         String requestedTeam = "WHITE";                 // Team that second user will try to join
+        try {
+            aDao.createAuth(userName);                   // Add both users to auth table
+            String token = aDao.createAuth(otherUser);   // Keep second user's token for test
+            int gameID = gDao.createGame(gameName);      // Create new game and retrieve game ID
 
-//        authDAO.createAuth(userName);                   // Add both users to auth table
-//        String token = authDAO.createAuth(otherUser);   // Keep second user's token for test
-//        int gameID = gameDAO.createGame(gameName);      // Create new game and retrieve game ID
-//
-//        gameDAO.updateWhiteUsername(gameID, userName);  // Add first user to white team of chess game
-//
-//        // Adding second user to the same game's white game should throw an exception.
-//        Assertions.assertThrows(AlreadyTakenException.class, () ->
-//                GameService.joinGame(gameID, requestedTeam, token, gameDAO, authDAO));
+            gDao.updateWhiteUsername(gameID, userName);  // Add first user to white team of chess game
+
+            // Adding second user to the same game's white game should throw an exception.
+            Assertions.assertThrows(AlreadyTakenException.class, () ->
+                    GameService.joinGame(gameID, requestedTeam, token, aDao, gDao));
+        } catch (SQLException | AlreadyTakenException e) {
+            Assertions.fail("Error: exception thrown");
+        }
     }
 
 
