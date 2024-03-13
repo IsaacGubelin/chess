@@ -6,6 +6,7 @@ import exception.AlreadyTakenException;
 import exception.BadRequestException;
 import exception.UnauthorizedException;
 import exception.DataAccessException;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import model.GameData;
 import model.UserData;
 import org.junit.jupiter.api.Assertions;
@@ -83,9 +84,12 @@ public class DataAccessTests {
             Assertions.fail("Failed, SQL exception.");
         }
 
+        // When checking password, use hashed password
+        BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
+
         // Check that all entries are in user database
         Assertions.assertEquals(daos.sqlUserDAO.getUser(name).username(), name);
-        Assertions.assertEquals(daos.sqlUserDAO.getUser(name).password(), password);
+        Assertions.assertTrue(encoder.matches(password, daos.sqlUserDAO.getUser(name).password()));
         Assertions.assertEquals(daos.sqlUserDAO.getUser(name).email(), email);
 
         // Check that auth database has new user entry

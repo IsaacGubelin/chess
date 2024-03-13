@@ -1,6 +1,5 @@
 package dataAccess;
 
-import exception.AlreadyTakenException;
 import model.UserData;
 
 import java.util.HashMap;

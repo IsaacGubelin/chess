@@ -1,6 +1,5 @@
 package dataAccess;
 
-import exception.AlreadyTakenException;
 import exception.DataAccessException;
 import model.UserData;
 

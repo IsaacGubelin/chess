@@ -1,11 +1,9 @@
 package dataAccess;
 
 import config.Config;
-import exception.AlreadyTakenException;
 import exception.DataAccessException;
-import model.AuthData;
 import model.UserData;
-import org.eclipse.jetty.server.Authentication;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -20,7 +18,7 @@ public class SQLUserDAO implements UserDAO{
             CREATE TABLE IF NOT EXISTS  users
             (
               `username` varchar(256) NOT NULL,
-              `password` varchar(256) NOT NULL,
+              `password` varchar(512) NOT NULL,
               `email` varchar(256) NOT NULL,
               PRIMARY KEY (`username`)
             );
@@ -78,9 +76,15 @@ public class SQLUserDAO implements UserDAO{
 
     @Override
     public void createUser(UserData userData) throws SQLException {
+        // Hash password
+        BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
+        String hashedPassword = encoder.encode(userData.password());
+
         String createStmt = "INSERT INTO users (username, password, email) VALUES (?, ?, ?)";
-        ExecuteSQL.executeUpdate(createStmt, userData.username(), userData.password(), userData.email());
+        ExecuteSQL.executeUpdate(createStmt, userData.username(), hashedPassword, userData.email());
     }
+
+
 
     @Override
     public UserData getUser(String username) {
