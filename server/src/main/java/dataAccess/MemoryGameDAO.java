@@ -7,6 +7,7 @@ import model.GameData;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.HashMap;
 
 public class MemoryGameDAO implements GameDAO {
@@ -42,8 +43,13 @@ public class MemoryGameDAO implements GameDAO {
     }
 
     // A getter for retrieving the games database
-    public HashMap<Integer, GameData> getGameDatabase() {
-        return gamesTable;
+    @Override
+    public ArrayList<GameData> getGamesList() {
+        ArrayList<GameData> games = new ArrayList<>();
+        for (int id : gamesTable.keySet()) { // Iterate through each key
+            games.add(gamesTable.get(id)); // Fetch game from current key and add to list
+        }
+        return games;
     }
 
     // Use to update the white team with a new user

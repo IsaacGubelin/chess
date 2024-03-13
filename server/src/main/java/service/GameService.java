@@ -6,22 +6,17 @@ import exception.AlreadyTakenException;
 import exception.BadRequestException;
 import exception.DataAccessException;
 import model.GameData;
-import server.DatabaseDAOCollection;
 
 import java.sql.SQLException;
-import java.util.Collection;
+import java.util.ArrayList;
 import java.util.HashSet;
 
 public class GameService {
 
 
     // Makes a list of all games in the games database and returns a collection
-    public static Collection<GameData> getGames(DatabaseDAOCollection daos) {
-        HashSet<GameData> games = new HashSet<>(); // Fill this container with all games
-        for (int id : daos.memGameDAO.getGameDatabase().keySet()) { // Iterate through each key
-            games.add(daos.memGameDAO.getGameDatabase().get(id)); // Fetch game from current key and add to list
-        }
-        return games;   // Return the collection of games
+    public static ArrayList<GameData> getGames(GameDAO gDao) throws SQLException {
+        return gDao.getGamesList();
     }
 
     public static int createGame(String gameName, GameDAO gDao)
@@ -49,27 +44,29 @@ public class GameService {
         if (color == null) {
             // Add logic here for spectating
         }
-        try {
-            String username = aDao.getAuth(authToken).username();   // Retrieve username listed under authToken
+        else {
+            try {
+                String username = aDao.getAuth(authToken).username();   // Retrieve username listed under authToken
 
 
-            // Join user to black team of specified game
-            if (color.equals(Config.BLACK_TEAM_REQ)) {
-                // Check if the requested game has an open slot for the black team
-                if (!gDao.hasAvailableTeam(gameID, Config.BLACK_TEAM_COL)) // If black team isn't available
-                    throw new AlreadyTakenException("Black team already taken.");
-                gDao.updateBlackUsername(gameID, username); // If good to do so, update black team name
+                // Join user to black team of specified game
+                if (color.equals(Config.BLACK_TEAM_REQ)) {
+                    // Check if the requested game has an open slot for the black team
+                    if (!gDao.hasAvailableTeam(gameID, Config.BLACK_TEAM_COL)) // If black team isn't available
+                        throw new AlreadyTakenException("Black team already taken.");
+                    gDao.updateBlackUsername(gameID, username); // If good to do so, update black team name
+                }
+                // Join user to white team
+                else if (color.equals(Config.WHITE_TEAM_REQ)) {
+                    // Check if requested game has an open slot for the white team
+                    if (!gDao.hasAvailableTeam(gameID, Config.WHITE_TEAM_COL)) // If white team isn't available
+                        throw new AlreadyTakenException("White team already taken.");
+                    gDao.updateWhiteUsername(gameID, username); // Update white team name
+                } else  // If none of previous conditions were met, request is bad.
+                    throw new BadRequestException("Given color does not match options.");
+            } catch (DataAccessException | SQLException e) {
+                throw new SQLException("SQL Error.");
             }
-            // Join user to white team
-            else if (color.equals(Config.WHITE_TEAM_REQ)) {
-                // Check if requested game has an open slot for the white team
-                if (!gDao.hasAvailableTeam(gameID, Config.WHITE_TEAM_COL)) // If white team isn't available
-                    throw new AlreadyTakenException("White team already taken.");
-                gDao.updateWhiteUsername(gameID, username); // Update white team name
-            } else  // If none of previous conditions were met, request is bad.
-                throw new BadRequestException("Given color does not match options.");
-        } catch (DataAccessException | SQLException e) {
-            throw new SQLException("SQL Error.");
         }
     }
 

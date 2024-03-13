@@ -38,22 +38,22 @@ public class Server {
         // CLEAR APPLICATION
         Spark.delete("/db", (req, res) -> new ClearHandler().clearDatabases(req, res, dataObjects.sqlGameDAO, dataObjects.sqlUserDAO, dataObjects.sqlAuthDAO));
 
-        // REGISTER USER // FIXME: instantiate sql
+        // REGISTER USER
         Spark.post("/user", (req, res) -> new RegisterHandler().registerHandle(req, res, dataObjects.sqlUserDAO, dataObjects.sqlAuthDAO));
 
-        // LOGIN USER // FIXME: instantiate sql
+        // LOGIN USER
         Spark.post("/session", (req, res) -> new LoginOutHandler().loginHandle(req, res, dataObjects.sqlUserDAO, dataObjects.sqlAuthDAO) );
 
-        // LOGOUT USER // FIXME: instantiate sql
+        // LOGOUT USER
         Spark.delete("/session", (req, res) -> new LoginOutHandler().logoutHandle(req, res, dataObjects.sqlAuthDAO));
 
-        // CREATE GAME // FIXME: instantiate sql
+        // CREATE GAME
         Spark.post("/game", (req, res) -> new GameHandler().createGameHandle(req, res, dataObjects.sqlAuthDAO, dataObjects.sqlGameDAO));
 
-        // LIST GAMES // FIXME: instantiate sql
-        Spark.get("/game", (req, res) -> new GameHandler().listGamesHandle(req, res, dataObjects));
+        // LIST GAMES
+        Spark.get("/game", (req, res) -> new GameHandler().listGamesHandle(req, res, dataObjects.sqlAuthDAO, dataObjects.sqlGameDAO));
 
-        // JOIN GAME // FIXME: instantiate sql
+        // JOIN GAME
         Spark.put("/game", (req, res) -> new GameHandler().joinGameHandle(req, res, dataObjects.sqlAuthDAO, dataObjects.sqlGameDAO));
 
 

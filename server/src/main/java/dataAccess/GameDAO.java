@@ -1,9 +1,11 @@
 package dataAccess;
 
 import java.sql.SQLException;
+import java.util.ArrayList;
 
 import exception.AlreadyTakenException;
 import exception.DataAccessException;
+import model.GameData;
 
 public interface GameDAO {
 
@@ -13,6 +15,8 @@ public interface GameDAO {
     void updateWhiteUsername(int gameID, String whiteUsername) throws SQLException, AlreadyTakenException;
 
     void updateBlackUsername(int gameID, String whiteUsername) throws SQLException, AlreadyTakenException;
+
+    public ArrayList<GameData> getGamesList() throws SQLException;
 
     boolean hasGame(int gameID);
 

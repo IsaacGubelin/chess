@@ -1,8 +1,5 @@
 package model;
+import java.util.ArrayList;
 
-import chess.ChessGame;
-
-import java.util.Collection;
-
-public record ListGamesData(Collection<GameData> games) {
+public record ListGamesData(ArrayList<GameData> games) {
 }

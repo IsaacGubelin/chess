@@ -23,7 +23,7 @@ import java.sql.SQLDataException;
 import java.sql.SQLException;
 import java.util.AbstractList;
 import java.util.Collection;
-import java.util.HashSet;
+import java.util.ArrayList;
 
 public class ServiceTests {
 
@@ -288,33 +288,43 @@ public class ServiceTests {
     @Test
     @DisplayName("Test successful request for listGames service")
     public void listGamesSuccess() {
-        DatabaseDAOCollection daos = new DatabaseDAOCollection();   // Make new DAOs
-        daos.memGameDAO.createGame("ChessGame1");       // Create chess game
-        String name = "Benjamin";                       // Start making new auth data
-        String correctToken = daos.memAuthDAO.createAuth(name); // Add new auth data and retrieve correct token
-        Assertions.assertEquals(daos.memAuthDAO.getAuth(correctToken).username(), name);   // Verify auth data creation
+        SQLGameDAO gDao = new SQLGameDAO();   // Make new DAOs
+        SQLAuthDAO aDao = new SQLAuthDAO();
+        try {
+            gDao.createGame("ChessGame1");       // Create chess game
+            String name = "Benjamin";                       // Start making new auth data
+            String correctToken = aDao.createAuth(name); // Add new auth data and retrieve correct token
+            Assertions.assertEquals(aDao.getAuth(correctToken).username(), name);   // Verify auth data creation
 
-        Collection<GameData> listOfGames = GameService.getGames(daos);   // Retrieve games
-        Assertions.assertTrue(!listOfGames.isEmpty());  // Verify that the container is not empty
+            Collection<GameData> listOfGames = GameService.getGames(gDao);   // Retrieve games
+
+            Assertions.assertTrue(!listOfGames.isEmpty());  // Verify that the container is not empty
+        } catch (SQLException | DataAccessException e) {
+            Assertions.fail("Failure.");
+        }
     }
 
     @Test
     @DisplayName("Test listGames rejection from wrong authToken")
     public void listGamesWrongAuthToken() {
-//        MemoryAuthDAO authDAO = new MemoryAuthDAO();    // Make an auth database
-//        MemoryGameDAO gameDAO = new MemoryGameDAO();    // Make games database
-//        gameDAO.createGame("Game1");            // Create game and add to database
-//        String token = authDAO.createAuth("Bob");   // Add auth data and get token
-        String wrongToken = "notRealToken";             // Make a fake token
+        SQLAuthDAO aDao = new SQLAuthDAO();    // Make an auth database
+        SQLGameDAO gameDAO = new SQLGameDAO();    // Make games database
+        try {
+            gameDAO.createGame("Game1");            // Create game and add to database
+            String token = aDao.createAuth("Bob");   // Add auth data and get token
+            String wrongToken = "notRealToken";             // Make a fake token
 
-        HashSet<GameData> games = new HashSet<>();
+            ArrayList<GameData> games = new ArrayList<>();
 
-        // Will NOT retrieve games if auth database doesn't have authToken.
-//        if (authDAO.hasAuth(wrongToken)) {
-//            games = (HashSet<GameData>) GameService.getGames(gameDAO);
-//            Assertions.fail("Error: retrieved games with incorrect authToken");
-//        }
-        Assertions.assertTrue(games.isEmpty()); // Should be empty
+            // Will NOT retrieve games if auth database doesn't have authToken.
+            if (aDao.hasAuth(wrongToken)) {
+                games = GameService.getGames(gameDAO);
+                Assertions.fail("Error: retrieved games with incorrect authToken");
+            }
+            Assertions.assertTrue(games.isEmpty()); // Should be empty
+        } catch (SQLException e) {
+            Assertions.fail("SQL exception.");
+        }
     }
 
     @Test

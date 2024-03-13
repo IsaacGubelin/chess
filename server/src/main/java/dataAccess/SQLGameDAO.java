@@ -5,8 +5,9 @@ import config.Config;
 import exception.AlreadyTakenException;
 import exception.DataAccessException;
 import com.google.gson.Gson;
+import model.GameData;
 
-import java.sql.PreparedStatement;
+import java.util.ArrayList;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
@@ -115,6 +116,47 @@ public class SQLGameDAO implements GameDAO{
         }
         return false;
     }
+
+    @Override
+    public ArrayList<GameData> getGamesList() throws SQLException {
+
+        try (var conn = DatabaseManager.getConnection()) {
+            // Make query statement to get all entries
+            ArrayList<GameData> games = new ArrayList<>();
+            String queryStmt = "SELECT * FROM " + Config.GAME_TABLE_NAME;
+            try (var ps = conn.prepareStatement(queryStmt)) {
+
+                // Executing the query and retrieving the result set
+                ResultSet resultSet = ps.executeQuery();
+
+                // Checking if the result set has any rows
+                while (resultSet.next()) {
+                    int id = resultSet.getInt(1);
+                    String whiteTeamName = resultSet.getString(2);
+                    String blackTeamName = resultSet.getString(3);
+                    String gameName = resultSet.getString(4);
+                    String gameStr = resultSet.getString(5);
+                    Gson gs = new Gson();
+                    ChessGame game = gs.fromJson(gameStr, ChessGame.class);
+                    games.add(new GameData(id, whiteTeamName, blackTeamName, gameName, game));
+                }
+                return games;
+            }
+        } catch (DataAccessException | SQLException e) {
+            throw new SQLException("Could not look for auth key!");
+        }
+    }
+
+
+//            while (resultSet.next()) {
+//                String columnItem = resultSet.getString(columnName);
+//                columnItems.add(columnItem);
+//            }
+//
+//            // Closing the resources
+//            resultSet.close();
+//            statement.close();
+//            connection.close();
 
     @Override
     public boolean isEmpty() throws DataAccessException {
