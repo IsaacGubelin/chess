@@ -26,6 +26,12 @@ public class SQLUserDAO implements UserDAO{
     };
 
     public SQLUserDAO() {
+        // If database isn't built, create one.
+        try {
+            DatabaseManager.createDatabase();
+        } catch (DataAccessException ex) {
+            System.out.println("Couldn't create database");
+        }
 
         try (var conn = DatabaseManager.getConnection()) {
             for (var statement : createUserTableStatements) {

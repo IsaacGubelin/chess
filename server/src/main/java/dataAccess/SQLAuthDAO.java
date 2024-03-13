@@ -24,6 +24,13 @@ public class SQLAuthDAO implements AuthDAO {
 
     // Constructor for AuthDAO
     public SQLAuthDAO() {
+
+        try {
+            DatabaseManager.createDatabase();
+        } catch (DataAccessException ex) {
+            System.out.println("Couldn't create database");
+        }
+
         try (var conn = DatabaseManager.getConnection()) {
             for (var statement : createAuthTableStatements) {
                 try (var preparedStatement = conn.prepareStatement(statement)) {

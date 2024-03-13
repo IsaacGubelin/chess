@@ -30,7 +30,11 @@ public class SQLGameDAO implements GameDAO{
     };
 
     public SQLGameDAO() {
-
+        try {
+            DatabaseManager.createDatabase();
+        } catch (DataAccessException ex) {
+            System.out.println("Couldn't create database");
+        }
         try (var conn = DatabaseManager.getConnection()) {
             for (var statement : createGameTableStatements) {
                 try (var preparedStatement = conn.prepareStatement(statement)) {
