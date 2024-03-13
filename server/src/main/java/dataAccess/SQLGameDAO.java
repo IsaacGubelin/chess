@@ -148,16 +148,6 @@ public class SQLGameDAO implements GameDAO{
     }
 
 
-//            while (resultSet.next()) {
-//                String columnItem = resultSet.getString(columnName);
-//                columnItems.add(columnItem);
-//            }
-//
-//            // Closing the resources
-//            resultSet.close();
-//            statement.close();
-//            connection.close();
-
     @Override
     public boolean isEmpty() throws DataAccessException {
         try (var conn = DatabaseManager.getConnection()) {

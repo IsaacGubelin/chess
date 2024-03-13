@@ -24,6 +24,232 @@ import java.util.ArrayList;
 
 public class DataAccessTests {
 
+    @Test
+    @DisplayName("Test clear game DAO")
+    public void testGameDaoClear() {
+        SQLGameDAO gDao = new SQLGameDAO();
+        String name = "JohnnyJohnWillyBartson";
+        try {
+            int id = gDao.createGame(name);
+            Assertions.assertTrue(gDao.hasGame(id));
+            gDao.clearGamesDataBase();
+            Assertions.assertTrue(gDao.isEmpty());
+        } catch (SQLException | DataAccessException e) {
+            Assertions.fail("SQL exception.");
+        }
+    }
+
+    @Test
+    @DisplayName("Test create game")
+    public void testGameDaoCreateGame() {
+        SQLGameDAO gDao = new SQLGameDAO();
+        String name = "JohnnyJohnWillyBartson";
+        try {
+            int id = gDao.createGame(name);
+            Assertions.assertTrue(gDao.hasGame(id));
+            gDao.clearGamesDataBase();
+        } catch (SQLException e) {
+            Assertions.fail("SQL exception.");
+        }
+    }
+
+    @Test
+    @DisplayName("Test create game")
+    public void testGameDaoCreateGameDifferentId() {
+        SQLGameDAO gDao = new SQLGameDAO();
+        String name = "JohnnyJohnWillyBartson";
+        try {
+            int id = gDao.createGame(name);
+            int otherId = gDao.createGame(name);
+            Assertions.assertFalse(id == otherId);
+            gDao.clearGamesDataBase();
+        } catch (SQLException e) {
+            Assertions.fail("SQL exception.");
+        }
+    }
+
+    @Test
+    @DisplayName("Test update white name")
+    public void testUpdateWhite() {
+        SQLGameDAO gDao = new SQLGameDAO();
+        String name = "JohnnyJohnWillyBartson";
+        try {
+            int id = gDao.createGame(name);
+            Assertions.assertTrue(gDao.hasAvailableTeam(id, Config.WHITE_TEAM_COL)); // Should indicate team is vacant
+            gDao.updateWhiteUsername(id, name);
+            gDao.clearGamesDataBase();
+        } catch (SQLException | AlreadyTakenException e) {
+            Assertions.fail("SQL exception.");
+        } catch (DataAccessException dataEx) {
+            Assertions.fail("Error in checking white team for name.");
+        }
+    }
+
+    @Test
+    @DisplayName("Test that DAO indicates correct vacancy of white team")
+    public void testUpdateWhiteUserIsTaken() {
+        SQLGameDAO gDao = new SQLGameDAO();
+        String name = "JohnnyJohnWillyBartson";
+        try {
+            int id = gDao.createGame(name);
+            gDao.updateWhiteUsername(id, name);
+            Assertions.assertFalse(gDao.hasAvailableTeam(id, Config.WHITE_TEAM_COL)); // Should indicate team is taken
+        } catch (SQLException | AlreadyTakenException e) {
+            Assertions.fail("SQL exception.");
+        } catch (DataAccessException dataEx) {
+            Assertions.fail("Error in checking white team for name.");
+        }
+        gDao.clearGamesDataBase(); // Reset games table
+    }
+
+    @Test
+    @DisplayName("Test update black name")
+    public void testUpdateBlack() {
+        SQLGameDAO gDao = new SQLGameDAO();
+        String name = "JohnnyJohnWillyBartson";
+        try {
+            int id = gDao.createGame(name);
+            Assertions.assertTrue(gDao.hasAvailableTeam(id, Config.BLACK_TEAM_COL));
+            gDao.updateBlackUsername(id, name);
+            gDao.clearGamesDataBase();
+        } catch (SQLException | AlreadyTakenException e) {
+            Assertions.fail("SQL exception.");
+        } catch (DataAccessException dataEx) {
+            Assertions.fail("Error in checking white team for name.");
+        }
+    }
+
+    @Test
+    @DisplayName("Test vacancy indication of black team")
+    public void testBlackTeamTaken() {
+        SQLGameDAO gDao = new SQLGameDAO();
+        String name = "JohnnyJohnWillyBartson";
+        try {
+            int id = gDao.createGame(name);
+            gDao.updateBlackUsername(id, name);
+            Assertions.assertFalse(gDao.hasAvailableTeam(id, Config.BLACK_TEAM_COL));
+            gDao.clearGamesDataBase();
+        } catch (SQLException | AlreadyTakenException e) {
+            Assertions.fail("SQL exception.");
+        } catch (DataAccessException dataEx) {
+            Assertions.fail("Error in checking white team for name.");
+        }
+    }
+
+    @Test
+    @DisplayName("Test isEmpty method for AuthDAO")
+    public void testAuthDaoEmpty() {
+        SQLAuthDAO aDao = new SQLAuthDAO();
+        try {
+            aDao.clearAuthDatabase();
+            Assertions.assertTrue(aDao.isEmpty());
+        } catch (DataAccessException e) {
+            Assertions.fail("SQL exception.");
+        }
+    }
+
+    @Test
+    @DisplayName("Test isEmpty method for GameDAO")
+    public void testGameDaoEmpty() {
+        SQLGameDAO gDao = new SQLGameDAO();
+        try {
+            gDao.clearGamesDataBase();
+            Assertions.assertTrue(gDao.isEmpty());
+        } catch (DataAccessException e) {
+            Assertions.fail("SQL exception.");
+        }
+    }
+
+    @Test
+    @DisplayName("Test listGames from GameDAO")
+    public void testListGames() {
+        SQLGameDAO gDao = new SQLGameDAO();
+
+        try {
+            gDao.createGame("Game1");
+            ArrayList<GameData> games = gDao.getGamesList();
+            Assertions.assertFalse(games.isEmpty());
+            gDao.clearGamesDataBase();
+        } catch (SQLException e) {
+            Assertions.fail("SQL exception thrown.");
+        }
+    }
+
+    @Test
+    @DisplayName("Test listGames from GameDAO when empty")
+    public void testListGamesEmpty() {
+        SQLGameDAO gDao = new SQLGameDAO();
+
+        try {
+            ArrayList<GameData> games = gDao.getGamesList();
+            Assertions.assertTrue(games.isEmpty());
+            gDao.clearGamesDataBase();
+        } catch (SQLException e) {
+            Assertions.fail("SQL exception thrown.");
+        }
+    }
+
+    @Test
+    @DisplayName("Test hasGame key-checking method in GameDAO")
+    public void testHasGame() {
+        SQLGameDAO gDao = new SQLGameDAO();
+
+        try {
+            int id = gDao.createGame("NewGame");    // Make game, retrieve id
+            Assertions.assertTrue(gDao.hasGame(id));        // Verify game can be verified with id
+            gDao.clearGamesDataBase();
+        } catch (SQLException e) {
+            Assertions.fail("SQL exception thrown.");
+        }
+    }
+
+    @Test
+    @DisplayName("Test hasGame key-checking method in GameDAO for nonexistent game")
+    public void testDoesNotHaveGame() {
+        SQLGameDAO gDao = new SQLGameDAO();
+
+        try {
+            gDao.createGame("NewGame");    // Make game, retrieve id
+            int wrongId = -1;       // Wrong id will not yield a game
+            Assertions.assertFalse(gDao.hasGame(wrongId));        // Verify game can be verified with id
+            gDao.clearGamesDataBase();
+        } catch (SQLException e) {
+            Assertions.fail("SQL exception thrown.");
+        }
+    }
+
+
+    @Test
+    @DisplayName("Test clear auth DAO")
+    public void testAuthDaoClear() {
+        SQLAuthDAO aDao = new SQLAuthDAO();
+        String name = "JohnnyJohnWillyBartson";
+        try {
+            String token = aDao.createAuth(name);
+            Assertions.assertTrue(aDao.hasAuth(token));
+            aDao.clearAuthDatabase();
+            Assertions.assertTrue(aDao.isEmpty());
+        } catch (SQLException | DataAccessException e) {
+            Assertions.fail("SQL exception.");
+        }
+    }
+
+
+
+    @Test
+    @DisplayName("Test clear user DAO")
+    public void testUserDaoClear() {
+        SQLUserDAO uDao = new SQLUserDAO();
+        String name = "JohnnyJohnWillyBartson";
+        try {
+            uDao.createUser(new UserData(name, "password", "email"));
+            Assertions.assertTrue(uDao.hasThisUsername(name));
+            uDao.clearUserDatabase();
+            Assertions.assertFalse(uDao.hasThisUsername(name));
+        } catch (SQLException e) {
+            Assertions.fail("SQL exception.");
+        }
+    }
 
     @Test
     @DisplayName("Check if clear endpoint empties all databases")
@@ -209,6 +435,7 @@ public class DataAccessTests {
         } catch (DataAccessException dEx) {
             Assertions.fail("Data access exception.");
         }
+        aDao.clearAuthDatabase(); // Reset tables
     }
 
     @Test
@@ -245,6 +472,8 @@ public class DataAccessTests {
         // Should throw unauthorized exception when given wrong password
         Assertions.assertThrows(UnauthorizedException.class, () ->
                 LoginOutService.login(new UserData(name, wrongWord, email), uDao, aDao));
+        aDao.clearAuthDatabase(); // Reset tables
+        uDao.clearUserDatabase();
     }
     @Test
     @DisplayName("Check for successful logout")
@@ -265,6 +494,7 @@ public class DataAccessTests {
         } catch (UnauthorizedException unEx) {
             Assertions.fail("Logout test failed.");
         }
+        aDao.clearAuthDatabase(); // reset auth table
     }
 
     @Test
@@ -283,6 +513,7 @@ public class DataAccessTests {
         } catch (DataAccessException | SQLException e) {
             Assertions.fail("SQL error.");
         }
+        aDao.clearAuthDatabase(); // Reset auth table
     }
 
     @Test
@@ -302,6 +533,8 @@ public class DataAccessTests {
         } catch (SQLException | DataAccessException e) {
             Assertions.fail("Failure.");
         }
+        gDao.clearGamesDataBase(); // Clear tables
+        aDao.clearAuthDatabase();
     }
 
     @Test
@@ -342,6 +575,7 @@ public class DataAccessTests {
         }
 
         Assertions.assertTrue(gameID != 0);
+        gDao.clearGamesDataBase(); // Reset games table
     }
 
     @Test
@@ -376,6 +610,8 @@ public class DataAccessTests {
         } catch (AlreadyTakenException alrEx) {
             Assertions.fail("Failed: already taken exception thrown.");
         }
+        gDao.clearGamesDataBase(); // Reset games table
+        aDao.clearAuthDatabase(); // Reset auth table
     }
 
 
@@ -401,6 +637,8 @@ public class DataAccessTests {
         } catch (SQLException | AlreadyTakenException e) {
             Assertions.fail("Error: exception thrown");
         }
+        gDao.clearGamesDataBase(); // Reset game table
+        aDao.clearAuthDatabase(); // Reset auth table
     }
 
 
