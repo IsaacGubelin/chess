@@ -23,9 +23,9 @@ public class UI {
 
     // Constructor for Client UI object
     public UI(String url) {
-        initClientUI();                 // Initialize all variables
         facade = new ServerFacade(url); // Initialize server facade with given url
         this.url = url;                 // Store url
+        initClientUI();                 // Initialize all variables
     }
 
     private void initClientUI() {
@@ -180,11 +180,11 @@ public class UI {
                 } else {
                     updateGamesList();  // Update list of games
                     try {
-                        currentGameIndex = Integer.parseInt(inputs[1]);     // Get integer from second argument
-                        int id = gameIDs.get(currentGameIndex);             // Retrieve corresponding game ID
+                        int requestedGameIndex = Integer.parseInt(inputs[1]); // Get integer from second argument
+                        int id = gameIDs.get(requestedGameIndex);             // Retrieve corresponding game ID
                         GameRequestData gameReqData = new GameRequestData(null, inputs[2], id); // Make req
                         facade.joinGame(authToken, gameReqData);    // Attempt to call facade join method
-                        currentGameIndex = ;
+                        currentGameIndex = requestedGameIndex;      // If joined, update current game index
                         System.out.println("Successfully joined game " + id);
 
                     } catch (NumberFormatException numEx) { // Prints error message if second argument wasn't a number
