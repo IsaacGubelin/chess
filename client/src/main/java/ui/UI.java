@@ -1,6 +1,5 @@
 package ui;
 import chess.ChessBoard;
-import chess.ChessGame;
 import facade.ServerFacade;
 import model.*;
 import resException.ResponseException;
@@ -216,10 +215,18 @@ public class UI {
                             System.out.println("Specified game ID does not exist.");
                         } else {
                             currentGameIndex = requestedIndex;
+                            int id = gameIDs.get(currentGameIndex);     // Retrieve actual game ID
+                            ListGamesData gamesList = facade.getGamesList(authToken);   // Find game for printing
+                            ChessBoard displayBoard = gamesList.games().get(id).game().getBoard(); // Get the board
+                            ChessBoardPrint.printChessBlackPerspective(displayBoard);   // Print once for black team
+                            ChessBoardPrint.printChessWhitePerspective(displayBoard);   // Print once for white team
                             System.out.println("Observing game " + currentGameIndex);
                         }
                     } catch (NumberFormatException numEx) {
                         System.out.println("Second argument not a number. Must use integer.");
+                    } catch (ResponseException ex) {
+                        System.out.println("Could not retrieve game for viewing.");
+                        System.out.println(ex.getMessage());
                     }
                 }
 
@@ -264,9 +271,9 @@ public class UI {
 
 
     // Gets called when user successfully uses register command
-    private void registerPrompt(String name, String password, String email) {
-
-    }
+//    private void registerPrompt(String name, <--FIX--> String password, String email) {
+//
+//    }
 
 
 
