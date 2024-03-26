@@ -26,4 +26,18 @@ public class ServerFacadeTests {
         Assertions.assertTrue(true);
     }
 
+    @Test
+    @DisplayName("First test")
+    public void test1() {
+        Assertions.assertFalse(false);
+    }
+
+    @Test
+    @DisplayName("First test")
+    public void test2() {
+        Assertions.assertEquals((3+5), 10-2);
+    }
+
+
+
 }
