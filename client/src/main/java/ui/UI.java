@@ -4,6 +4,7 @@ import facade.ServerFacade;
 import model.*;
 import resException.ResponseException;
 
+import java.util.HashMap;
 import java.util.Scanner;
 import static ui.EscapeSequences.*;
 
@@ -15,14 +16,24 @@ public class UI {
     private String status;                              // State of client
     private String authToken;                           // Keeps track of the user's authToken
     private final String url;
-    private final ServerFacade facade;
+    private final ServerFacade facade;                  // Access the facade methods
+    private HashMap<Integer, Integer> gameIDs;                  // Keeps track of listed games
+
+    private int currentGameIndex;
 
     // Constructor for Client UI object
     public UI(String url) {
+        initClientUI();                 // Initialize all variables
+        facade = new ServerFacade(url); // Initialize server facade with given url
+        this.url = url;                 // Store url
+    }
+
+    private void initClientUI() {
+        gameIDs = new HashMap<>();      // Initialize game ID container
         status = LOGGED_OUT;            // Status starts in logged out state
         authToken = "";                 // No token at startup
-        this.url = url;                 // Store url
-        facade = new ServerFacade(url); // Initialize server facade with given url
+        currentGameIndex = -1;             // Will be updated to positive value when user joins/observes game
+        updateGamesList();              // Check all current chess games and store their IDs in a list
     }
 
     // The main looping interface that collects user input and prints prompt messages.
@@ -47,7 +58,7 @@ public class UI {
                 promptLoggedIn(inputs, numArgs);
             }
 
-            if (line.equals("quit")) {
+            if (line.equals("quit") && status.equals(LOGGED_OUT)) {
                 break;                              // Quit the application when user enters "quit"
             }
         }
@@ -151,7 +162,7 @@ public class UI {
                 } else {
                     try {
                         ListGamesData gamesList = facade.getGamesList(authToken);
-                        printGamesListInfo(gamesList);  // Print info for all active chess games
+                        listGamesInfo(gamesList);  // Print info for all active chess games
                     } catch (ResponseException ex) {
                         System.out.println("Could not list games.");
                         System.out.println(ex.getMessage());
@@ -160,9 +171,54 @@ public class UI {
 
                 break;
 
-            //TODO:
-            // join
-            // observe
+            case "join":
+                if (numArgs != 3) {
+                    System.out.println("Invalid entry. To join a game, use below format:");
+                    System.out.println("join <ID> [WHITE|BLACK]");
+                } else if (!inputs[2].equals("WHITE") && !inputs[2].equals("BLACK")) {
+                    System.out.println("Invalid team request. Type \"BLACK\" or \"WHITE\"");
+                } else {
+                    updateGamesList();  // Update list of games
+                    try {
+                        currentGameIndex = Integer.parseInt(inputs[1]);     // Get integer from second argument
+                        int id = gameIDs.get(currentGameIndex);             // Retrieve corresponding game ID
+                        GameRequestData gameReqData = new GameRequestData(null, inputs[2], id); // Make req
+                        facade.joinGame(authToken, gameReqData);    // Attempt to call facade join method
+                        currentGameIndex = ;
+                        System.out.println("Successfully joined game " + id);
+
+                    } catch (NumberFormatException numEx) { // Prints error message if second argument wasn't a number
+                        System.out.println("Please use only integers for ID of requested game.");
+                    } catch (ResponseException ex) {
+                        System.out.println("Could not join game.");
+                        System.out.println(ex.getMessage());
+                    } catch (NullPointerException nullEx) {
+                        System.out.println("Specified game ID does not exist.");
+                    }
+                }
+
+                break;
+
+            case "observe":
+                if (numArgs != 2) {
+                    System.out.println("Invalid entry. To observe a game, use below format:");
+                    System.out.println("observe <GAME_ID>");
+                } else {
+                    updateGamesList();  // Get updated list of available game IDs
+                    try {
+                        int requestedIndex = Integer.parseInt(inputs[1]);     // Get integer from second argument
+                        if (!gameIDs.containsKey(requestedIndex)) {
+                            System.out.println("Specified game ID does not exist.");
+                        } else {
+                            currentGameIndex = requestedIndex;
+                            System.out.println("Observing game " + currentGameIndex);
+                        }
+                    } catch (NumberFormatException numEx) {
+                        System.out.println("Second argument not a number. Must use integer.");
+                    }
+                }
+
+                break;
 
             case "logout":
                 try {
@@ -187,23 +243,35 @@ public class UI {
         }
     }
 
+    private void updateGamesList() {
+        try {
+            ListGamesData gamesList = facade.getGamesList(authToken);
+            int i = 0;  // For indexing list
+            for (GameData game : gamesList.games()) {
+                gameIDs.put(i, game.gameID());  // Pair index with game ID and add to list
+                i++;                            // Increment index
+            }
+        } catch (ResponseException ex) {
+            System.out.println("Could not update games list.");
+            System.out.println(ex.getMessage());
+        }
+    }
+
+
     // Gets called when user successfully uses register command
     private void registerPrompt(String name, String password, String email) {
 
     }
 
 
-    private void printOptionsPreLogin() {
-        // Set text output formatting to format for prompts
-        setTextToPromptFormat();
-        System.out.print("[LOGGED_OUT] >>> ");
-    }
 
     // Helper method for printing all games and needed info
-    private void printGamesListInfo(ListGamesData gamesList) {
+    private void listGamesInfo(ListGamesData gamesList) {
         System.out.println("All active chess games:");
+        int i = 0;      // Update private list of game IDs
         for (GameData game : gamesList.games()) {
-            System.out.println("Game ID: " + game.gameID() + " Game Name: " + game.gameName());
+            gameIDs.put(i, game.gameID());  // Update game ID list
+            System.out.println(i + ". " + game.gameName());
             if (game.blackUsername() == null) {
                 System.out.print("Black team is available. ");
             } else {
@@ -214,6 +282,7 @@ public class UI {
             } else {
                 System.out.println("White team is occupied by " + game.whiteUsername() + ".\n");
             }
+            i++;                            // Increment index
         }
     }
 
@@ -232,13 +301,11 @@ public class UI {
         setTextToPromptFormat();
         System.out.println("list" + RESET_TEXT_BOLD_FAINT + " --> Show list of games");
         setTextToPromptFormat();
-        System.out.println("join <ID> [WHITE|BLACK|<empty>]" + RESET_TEXT_BOLD_FAINT + " --> join game");
+        System.out.println("join <ID> [WHITE|BLACK]" + RESET_TEXT_BOLD_FAINT + " --> join game");
         setTextToPromptFormat();
         System.out.println("observe <ID>" + RESET_TEXT_BOLD_FAINT + " --> be a spectator in a game");
         setTextToPromptFormat();
         System.out.println("logout" + RESET_TEXT_BOLD_FAINT + " --> exit when done");
-        setTextToPromptFormat();
-        System.out.println("quit" + RESET_TEXT_BOLD_FAINT + " --> stop playing chess");
         setTextToPromptFormat();
         System.out.println("help" + RESET_TEXT_BOLD_FAINT + " --> show available options");
     }
@@ -248,10 +315,4 @@ public class UI {
     private void setTextToPromptFormat() {
         System.out.print(SET_TEXT_BOLD + SET_TEXT_ITALIC + SET_TEXT_COLOR_BLUE);
     }
-
-    // Changes text appearance back to normal
-    private void setTextToUserFormat() {
-        System.out.print(RESET_TEXT_BOLD_FAINT + RESET_TEXT_ITALIC + SET_TEXT_COLOR_WHITE);
-    }
-
 }

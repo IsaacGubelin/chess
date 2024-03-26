@@ -85,6 +85,29 @@ public class ServerFacade {
         }
     }
 
+    /**
+     * A function called by the chess client to join an available game.
+     * @param gameReqData
+     * @param authToken
+     */
+    public void joinGame(String authToken, GameRequestData gameReqData) throws ResponseException {
+        String path = "/game";
+        String method = "PUT";
+        try {
+            URL url = (new URI(serverUrl + path).toURL());
+            HttpURLConnection http = (HttpURLConnection) url.openConnection();
+            http.setRequestMethod(method);              // Set the request method (GET, DELETE, POST, etc)
+            http.setDoOutput(true);                     // Indicate that the connection will output data
+
+            http.addRequestProperty(REQ_HEADER_AUTHORIZATION, authToken);   // Add auth token to http header
+            writeBody(gameReqData, http);       // Prepare http body using game request data
+            http.connect();                     // Make connection
+            throwIfNotSuccessful(http);
+
+        } catch (Exception ex) {
+            throw new ResponseException(500, ex.getMessage());
+        }
+    }
 
     private <T> T makeRequest(String method, String path, Object request, Class<T> responseClass) throws ResponseException {
         try {
