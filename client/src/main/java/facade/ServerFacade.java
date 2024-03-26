@@ -67,6 +67,7 @@ public class ServerFacade {
         }
     }
 
+
     public ListGamesData getGamesList(String authToken) throws ResponseException {
         String path = "/game";
         String method = "GET";

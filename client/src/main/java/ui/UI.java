@@ -1,4 +1,5 @@
 package ui;
+import chess.ChessBoard;
 import chess.ChessGame;
 import facade.ServerFacade;
 import model.*;
@@ -184,6 +185,10 @@ public class UI {
                         int id = gameIDs.get(requestedGameIndex);             // Retrieve corresponding game ID
                         GameRequestData gameReqData = new GameRequestData(null, inputs[2], id); // Make req
                         facade.joinGame(authToken, gameReqData);    // Attempt to call facade join method
+                        ListGamesData gamesList = facade.getGamesList(authToken);   // Find game for printing
+                        ChessBoard displayBoard = gamesList.games().get(id).game().getBoard(); // Get the board
+                        ChessBoardPrint.printChessBlackPerspective(displayBoard);   // Print once for black team
+                        ChessBoardPrint.printChessWhitePerspective(displayBoard);   // Print once for white team
                         currentGameIndex = requestedGameIndex;      // If joined, update current game index
                         System.out.println("Successfully joined game " + id);
 
