@@ -4,7 +4,9 @@ import ui.UI;
 
 /**
  * LAST LEFT OFF:
- *
+ * Adding port option for facade constructor
+ * Making Junit tests
+ * Weird error with joining/observing last game in list
  */
 
 
