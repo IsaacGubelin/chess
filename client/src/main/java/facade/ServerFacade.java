@@ -9,10 +9,16 @@ import java.util.ArrayList;
 
 
 public class ServerFacade {
-    private final String serverUrl;                                     // Connect to server
-    private final String REQ_HEADER_AUTHORIZATION = "authorization";    // Used as key for HTTP request headers
+    public final String serverUrl;                                     // Connect to server
+    public final String REQ_HEADER_AUTHORIZATION = "authorization";    // Used as key for HTTP request headers
 
     public ServerFacade(String url) {
+        serverUrl = url;
+    }
+
+    public ServerFacade(int port) {
+        String url = "http://localhost:";
+        url += port;
         serverUrl = url;
     }
 
@@ -110,7 +116,7 @@ public class ServerFacade {
         }
     }
 
-    private <T> T makeRequest(String method, String path, Object request, Class<T> responseClass) throws ResponseException {
+    public <T> T makeRequest(String method, String path, Object request, Class<T> responseClass) throws ResponseException {
         try {
             URL url = (new URI(serverUrl + path)).toURL();
             HttpURLConnection http = (HttpURLConnection) url.openConnection();
@@ -127,7 +133,7 @@ public class ServerFacade {
     }
 
 
-    private static void writeBody(Object request, HttpURLConnection http) throws IOException {
+    public static void writeBody(Object request, HttpURLConnection http) throws IOException {
         if (request != null) {
             http.addRequestProperty("Content-Type", "application/json");
             String reqData = new Gson().toJson(request);
@@ -138,7 +144,7 @@ public class ServerFacade {
     }
 
     // Reads the response body from the input stream of the HTTP connection.
-    private static <T> T readBody(HttpURLConnection http, Class<T> responseClass) throws IOException {
+    public static <T> T readBody(HttpURLConnection http, Class<T> responseClass) throws IOException {
         T response = null;
         if (http.getContentLength() < 0) {  // If content length is negative, there is content to read
             try (InputStream respBody = http.getInputStream()) {
@@ -151,7 +157,7 @@ public class ServerFacade {
         return response;
     }
 
-    private void throwIfNotSuccessful(HttpURLConnection http) throws IOException, ResponseException {
+    public void throwIfNotSuccessful(HttpURLConnection http) throws IOException, ResponseException {
         var status = http.getResponseCode();
         if (!isSuccessful(status)) {
             throw new ResponseException(status, "failure: " + status);
@@ -159,7 +165,7 @@ public class ServerFacade {
     }
 
     // Returns true if status code is 200-299 (good)
-    private boolean isSuccessful(int status) {
+    public boolean isSuccessful(int status) {
         return status / 100 == 2;
     }
 

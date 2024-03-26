@@ -4,6 +4,8 @@ import dataAccess.DatabaseManager;
 import server.Server;
 
 
+// FIXME: Change DAO types in server and remove multi-DAO object class entirely
+
 public class Main {
     public static void main(String[] args) {
         var piece = new ChessPiece(ChessGame.TeamColor.WHITE, ChessPiece.PieceType.PAWN);
