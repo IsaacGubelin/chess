@@ -1,6 +1,6 @@
 package service;
 
-import config.Config;
+import config.ConfigConsts;
 import dataAccess.*;
 import exception.AlreadyTakenException;
 import exception.BadRequestException;
@@ -9,7 +9,6 @@ import model.GameData;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.HashSet;
 
 public class GameService {
 
@@ -50,16 +49,16 @@ public class GameService {
 
 
                 // Join user to black team of specified game
-                if (color.equals(Config.BLACK_TEAM_REQ)) {
+                if (color.equals(ConfigConsts.BLACK_TEAM_REQ)) {
                     // Check if the requested game has an open slot for the black team
-                    if (!gDao.hasAvailableTeam(gameID, Config.BLACK_TEAM_COL)) // If black team isn't available
+                    if (!gDao.hasAvailableTeam(gameID, ConfigConsts.BLACK_TEAM_COL)) // If black team isn't available
                         throw new AlreadyTakenException("Black team already taken.");
                     gDao.updateBlackUsername(gameID, username); // If good to do so, update black team name
                 }
                 // Join user to white team
-                else if (color.equals(Config.WHITE_TEAM_REQ)) {
+                else if (color.equals(ConfigConsts.WHITE_TEAM_REQ)) {
                     // Check if requested game has an open slot for the white team
-                    if (!gDao.hasAvailableTeam(gameID, Config.WHITE_TEAM_COL)) // If white team isn't available
+                    if (!gDao.hasAvailableTeam(gameID, ConfigConsts.WHITE_TEAM_COL)) // If white team isn't available
                         throw new AlreadyTakenException("White team already taken.");
                     gDao.updateWhiteUsername(gameID, username); // Update white team name
                 } else  // If none of previous conditions were met, request is bad.

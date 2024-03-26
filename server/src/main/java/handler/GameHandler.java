@@ -1,13 +1,12 @@
 package handler;
 
 import com.google.gson.Gson;
-import config.Config;
+import config.ConfigConsts;
 import dataAccess.*;
 import exception.AlreadyTakenException;
 import exception.BadRequestException;
 import exception.DataAccessException;
 import model.*;
-import server.DatabaseDAOCollection;
 import service.GameService;
 import spark.Request;
 import spark.Response;
@@ -20,7 +19,7 @@ public class GameHandler {
 
     public Object listGamesHandle(Request req, Response res, AuthDAO aDao, GameDAO gDao) {
 
-        String authToken = req.headers(Config.LOGOUT_REQ_HEADER);   // Get authToken for verification
+        String authToken = req.headers(ConfigConsts.LOGOUT_REQ_HEADER);   // Get authToken for verification
 
         // Verify the authToken for authorization
         if (!aDao.hasAuth(authToken)) { // If authToken isn't in database, return error status message
@@ -40,7 +39,7 @@ public class GameHandler {
 
     public Object createGameHandle(Request req, Response res, AuthDAO aDao, GameDAO gDao) {
 
-        String authToken = req.headers(Config.LOGOUT_REQ_HEADER);   // Get authToken for verification
+        String authToken = req.headers(ConfigConsts.LOGOUT_REQ_HEADER);   // Get authToken for verification
 
         // Verify the authToken for authorization
         if (!aDao.hasAuth(authToken)) { // If authToken isn't in database, return error status message
@@ -67,7 +66,7 @@ public class GameHandler {
 
     public Object joinGameHandle(Request req, Response res, AuthDAO aDao, GameDAO gDao) {
 
-        String authToken = req.headers(Config.LOGOUT_REQ_HEADER);   // Get authToken for verification
+        String authToken = req.headers(ConfigConsts.LOGOUT_REQ_HEADER);   // Get authToken for verification
         // Verify the authToken for authorization
         if (!aDao.hasAuth(authToken)) { // If authToken isn't in database, return error status message
             res.status(401);

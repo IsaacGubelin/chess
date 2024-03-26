@@ -1,7 +1,7 @@
 package handler;
 
 import com.google.gson.Gson;
-import config.Config;
+import config.ConfigConsts;
 import dataAccess.*;
 import exception.BadRequestException;
 import exception.DataAccessException;
@@ -38,7 +38,7 @@ public class LoginOutHandler {
 
     // LOGOUT HANDLER
     public Object logoutHandle(Request req, Response res, AuthDAO aDao) {
-        String authToken = req.headers(Config.LOGOUT_REQ_HEADER);
+        String authToken = req.headers(ConfigConsts.LOGOUT_REQ_HEADER);
 
         try {
             LoginOutService.logout(authToken, aDao);

@@ -1,6 +1,6 @@
 package dataAccessTests;
 
-import config.Config;
+import config.ConfigConsts;
 import dataAccess.*;
 import exception.AlreadyTakenException;
 import exception.BadRequestException;
@@ -75,7 +75,7 @@ public class DataAccessTests {
         String name = "JohnnyJohnWillyBartson";
         try {
             int id = gDao.createGame(name);
-            Assertions.assertTrue(gDao.hasAvailableTeam(id, Config.WHITE_TEAM_COL)); // Should indicate team is vacant
+            Assertions.assertTrue(gDao.hasAvailableTeam(id, ConfigConsts.WHITE_TEAM_COL)); // Should indicate team is vacant
             gDao.updateWhiteUsername(id, name);
             gDao.clearGamesDataBase();
         } catch (SQLException | AlreadyTakenException e) {
@@ -93,7 +93,7 @@ public class DataAccessTests {
         try {
             int id = gDao.createGame(name);
             gDao.updateWhiteUsername(id, name);
-            Assertions.assertFalse(gDao.hasAvailableTeam(id, Config.WHITE_TEAM_COL)); // Should indicate team is taken
+            Assertions.assertFalse(gDao.hasAvailableTeam(id, ConfigConsts.WHITE_TEAM_COL)); // Should indicate team is taken
         } catch (SQLException | AlreadyTakenException e) {
             Assertions.fail("SQL exception.");
         } catch (DataAccessException dataEx) {
@@ -109,7 +109,7 @@ public class DataAccessTests {
         String name = "JohnnyJohnWillyBartson";
         try {
             int id = gDao.createGame(name);
-            Assertions.assertTrue(gDao.hasAvailableTeam(id, Config.BLACK_TEAM_COL));
+            Assertions.assertTrue(gDao.hasAvailableTeam(id, ConfigConsts.BLACK_TEAM_COL));
             gDao.updateBlackUsername(id, name);
             gDao.clearGamesDataBase();
         } catch (SQLException | AlreadyTakenException e) {
@@ -127,7 +127,7 @@ public class DataAccessTests {
         try {
             int id = gDao.createGame(name);
             gDao.updateBlackUsername(id, name);
-            Assertions.assertFalse(gDao.hasAvailableTeam(id, Config.BLACK_TEAM_COL));
+            Assertions.assertFalse(gDao.hasAvailableTeam(id, ConfigConsts.BLACK_TEAM_COL));
             gDao.clearGamesDataBase();
         } catch (SQLException | AlreadyTakenException e) {
             Assertions.fail("SQL exception.");
@@ -295,8 +295,8 @@ public class DataAccessTests {
         String email = "another@yahmail.com";
         String token = "";
 
-        String deleteUserStmt = "DELETE FROM " + Config.USER_TABLE_NAME + " WHERE username =?";
-        String deleteAuthStmt = "DELETE FROM " + Config.AUTH_TABLE_NAME + " WHERE authToken =?";
+        String deleteUserStmt = "DELETE FROM " + ConfigConsts.USER_TABLE_NAME + " WHERE username =?";
+        String deleteAuthStmt = "DELETE FROM " + ConfigConsts.AUTH_TABLE_NAME + " WHERE authToken =?";
 
 
         try {
@@ -367,8 +367,8 @@ public class DataAccessTests {
         String password = "Swordfish";
         String email = "another@yahmail.com";
         String token = "";
-        String deleteUserStmt = "DELETE FROM " + Config.USER_TABLE_NAME + " WHERE username =?";
-        String deleteAuthStmt = "DELETE FROM " + Config.AUTH_TABLE_NAME + " WHERE authToken =?";
+        String deleteUserStmt = "DELETE FROM " + ConfigConsts.USER_TABLE_NAME + " WHERE username =?";
+        String deleteAuthStmt = "DELETE FROM " + ConfigConsts.AUTH_TABLE_NAME + " WHERE authToken =?";
 
         try {
             token = RegisterService.register(new UserData(name, password, email), uDAO, aDAO);
@@ -600,11 +600,11 @@ public class DataAccessTests {
             String token = aDao.createAuth(userName);        // Make auth data for user and get token
             int gameID = gDao.createGame("Game1"); // Create new game and retrieve game ID
 
-            Assertions.assertTrue(gDao.hasAvailableTeam(gameID, Config.WHITE_TEAM_COL));
+            Assertions.assertTrue(gDao.hasAvailableTeam(gameID, ConfigConsts.WHITE_TEAM_COL));
 
             gDao.updateWhiteUsername(gameID, userName);      // Add user to white team of chess game
 
-            Assertions.assertFalse(gDao.hasAvailableTeam(gameID, Config.WHITE_TEAM_COL));
+            Assertions.assertFalse(gDao.hasAvailableTeam(gameID, ConfigConsts.WHITE_TEAM_COL));
         } catch (DataAccessException | SQLException e) {
             Assertions.fail("SQL error.");
         } catch (AlreadyTakenException alrEx) {

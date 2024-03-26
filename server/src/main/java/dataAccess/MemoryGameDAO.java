@@ -1,12 +1,9 @@
 package dataAccess;
 
 import chess.ChessGame;
-import config.Config;
-import exception.DataAccessException;
+import config.ConfigConsts;
 import model.GameData;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -17,10 +14,10 @@ public class MemoryGameDAO implements GameDAO {
 
     // A game ID generator that automatically finds available ID numbers.
     private int generateID() {
-        int id = Config.GAME_ID_MIN;    // Starting ID value
+        int id = ConfigConsts.GAME_ID_MIN;    // Starting ID value
         while (gamesTable.containsKey(id)) { // Increment if the id value is already taken
             id++;
-            if (id > Config.GAME_ID_MAX) // Will return -1 if out of available games
+            if (id > ConfigConsts.GAME_ID_MAX) // Will return -1 if out of available games
                 return -1;
         }
         return id;
@@ -81,9 +78,9 @@ public class MemoryGameDAO implements GameDAO {
 
     @Override
     public boolean hasAvailableTeam(int gameID, String team) {
-        if (team.equals(Config.BLACK_TEAM_COL)) {   // If black is requested, check if black team username is null
+        if (team.equals(ConfigConsts.BLACK_TEAM_COL)) {   // If black is requested, check if black team username is null
             return gamesTable.get(gameID).blackUsername() == null;
-        } else if (team.equals(Config.WHITE_TEAM_COL)) {    // Check same condition for white team
+        } else if (team.equals(ConfigConsts.WHITE_TEAM_COL)) {    // Check same condition for white team
             return gamesTable.get(gameID).whiteUsername() == null;
         }
         return false;   // Irregular team name input will return false by default

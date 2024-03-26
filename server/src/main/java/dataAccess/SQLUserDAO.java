@@ -1,6 +1,6 @@
 package dataAccess;
 
-import config.Config;
+import config.ConfigConsts;
 import exception.DataAccessException;
 import model.UserData;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -49,8 +49,8 @@ public class SQLUserDAO implements UserDAO{
     public boolean hasThisUsername(String username) {
         try (var conn = DatabaseManager.getConnection()) {
             // Make query statement to count instances of key
-            String queryStmt = "SELECT COUNT(*) FROM " + Config.USER_TABLE_NAME + " WHERE "
-                    + Config.USER_TABLE_KEY_COL + " = ?";
+            String queryStmt = "SELECT COUNT(*) FROM " + ConfigConsts.USER_TABLE_NAME + " WHERE "
+                    + ConfigConsts.USER_TABLE_KEY_COL + " = ?";
             try (var ps = conn.prepareStatement(queryStmt)) {
                 ps.setString(1, username);    // Replace '?' with key value
 
@@ -121,7 +121,7 @@ public class SQLUserDAO implements UserDAO{
 
     @Override
     public void deleteUser(String username) {
-        String deleteStmt = "DELETE FROM " + Config.USER_TABLE_NAME + " WHERE username=?";
+        String deleteStmt = "DELETE FROM " + ConfigConsts.USER_TABLE_NAME + " WHERE username=?";
         try {
             ExecuteSQL.executeUpdate(deleteStmt, username);
         } catch (Exception e) {

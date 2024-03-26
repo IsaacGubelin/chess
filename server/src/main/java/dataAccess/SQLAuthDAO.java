@@ -1,7 +1,6 @@
 package dataAccess;
 
-import com.google.gson.Gson;
-import config.Config;
+import config.ConfigConsts;
 import exception.DataAccessException;
 import model.AuthData;
 
@@ -102,8 +101,8 @@ public class SQLAuthDAO implements AuthDAO {
     public boolean hasAuth(String authToken) {
         try (var conn = DatabaseManager.getConnection()) {
             // Make query statement to count instances of key
-            String queryStmt = "SELECT COUNT(*) FROM " + Config.AUTH_TABLE_NAME + " WHERE "
-                    + Config.AUTH_TABLE_KEY_COL + " = ?";
+            String queryStmt = "SELECT COUNT(*) FROM " + ConfigConsts.AUTH_TABLE_NAME + " WHERE "
+                    + ConfigConsts.AUTH_TABLE_KEY_COL + " = ?";
             try (var ps = conn.prepareStatement(queryStmt)) {
                 ps.setString(1, authToken);    // Replace '?' with key value
 
@@ -127,7 +126,7 @@ public class SQLAuthDAO implements AuthDAO {
     public boolean isEmpty() throws DataAccessException {
         try (var conn = DatabaseManager.getConnection()) {
             // Make query statement to count entries
-            String queryStmt = "SELECT COUNT(*) FROM " + Config.AUTH_TABLE_NAME;
+            String queryStmt = "SELECT COUNT(*) FROM " + ConfigConsts.AUTH_TABLE_NAME;
             try (var ps = conn.prepareStatement(queryStmt)) {
 
                 // Executing the query and retrieving the result set

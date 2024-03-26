@@ -1,7 +1,7 @@
 package dataAccess;
 
 import chess.ChessGame;
-import config.Config;
+import config.ConfigConsts;
 import exception.AlreadyTakenException;
 import exception.DataAccessException;
 import com.google.gson.Gson;
@@ -70,7 +70,7 @@ public class SQLGameDAO implements GameDAO{
     @Override
     public void updateWhiteUsername(int gameID, String whiteUsername) throws SQLException, AlreadyTakenException {
         try {
-            if (hasAvailableTeam(gameID, Config.WHITE_TEAM_COL)) {
+            if (hasAvailableTeam(gameID, ConfigConsts.WHITE_TEAM_COL)) {
                 String updateStmt = "UPDATE games SET whiteUsername=? WHERE gameID=?";
                 ExecuteSQL.executeUpdate(updateStmt, whiteUsername, gameID);
             } else {
@@ -85,7 +85,7 @@ public class SQLGameDAO implements GameDAO{
     @Override
     public void updateBlackUsername(int gameID, String blackUsername) throws SQLException, AlreadyTakenException {
         try {
-            if (hasAvailableTeam(gameID, Config.BLACK_TEAM_COL)) {
+            if (hasAvailableTeam(gameID, ConfigConsts.BLACK_TEAM_COL)) {
                 String updateStmt = "UPDATE games SET blackUsername=? WHERE gameID=?";
                 ExecuteSQL.executeUpdate(updateStmt, blackUsername, gameID);
             } else {
@@ -100,8 +100,8 @@ public class SQLGameDAO implements GameDAO{
     public boolean hasGame(int gameID) {
         try (var conn = DatabaseManager.getConnection()) {
             // Make query statement to count instances of key
-            String queryStmt = "SELECT COUNT(*) FROM " + Config.GAME_TABLE_NAME + " WHERE "
-                    + Config.GAME_TABLE_KEY_COL + " = ?";
+            String queryStmt = "SELECT COUNT(*) FROM " + ConfigConsts.GAME_TABLE_NAME + " WHERE "
+                    + ConfigConsts.GAME_TABLE_KEY_COL + " = ?";
             try (var ps = conn.prepareStatement(queryStmt)) {
                 ps.setInt(1, gameID);    // Replace '?' with key value
 
@@ -127,7 +127,7 @@ public class SQLGameDAO implements GameDAO{
         try (var conn = DatabaseManager.getConnection()) {
             // Make query statement to get all entries
             ArrayList<GameData> games = new ArrayList<>();
-            String queryStmt = "SELECT * FROM " + Config.GAME_TABLE_NAME;
+            String queryStmt = "SELECT * FROM " + ConfigConsts.GAME_TABLE_NAME;
             try (var ps = conn.prepareStatement(queryStmt)) {
 
                 // Executing the query and retrieving the result set
@@ -156,7 +156,7 @@ public class SQLGameDAO implements GameDAO{
     public boolean isEmpty() throws DataAccessException {
         try (var conn = DatabaseManager.getConnection()) {
             // Make query statement to count entries
-            String queryStmt = "SELECT COUNT(*) FROM " + Config.GAME_TABLE_NAME;
+            String queryStmt = "SELECT COUNT(*) FROM " + ConfigConsts.GAME_TABLE_NAME;
             try (var ps = conn.prepareStatement(queryStmt)) {
 
                 // Executing the query and retrieving the result set
@@ -179,7 +179,7 @@ public class SQLGameDAO implements GameDAO{
     public boolean hasAvailableTeam(int gameID, String team) throws DataAccessException {
         try (var conn = DatabaseManager.getConnection()) {
             // Make query statement to verify if the requested team is available for game with given ID
-            String queryStmt = "SELECT " + team + " FROM " + Config.GAME_TABLE_NAME + " WHERE gameID = " + gameID;
+            String queryStmt = "SELECT " + team + " FROM " + ConfigConsts.GAME_TABLE_NAME + " WHERE gameID = " + gameID;
             try (var ps = conn.prepareStatement(queryStmt)) {
 
                 // Executing the query and retrieving the result set

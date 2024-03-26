@@ -5,7 +5,7 @@ package config;
  */
 
 
-public class Config {
+public class ConfigConsts {
 
     // Numeric values
     public static final int GAME_ID_MIN = 1;    // Smallest value of game ID
