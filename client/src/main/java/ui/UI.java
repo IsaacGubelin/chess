@@ -186,8 +186,8 @@ public class UI {
                         facade.joinGame(authToken, gameReqData);    // Attempt to call facade join method
                         ListGamesData gamesList = facade.getGamesList(authToken);   // Find game for printing
                         ChessBoard displayBoard = gamesList.games().get(id).game().getBoard(); // Get the board
-                        ChessBoardPrint.printChessBlackPerspective(displayBoard);   // Print once for black team
-                        ChessBoardPrint.printChessWhitePerspective(displayBoard);   // Print once for white team
+                        ChessBoardPrint.printChessBoard(displayBoard, false);   // Print for black team
+                        ChessBoardPrint.printChessBoard(displayBoard, true);   // Print for white team
                         currentGameIndex = requestedGameIndex;      // If joined, update current game index
                         System.out.println("Successfully joined game " + id);
 
@@ -218,8 +218,8 @@ public class UI {
                             int id = gameIDs.get(currentGameIndex);     // Retrieve actual game ID
                             ListGamesData gamesList = facade.getGamesList(authToken);   // Find game for printing
                             ChessBoard displayBoard = gamesList.games().get(id).game().getBoard(); // Get the board
-                            ChessBoardPrint.printChessBlackPerspective(displayBoard);   // Print once for black team
-                            ChessBoardPrint.printChessWhitePerspective(displayBoard);   // Print once for white team
+                            ChessBoardPrint.printChessBoard(displayBoard, false);   // Print black team
+                            ChessBoardPrint.printChessBoard(displayBoard, true);   // Print white team
                             System.out.println("Observing game " + currentGameIndex);
                         }
                     } catch (NumberFormatException numEx) {

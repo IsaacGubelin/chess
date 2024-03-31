@@ -1,5 +1,6 @@
 import chess.*;
 
+import ui.ChessBoardPrint;
 import ui.UI;
 
 /**
@@ -20,8 +21,17 @@ public class Main {
         var piece = new ChessPiece(ChessGame.TeamColor.WHITE, ChessPiece.PieceType.PAWN);
         System.out.println("♕ 240 Chess Client: " + piece);
 
-        UI ui = new UI(serverUrl);   // User Interface object
-        ui.runInterface();
+        ChessGame game = new ChessGame();
+//        try {
+//            game.makeMove(new ChessMove(new ChessPosition(2, 1), new ChessPosition(3, 1)));
+//        } catch (InvalidMoveException e) {
+//            System.out.println("Whoops");
+//        }
+        ChessBoardPrint.printChessBoard(game.getBoard(), false);
+
+
+//        UI ui = new UI(serverUrl);   // User Interface object
+//        ui.runInterface();
 
     }
 }

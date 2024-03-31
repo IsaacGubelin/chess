@@ -2,9 +2,9 @@ package ui;
 
 import static ui.EscapeSequences.*;
 
-import chess.ChessBoard;
-import chess.ChessGame;
-import chess.ChessPiece;
+import chess.*;
+
+import java.util.HashSet;
 
 /**
  * ChessBoardPrint.java created by Isaac Gubelin on February 9, 2024
@@ -109,20 +109,44 @@ public class ChessBoardPrint {
         return pieceChar;
     }
 
-
     /**
-     * Prints the board with white pieces at bottom, black pieces at top.
-     * @param board The board to be printed and displayed
+     * Prints the chessboard with all pieces in their current positions. Boolean toggles team perspective
+     * @param board
+     * @param isWhitePieceSide
      */
-    public static void printChessWhitePerspective(ChessBoard board) {
-        // Print top border of board with column labels left to right
-        System.out.println(SET_TEXT_COLOR_DARK_GREY + SET_BG_COLOR_LIGHT_GREY +
-                "    a  b  c  d  e  f  g  h    " + SET_BG_COLOR_BLACK);
-        // Go through every square in the board
-        for (int row = 8; row > 0; row--) {     // Go from top to bottom
+    public static void printChessBoard(ChessBoard board, boolean isWhitePieceSide, HashSet<ChessMove> highlightMoves) {
+
+        // Determine the direction of iteration based on the perspective
+        int startRow = isWhitePieceSide ? 8 : 1;
+        int endRow = isWhitePieceSide ? 0 : 9;
+        int rowChange = isWhitePieceSide ? -1 : 1;
+        HashSet<ChessPosition> endPlaces = new HashSet<>(); // Keep track of end moves to highlight on board
+        if (highlightMoves != null) {                       // If collection of ChessMoves parameter was given
+            for (ChessMove move : highlightMoves) {         // Make a list of all end positions to highlight
+                endPlaces.add(move.getEndPosition());
+            }
+        }
+
+        // Print the column labels based on perspective
+        if (isWhitePieceSide) {
+            System.out.println(SET_TEXT_COLOR_DARK_GREY + SET_BG_COLOR_LIGHT_GREY +
+                    "    a  b  c  d  e  f  g  h    " + SET_BG_COLOR_BLACK);
+        } else {
+            System.out.println(SET_TEXT_COLOR_DARK_GREY + SET_BG_COLOR_LIGHT_GREY +
+                    "    h  g  f  e  d  c  b  a    " + SET_BG_COLOR_BLACK);
+        }
+
+        // Go through every row in the board
+        for (int row = startRow; row != endRow; row += rowChange) {
             // print row number on chessboard border
             System.out.print(SET_TEXT_COLOR_DARK_GREY + SET_BG_COLOR_LIGHT_GREY + " " + row + " ");
-            for (int col = 1; col < OUT_BOUNDS; col++) {
+
+            // Determine the direction of iteration for columns based on perspective
+            int startCol = isWhitePieceSide ? 1 : 8;
+            int endCol = isWhitePieceSide ? 9 : 0;
+            int colChange = isWhitePieceSide ? 1 : -1;
+            // Go through all columns in row
+            for (int col = startCol; col != endCol; col += colChange) {
                 setBackgroundToSquareColor(row, col);                           // Chess square color
                 if (board.hasPieceAt(row, col)) {                               // If there's a piece, print it
                     setTextToPieceColor(board.getPiece(row, col).getTeamColor()); // Print text in correct color
@@ -131,41 +155,22 @@ public class ChessBoardPrint {
                 else
                     System.out.print("   ");                            // Otherwise, print blank square
             }
-            // print row number on chessboard right side border
             System.out.print(SET_TEXT_COLOR_DARK_GREY + SET_BG_COLOR_LIGHT_GREY + " " + row + " ");
             System.out.print(SET_BG_COLOR_BLACK + "\n");
         }
-        // Print bottom border of board with column labels left to right
-        System.out.println(SET_TEXT_COLOR_DARK_GREY + SET_BG_COLOR_LIGHT_GREY +
-                "    a  b  c  d  e  f  g  h    " + SET_BG_COLOR_BLACK);
+        // Print bottom border of board with column labels
+        if (isWhitePieceSide) {
+            System.out.println(SET_TEXT_COLOR_DARK_GREY + SET_BG_COLOR_LIGHT_GREY +
+                    "    a  b  c  d  e  f  g  h    " + SET_BG_COLOR_BLACK);
+        } else {
+            System.out.println(SET_TEXT_COLOR_DARK_GREY + SET_BG_COLOR_LIGHT_GREY +
+                    "    h  g  f  e  d  c  b  a    " + SET_BG_COLOR_BLACK);
+        }
         System.out.println(RESET_BG_COLOR + SET_TEXT_COLOR_WHITE); // Reset text to usual color
     }
 
-    public static void printChessBlackPerspective(ChessBoard board) {
-        // Print the column labels right to left
-        System.out.println(SET_TEXT_COLOR_DARK_GREY + SET_BG_COLOR_LIGHT_GREY +
-                            "    h  g  f  e  d  c  b  a    " + SET_BG_COLOR_BLACK);
-
-        // Go through every square in the board
-        for (int row = 1; row < OUT_BOUNDS; row++) {     // Go from bottom to top
-            // print row number on chessboard border
-            System.out.print(SET_TEXT_COLOR_DARK_GREY + SET_BG_COLOR_LIGHT_GREY + " " + row + " ");
-            for (int col = 8; col > 0; col--) {
-                setBackgroundToSquareColor(row, col);                           // Chess square color
-                if (board.hasPieceAt(row, col)) {                               // If there's a piece, print it
-                    setTextToPieceColor(board.getPiece(row, col).getTeamColor()); // Print text in correct color
-                    System.out.print(" " + getPieceLetter(board.getPiece(row, col)) + " ");
-                }
-                else
-                    System.out.print("   ");                            // Otherwise, print blank square
-            }
-            System.out.print(SET_TEXT_COLOR_DARK_GREY + SET_BG_COLOR_LIGHT_GREY + " " + row + " ");
-            System.out.print(SET_BG_COLOR_BLACK + "\n");
-        }
-        // Print bottom border of chess board with column labels
-        System.out.println(SET_TEXT_COLOR_DARK_GREY + SET_BG_COLOR_LIGHT_GREY +
-                "    h  g  f  e  d  c  b  a    " + SET_BG_COLOR_BLACK);
-        System.out.println(RESET_BG_COLOR + SET_TEXT_COLOR_WHITE); // Reset text to usual color
+    public static void printChessBoard(ChessBoard board, boolean isWhitePieceSide) {
+        printChessBoard(board, isWhitePieceSide, null);
     }
 
     public static void printChessSpectatorView(ChessBoard board) {
