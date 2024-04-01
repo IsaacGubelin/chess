@@ -114,12 +114,14 @@ public class ChessBoardPrint {
      * @param board
      * @param isWhitePieceSide
      */
-    public static void printChessBoard(ChessBoard board, boolean isWhitePieceSide, HashSet<ChessMove> highlightMoves) {
+    public static void printChessBoard(ChessBoard board, boolean isWhitePieceSide,
+                                       HashSet<ChessMove> highlightMoves, ChessPosition currentPos) {
 
         // Determine the direction of iteration based on the perspective
         int startRow = isWhitePieceSide ? 8 : 1;
         int endRow = isWhitePieceSide ? 0 : 9;
         int rowChange = isWhitePieceSide ? -1 : 1;
+
         HashSet<ChessPosition> endPlaces = new HashSet<>(); // Keep track of end moves to highlight on board
         if (highlightMoves != null) {                       // If collection of ChessMoves parameter was given
             for (ChessMove move : highlightMoves) {         // Make a list of all end positions to highlight
@@ -147,7 +149,13 @@ public class ChessBoardPrint {
             int colChange = isWhitePieceSide ? 1 : -1;
             // Go through all columns in row
             for (int col = startCol; col != endCol; col += colChange) {
-                setBackgroundToSquareColor(row, col);                           // Chess square color
+                if (endPlaces.contains(new ChessPosition(row, col))) {          // If position is an available move
+                    setBackgroundHighlightMove(row, col);                       // Highlight it on the board
+                } else if (currentPos != null && row == currentPos.getRow() && col == currentPos.getColumn()) {
+                    System.out.print(SET_BG_COLOR_YELLOW);    // If at current position of given piece, highlight
+                } else {
+                    setBackgroundToSquareColor(row, col);                       // Otherwise, use regular square color
+                }
                 if (board.hasPieceAt(row, col)) {                               // If there's a piece, print it
                     setTextToPieceColor(board.getPiece(row, col).getTeamColor()); // Print text in correct color
                     System.out.print(" " + getPieceLetter(board.getPiece(row, col)) + " ");
@@ -170,7 +178,7 @@ public class ChessBoardPrint {
     }
 
     public static void printChessBoard(ChessBoard board, boolean isWhitePieceSide) {
-        printChessBoard(board, isWhitePieceSide, null);
+        printChessBoard(board, isWhitePieceSide, null, null);
     }
 
     public static void printChessSpectatorView(ChessBoard board) {
@@ -216,6 +224,13 @@ public class ChessBoardPrint {
             System.out.print(UNICODE_ESCAPE + "[48;5;222m");    // Creme yellow
         else
             System.out.print(UNICODE_ESCAPE + "[48;5;95m");     // Brown
+    }
+
+    private static void setBackgroundHighlightMove(int row, int col) {
+        if ((row + col) % 2 == 0)                     // Check if square is odd or even for choosing color
+            System.out.print(SET_BG_COLOR_GREEN);    // Creme yellow
+        else
+            System.out.print(SET_BG_COLOR_DARK_GREEN);     // Brown
     }
 
 }
