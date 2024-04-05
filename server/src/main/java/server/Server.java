@@ -35,6 +35,9 @@ public class Server {
         Spark.port(desiredPort);
         Spark.staticFiles.location("web");
 
+        // Give it a class that has the wanted annotations FIXME: make this connection
+//        Spark.webSocket("/connect", );
+
         // CLEAR APPLICATION
         Spark.delete("/db", (req, res) -> new ClearHandler().clearDatabases(req, res, dataObjects.sqlGameDAO, dataObjects.sqlUserDAO, dataObjects.sqlAuthDAO));
 
