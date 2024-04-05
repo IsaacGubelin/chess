@@ -22,7 +22,7 @@ public class WebSocketFacade extends Endpoint {
             this.messageHandler = msgHandler;
 
             WebSocketContainer container = ContainerProvider.getWebSocketContainer();
-            this.session = container.connectToServer(this, socketURI);
+            this.session = (Session) container.connectToServer(this, socketURI);
 
             //set message handler
             this.session.addMessageHandler(new MessageHandler.Whole<String>() {
@@ -45,25 +45,4 @@ public class WebSocketFacade extends Endpoint {
     public void onOpen(Session session, EndpointConfig endpointConfig) {
     }
 
-//public WebSocketFacade(String url, ServiceMessageHandler msgHandler) throws ResponseException {
-//    try {
-//        url = url.replace("http", "ws");
-//        URI socketURI = new URI(url + "/connect");
-//        this.messageHandler = msgHandler;
-//
-//        WebSocketContainer container = ClientManager.createClient();
-//        container.connectToServer(this, socketURI);
-//
-//    } catch (DeploymentException | IOException | URISyntaxException ex) {
-//        throw new ResponseException(500, ex.getMessage());
-//    }
-//}
-//
-//    // Method to handle incoming messages
-//    public void onMessage(String message) {
-//        // Your message handling logic here
-//        // Example: messageHandler.handleMessage(message);
-//    }
-//
-//
 }
