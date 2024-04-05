@@ -9,7 +9,7 @@ import java.util.Scanner;
 import static ui.EscapeSequences.*;
 
 
-public class UI {
+public class ClientUI {
 
     private final String LOGGED_OUT = "[LOGGED_OUT]";   // Used in pre-login prompts
     private final String LOGGED_IN = "[LOGGED_IN]";     // Used in post-login prompts
@@ -22,7 +22,7 @@ public class UI {
     private int currentGameIndex;
 
     // Constructor for Client UI object
-    public UI(String url) {
+    public ClientUI(String url) {
         facade = new ServerFacade(url); // Initialize server facade with given url
         this.url = url;                 // Store url
         initClientUI();                 // Initialize all variables
@@ -268,12 +268,6 @@ public class UI {
             System.out.println(ex.getMessage());
         }
     }
-
-
-    // Gets called when user successfully uses register command
-//    private void registerPrompt(String name, <--FIX--> String password, String email) {
-//
-//    }
 
 
 

@@ -1,6 +1,7 @@
 package server.webSocket;
 
 import org.eclipse.jetty.websocket.api.Session;
+
 import java.io.IOException;
 
 // A collection of these will be held in a data structure for easy communication of notifications.

@@ -1,11 +1,4 @@
-import chess.*;
-
-import ui.ChessBoardPrint;
-import ui.EscapeSequences;
-import ui.UI;
-
-import java.util.Collection;
-import java.util.HashSet;
+import ui.ClientUI;
 
 /**
  * LAST LEFT OFF:
@@ -39,8 +32,8 @@ public class Main {
 //        Collection<ChessMove> moves = game.validMoves(new ChessPosition(6, 1));
 //        ChessBoardPrint.printChessBoard(game.getBoard(), true);
 
-        UI ui = new UI(serverUrl);   // User Interface object
-        ui.runInterface();
+        ClientUI clientUi = new ClientUI(serverUrl);   // User Interface object
+        clientUi.runInterface();
 
     }
 }

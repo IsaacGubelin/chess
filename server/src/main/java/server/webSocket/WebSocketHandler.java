@@ -1,11 +1,11 @@
 package server.webSocket;
 
 import com.google.gson.Gson;
-import dataAccess.AuthDAO;
 import model.AuthData;
 import org.eclipse.jetty.websocket.api.annotations.OnWebSocketMessage;
 import org.eclipse.jetty.websocket.api.annotations.WebSocket;
-import org.glassfish.grizzly.http.server.Session;
+import org.eclipse.jetty.websocket.api.Session;
+import webSocketMessages.serverMessages.ServerMessage;
 import webSocketMessages.userCommands.UserGameCommand;
 
 import java.io.IOException;
@@ -13,6 +13,8 @@ import java.io.IOException;
 @WebSocket
 public class WebSocketHandler {
 
+    // A container to keep track of connections related to single game (players and observers)
+    private final ConnectionManager connections = new ConnectionManager();
 
     @OnWebSocketMessage
     public void onMessage(Session session, String message) throws IOException {
@@ -24,12 +26,12 @@ public class WebSocketHandler {
     }
 
 
-    private void joinPlayer(String visitorName, Session session) throws IOException {
-        AuthData authData = new Gson().fromJson(visitorName, AuthData.class);  // Convert json back to auth record
-//        connections.add(visitorName, session);
-//        var message = String.format("%s is in the shop", visitorName);
-//        var notification = new Notification(Notification.Type.ARRIVAL, message);
-//        connections.broadcast(visitorName, notification);
+    private void joinPlayer(String visitorInfo, Session session) throws IOException {
+        AuthData authData = new Gson().fromJson(visitorInfo, AuthData.class);  // Convert json back to auth record
+        connections.add(authData.username(), session);      // Add the user's name to the list in connections
+        var message = String.format("%s has joined the game.", authData.username());
+        ServerMessage notification = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION);
+        connections.broadcast(authData.username(), notification);
     }
 
     private void joinObserver(String visitorName, Session session) throws IOException {
