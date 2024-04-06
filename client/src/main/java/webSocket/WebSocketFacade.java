@@ -2,20 +2,25 @@ package webSocket;
 
 
 import com.google.gson.Gson;
-import org.glassfish.tyrus.client.ClientManager;
-import org.glassfish.tyrus.core.wsadl.model.Endpoint;
 import resException.ResponseException;
 import webSocketMessages.serverMessages.ServerMessage;
-
 import javax.websocket.*;
 import java.io.IOException;
-import java.net.URI;
-import java.net.URISyntaxException;
+import java.net.*;
+
+import static ui.EscapeSequences.SET_TEXT_COLOR_BLUE;
+import static ui.EscapeSequences.SET_TEXT_COLOR_RED;
 
 public class WebSocketFacade extends Endpoint {
 
     Session session;
     ServiceMessageHandler messageHandler;
+
+    // TODO: Put case statements to account for each type of server message
+    private void notify(ServerMessage message) {
+
+    }
+
 
     public WebSocketFacade(String url, ServiceMessageHandler msgHandler) throws ResponseException {
         try {
@@ -30,7 +35,7 @@ public class WebSocketFacade extends Endpoint {
                 @Override
                 public void onMessage(String message) {
                     ServerMessage notification = new Gson().fromJson(message, ServerMessage.class);
-                    ServiceMessageHandler.notify(notification);
+//                    ServiceMessageHandler.notify(notification);
                 }
             });
         } catch (DeploymentException | IOException | URISyntaxException ex) {
@@ -43,7 +48,9 @@ public class WebSocketFacade extends Endpoint {
 
     //Endpoint requires this method, but you don't have to do anything
     @Override
+    @OnOpen
     public void onOpen(Session session, EndpointConfig endpointConfig) {
+        // FIXME: Add print statement
     }
 
 }
