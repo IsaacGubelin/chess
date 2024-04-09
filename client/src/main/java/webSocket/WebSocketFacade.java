@@ -3,6 +3,8 @@ package webSocket;
 
 import com.google.gson.Gson;
 import resException.ResponseException;
+import webSocketMessages.serverMessages.LoadGameMessage;
+import webSocketMessages.serverMessages.NotificationMessage;
 import webSocketMessages.serverMessages.ServerMessage;
 import javax.websocket.*;
 import java.io.IOException;
@@ -11,13 +13,18 @@ import java.net.*;
 import static ui.EscapeSequences.SET_TEXT_COLOR_BLUE;
 import static ui.EscapeSequences.SET_TEXT_COLOR_RED;
 
+// TODO: Find out what communication happens between this facade, the client, the server facade, and the websocket handler
+
 public class WebSocketFacade extends Endpoint {
 
     Session session;
     ServiceMessageHandler messageHandler;
 
-    // TODO: Put case statements to account for each type of server message
-    private void notify(ServerMessage message) {
+    private void wsNotifyClient(NotificationMessage message) {
+        System.out.println(SET_TEXT_COLOR_RED + message.getMessage() + SET_TEXT_COLOR_BLUE);
+    }
+
+    private void wsLoadGame(LoadGameMessage message) {
 
     }
 
@@ -34,7 +41,18 @@ public class WebSocketFacade extends Endpoint {
             this.session.addMessageHandler(new MessageHandler.Whole<String>() {
                 @Override
                 public void onMessage(String message) {
-                    ServerMessage notification = new Gson().fromJson(message, ServerMessage.class);
+                    ServerMessage msg = new Gson().fromJson(message, ServerMessage.class);
+                    switch (msg.getServerMessageType()) {
+                        case LOAD_GAME:
+                            break;
+
+                        case ERROR:
+                            break;
+
+                        case NOTIFICATION:
+                            wsNotifyClient((NotificationMessage) msg);
+                            break;
+                    }
 //                    ServiceMessageHandler.notify(notification);
                 }
             });

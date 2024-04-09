@@ -14,6 +14,8 @@ public class ClientUI {
     private final String LOGGED_OUT = "[LOGGED_OUT]";   // Used in pre-login prompts
     private final String LOGGED_IN = "[LOGGED_IN]";     // Used in post-login prompts
     private String status;                              // State of client
+
+    private String name;                                // Username of client
     private String authToken;                           // Keeps track of the user's authToken
     private final String url;
     private final ServerFacade facade;                  // Access the facade methods
@@ -84,8 +86,8 @@ public class ClientUI {
                     try {
                         var authData = facade.register(userData);  // Call register method in server facade
                         System.out.println("Successful registration for " + inputs[1]);
-                        System.out.println("Your auth token is " + authData.authToken());
-                        authToken = authData.authToken();        // Store token
+                        name = inputs[1];                       // Store username
+                        authToken = authData.authToken();       // Store token
                         status = LOGGED_IN;     // Status string shows that newly registered user is logged in
 
                     } catch (ResponseException ex) {
@@ -110,7 +112,7 @@ public class ClientUI {
                     try {
                         var authData = facade.login(userData);
                         System.out.println("Successful login for " + inputs[1]);
-                        System.out.println("Your auth token is " + authData.authToken());
+                        name = inputs[1];                   // Store username
                         authToken = authData.authToken();   // Store token
                         status = LOGGED_IN;
                     } catch (ResponseException ex) {
