@@ -1,5 +1,6 @@
 package ui;
 import chess.ChessBoard;
+import chess.ChessGame;
 import facade.ServerFacade;
 import model.*;
 import resException.ResponseException;
@@ -17,6 +18,7 @@ public class ClientUI {
 
     private String name;                                // Username of client
     private String authToken;                           // Keeps track of the user's authToken
+    private ChessGame chessGame;                        // Local copy of chess game when player joins/creates one
     private final String url;
     private final ServerFacade facade;                  // Access the facade methods
     private HashMap<Integer, Integer> gameIDs;                  // Keeps track of listed games
@@ -292,6 +294,11 @@ public class ClientUI {
             }
             i++;                            // Increment index
         }
+    }
+
+    // Set chess game private member to given parameter
+    public void updateGame(ChessGame game) {
+        this.chessGame = game;
     }
 
     private void printHelpScreenLoggedOut() {
