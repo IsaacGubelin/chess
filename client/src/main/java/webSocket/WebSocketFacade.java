@@ -20,7 +20,7 @@ public class WebSocketFacade extends Endpoint {
     Session session;
     ServiceMessageHandler messageHandler;
 
-    private void wsNotifyClient(NotificationMessage message) {
+    private void clientNotify(NotificationMessage message) {
         System.out.println(SET_TEXT_COLOR_RED + message.getMessage() + SET_TEXT_COLOR_BLUE);
     }
 
@@ -36,7 +36,7 @@ public class WebSocketFacade extends Endpoint {
             this.messageHandler = msgHandler;
 
             WebSocketContainer container = ContainerProvider.getWebSocketContainer();
-            this.session = (Session) container.connectToServer(this, socketURI);
+            this.session = container.connectToServer(this, socketURI);
             //set message handler
             this.session.addMessageHandler(new MessageHandler.Whole<String>() {
                 @Override
@@ -44,13 +44,15 @@ public class WebSocketFacade extends Endpoint {
                     ServerMessage msg = new Gson().fromJson(message, ServerMessage.class);
                     switch (msg.getServerMessageType()) {
                         case LOAD_GAME:
+
                             break;
 
                         case ERROR:
                             break;
 
-                        case NOTIFICATION:
-                            wsNotifyClient((NotificationMessage) msg);
+                        case NOTIFICATION:  // If message is notification type, deserialize into notification class
+                            NotificationMessage notification = new Gson().fromJson(message, NotificationMessage.class);
+                            clientNotify(notification);
                             break;
                     }
 //                    ServiceMessageHandler.notify(notification);
