@@ -3,6 +3,7 @@ package webSocket;
 
 import com.google.gson.Gson;
 import resException.ResponseException;
+import webSocketMessages.serverMessages.ErrorMessage;
 import webSocketMessages.serverMessages.LoadGameMessage;
 import webSocketMessages.serverMessages.NotificationMessage;
 import webSocketMessages.serverMessages.ServerMessage;
@@ -20,11 +21,17 @@ public class WebSocketFacade extends Endpoint {
     Session session;
     ServiceMessageHandler messageHandler;
 
+    // Print notification message for players/observers joining or leaving games
     private void clientNotify(NotificationMessage message) {
         System.out.println(SET_TEXT_COLOR_RED + message.getMessage() + SET_TEXT_COLOR_BLUE);
     }
 
-    private void wsLoadGame(LoadGameMessage message) {
+    // Print error message
+    private void clientErrorMessage(ErrorMessage message) {
+        System.out.println("Error: " + message.getMessage());
+    }
+
+    public void wsLoadGame(LoadGameMessage message) {
 
     }
 
@@ -38,16 +45,17 @@ public class WebSocketFacade extends Endpoint {
             WebSocketContainer container = ContainerProvider.getWebSocketContainer();
             this.session = container.connectToServer(this, socketURI);
             //set message handler
-            this.session.addMessageHandler(new MessageHandler.Whole<String>() {
+            this.session.addMessageHandler(new MessageHandler.Whole<String>() { // DO NOT replace with lambda
                 @Override
                 public void onMessage(String message) {
                     ServerMessage msg = new Gson().fromJson(message, ServerMessage.class);
-                    switch (msg.getServerMessageType()) {
+                    switch (msg.getServerMessageType()) {   // Choose what to do with message based on type
                         case LOAD_GAME:
 
                             break;
 
                         case ERROR:
+                            ErrorMessage errMsg = new Gson().fromJson(message, ErrorMessage.class);
                             break;
 
                         case NOTIFICATION:  // If message is notification type, deserialize into notification class
@@ -55,7 +63,6 @@ public class WebSocketFacade extends Endpoint {
                             clientNotify(notification);
                             break;
                     }
-//                    ServiceMessageHandler.notify(notification);
                 }
             });
         } catch (DeploymentException | IOException | URISyntaxException ex) {

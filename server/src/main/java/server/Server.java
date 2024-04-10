@@ -5,6 +5,7 @@ import handler.ClearHandler;
 import handler.GameHandler;
 import handler.LoginOutHandler;
 import handler.RegisterHandler;
+import server.webSocket.WebSocketHandler;
 import spark.*;
 
 public class Server {
@@ -18,6 +19,7 @@ public class Server {
      * </p>
      */
     private DatabaseDAOCollection dataObjects = new DatabaseDAOCollection();
+    private WebSocketHandler socketHandler = new WebSocketHandler();
 
 
     // Collection of regular memory DAOs. These erase when the server stops.
@@ -36,7 +38,7 @@ public class Server {
         Spark.staticFiles.location("web");
 
         // Give it a class that has the wanted annotations FIXME: make this connection
-//        Spark.webSocket("/connect", );
+        Spark.webSocket("/connect", socketHandler);
 
         // CLEAR APPLICATION
         Spark.delete("/db", (req, res) -> new ClearHandler().clearDatabases(req, res, dataObjects.sqlGameDAO, dataObjects.sqlUserDAO, dataObjects.sqlAuthDAO));
