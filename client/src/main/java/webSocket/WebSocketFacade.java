@@ -15,8 +15,6 @@ import java.net.*;
 import static ui.EscapeSequences.SET_TEXT_COLOR_BLUE;
 import static ui.EscapeSequences.SET_TEXT_COLOR_RED;
 
-// TODO: Find out what communication happens between this facade, the client, the server facade, and the websocket handler
-
 public class WebSocketFacade extends Endpoint {
 
     Session session;
@@ -52,7 +50,7 @@ public class WebSocketFacade extends Endpoint {
     @Override
     @OnOpen
     public void onOpen(Session session, EndpointConfig endpointConfig) {
-        // FIXME: Add print statement
+        System.out.println("onOpen reached within client websocket.");
     }
 
 }

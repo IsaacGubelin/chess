@@ -7,10 +7,7 @@ import model.*;
 import resException.ResponseException;
 import webSocket.ServiceMessageHandler;
 import webSocket.WebSocketFacade;
-import webSocketMessages.serverMessages.ErrorMessage;
-import webSocketMessages.serverMessages.LoadGameMessage;
-import webSocketMessages.serverMessages.NotificationMessage;
-import webSocketMessages.serverMessages.ServerMessage;
+import webSocketMessages.serverMessages.*;
 
 import java.util.HashMap;
 import java.util.Scanner;
@@ -23,6 +20,7 @@ public class ClientUI {
     private final String LOGGED_IN = "[LOGGED_IN]";     // Used in post-login prompts
     private String status;                              // State of client
     private String name;                                // Username of client
+    private ChessGame.TeamColor color;                  // Keep track of user's team color
     private String authToken;                           // Keeps track of the user's authToken
     private ChessGame chessGame;                        // Local copy of chess game when player joins/creates one
 
@@ -44,6 +42,7 @@ public class ClientUI {
 
     private void initClientUI() throws ResponseException {   // Ordering matters on these initializations
         gameIDs = new HashMap<>();      // Initialize game ID container
+        color = null;
         msgHandler = new ServiceMessageHandler() {  // in-line implementation for needed functions
             @Override
             public void notify(String message) {
@@ -285,6 +284,9 @@ public class ClientUI {
             case LOAD_GAME -> {
                 this.chessGame = js.fromJson(message, LoadGameMessage.class).getGame(); // Update the local game
                 System.out.printf("Chess game updated for %s.\n", name);    // Notify user
+                // Determine team to print. If color is null, client is a spectator and will see white's perspective.
+                boolean printWhiteSide = (this.color.equals(ChessGame.TeamColor.WHITE) || (this.color == null));
+                ChessBoardPrint.printChessBoard(this.chessGame.getBoard(), printWhiteSide); // Print game board
             }
             case ERROR -> {
                 String errMsg = new Gson().fromJson(message, ErrorMessage.class).getMessage();  // Get error message
