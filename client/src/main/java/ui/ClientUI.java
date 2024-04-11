@@ -200,15 +200,15 @@ public class ClientUI {
                 } else {
                     updateGamesList();  // Update list of games
                     try {
-                        int requestedGameIndex = Integer.parseInt(inputs[1]); // Get integer from second argument
-                        int id = gameIDs.get(requestedGameIndex);             // Retrieve corresponding game ID
+                        int reqGameIndex = Integer.parseInt(inputs[1]); // Get integer from second argument
+                        int id = gameIDs.get(reqGameIndex);             // Retrieve corresponding game ID
                         GameRequestData gameReqData = new GameRequestData(null, inputs[2], id); // Make req
                         facade.joinGame(authToken, gameReqData);    // Attempt to call facade join method
                         ListGamesData gamesList = facade.getGamesList(authToken);   // Find game for printing
-                        ChessBoard displayBoard = gamesList.games().get(id).game().getBoard(); // Get the board
-                        ChessBoardPrint.printChessBoard(displayBoard, false);   // Print for black team
-                        ChessBoardPrint.printChessBoard(displayBoard, true);   // Print for white team
-                        currentGameIndex = requestedGameIndex;      // If joined, update current game index
+                        ChessBoard displayBoard = gamesList.games().get(reqGameIndex).game().getBoard(); // Get board
+                        boolean isWhite = (inputs[2].equals("WHITE"));  // Check team
+                        ChessBoardPrint.printChessBoard(displayBoard, isWhite);   // Print for white team
+                        currentGameIndex = reqGameIndex;      // If joined, update current game index
                         System.out.println("Successfully joined game " + id);
 
                     } catch (NumberFormatException numEx) { // Prints error message if second argument wasn't a number
@@ -235,9 +235,8 @@ public class ClientUI {
                             System.out.println("Specified game ID does not exist.");
                         } else {
                             currentGameIndex = requestedIndex;
-                            int id = gameIDs.get(currentGameIndex);     // Retrieve actual game ID
                             ListGamesData gamesList = facade.getGamesList(authToken);   // Find game for printing
-                            ChessBoard displayBoard = gamesList.games().get(id).game().getBoard(); // Get the board
+                            ChessBoard displayBoard = gamesList.games().get(currentGameIndex).game().getBoard(); // Get the board
                             ChessBoardPrint.printChessBoard(displayBoard, false);   // Print black team
                             ChessBoardPrint.printChessBoard(displayBoard, true);   // Print white team
                             System.out.println("Observing game " + currentGameIndex);
