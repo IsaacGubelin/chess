@@ -1,9 +1,16 @@
 package ui;
 import chess.ChessBoard;
 import chess.ChessGame;
+import com.google.gson.Gson;
 import facade.ServerFacade;
 import model.*;
 import resException.ResponseException;
+import webSocket.ServiceMessageHandler;
+import webSocket.WebSocketFacade;
+import webSocketMessages.serverMessages.ErrorMessage;
+import webSocketMessages.serverMessages.LoadGameMessage;
+import webSocketMessages.serverMessages.NotificationMessage;
+import webSocketMessages.serverMessages.ServerMessage;
 
 import java.util.HashMap;
 import java.util.Scanner;
@@ -15,28 +22,38 @@ public class ClientUI {
     private final String LOGGED_OUT = "[LOGGED_OUT]";   // Used in pre-login prompts
     private final String LOGGED_IN = "[LOGGED_IN]";     // Used in post-login prompts
     private String status;                              // State of client
-
     private String name;                                // Username of client
     private String authToken;                           // Keeps track of the user's authToken
     private ChessGame chessGame;                        // Local copy of chess game when player joins/creates one
+
+    // CONNECTIONS AND FACADES
     private final String url;
+    private ServiceMessageHandler msgHandler;
+    private WebSocketFacade clientSocket;               // Access the methods in the web socket facade
     private final ServerFacade facade;                  // Access the facade methods
     private HashMap<Integer, Integer> gameIDs;                  // Keeps track of listed games
 
     private int currentGameIndex;
 
     // Constructor for Client UI object
-    public ClientUI(String url) {
+    public ClientUI(String url) throws ResponseException {
         facade = new ServerFacade(url); // Initialize server facade with given url
         this.url = url;                 // Store url
-        initClientUI();                 // Initialize all variables
+        initClientUI();                 // Initialize all other variables
     }
 
-    private void initClientUI() {
+    private void initClientUI() throws ResponseException {   // Ordering matters on these initializations
         gameIDs = new HashMap<>();      // Initialize game ID container
+        msgHandler = new ServiceMessageHandler() {  // in-line implementation for needed functions
+            @Override
+            public void notify(String message) {
+                handleServerMessage(message);  // This function determines the message type and then does needed tasks
+            }
+        };
+        clientSocket = new WebSocketFacade(url, msgHandler);
         status = LOGGED_OUT;            // Status starts in logged out state
         authToken = "";                 // No token at startup
-        currentGameIndex = -1;             // Will be updated to positive value when user joins/observes game
+        currentGameIndex = -1;          // Will be updated to positive value when user joins/observes game
         updateGamesList();              // Check all current chess games and store their IDs in a list
     }
 
@@ -256,6 +273,27 @@ public class ClientUI {
                 System.out.println("Invalid input. Follow these options:");
                 printHelpScreenLoggedIn();
                 break;
+        }
+    }
+
+    // Helper function is used for implementation of ServiceMessageHandler (see client init)
+    void handleServerMessage(String message) {
+        var js = new Gson();                                                    // Make a Json conversion object
+        ServerMessage msg = js.fromJson(message, ServerMessage.class);          // Deserialize into ServerMessage
+        ServerMessage.ServerMessageType type = msg.getServerMessageType();      // Determine type of message
+        switch (type) {                                             // Choose what to do with message based on type
+            case LOAD_GAME -> {
+                this.chessGame = js.fromJson(message, LoadGameMessage.class).getGame(); // Update the local game
+                System.out.printf("Chess game updated for %s.\n", name);    // Notify user
+            }
+            case ERROR -> {
+                String errMsg = new Gson().fromJson(message, ErrorMessage.class).getMessage();  // Get error message
+                System.out.println(SET_TEXT_COLOR_RED + "Error: " + errMsg + SET_TEXT_COLOR_BLUE); // Print the error
+            }
+            case NOTIFICATION -> {  // If message is notification type, deserialize into notification class
+                String notification = new Gson().fromJson(message, NotificationMessage.class).getMessage();
+                System.out.println(notification);   // Print notification to user's terminal
+            }
         }
     }
 

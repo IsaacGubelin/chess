@@ -1,9 +1,15 @@
+import resException.ResponseException;
+import ui.ChessBoardPrint;
 import ui.ClientUI;
 
 /**
  * LAST LEFT OFF:
  * Weird error with joining/observing last game in list
  */
+import chess.*;
+
+import java.util.Collection;
+import java.util.HashSet;
 
 
 public class Main {
@@ -13,9 +19,9 @@ public class Main {
             serverUrl = args[0];
         }
 
-//        var piece = new ChessPiece(ChessGame.TeamColor.WHITE, ChessPiece.PieceType.PAWN);
-//        System.out.println("♕ 240 Chess Client: " + piece);
-
+        var piece = new ChessPiece(ChessGame.TeamColor.WHITE, ChessPiece.PieceType.PAWN);
+        System.out.println("♕ 240 Chess Client: " + piece);
+//
 //        ChessGame game = new ChessGame();
 //        try {
 //            game.makeMove(new ChessMove(new ChessPosition(2, 5), new ChessPosition(3, 5)));
@@ -28,9 +34,14 @@ public class Main {
 //            System.out.println("Whoops");
 //        }
 //        Collection<ChessMove> moves = game.validMoves(new ChessPosition(6, 1));
-//        ChessBoardPrint.printChessBoard(game.getBoard(), true);
+//        ChessBoardPrint.printChessBoard(game.getBoard(), true, (HashSet<ChessMove>) moves, new ChessPosition(6, 1));
 
-        ClientUI clientUi = new ClientUI(serverUrl);   // User Interface object
+        ClientUI clientUi = null;   // User Interface object
+        try {
+            clientUi = new ClientUI(serverUrl);
+        } catch (ResponseException e) {
+            System.out.println("Error: exception thrown during client initialization.");
+        }
         clientUi.runInterface();
 
     }

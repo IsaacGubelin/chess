@@ -1,6 +1,7 @@
 package webSocket;
 
 
+import chess.ChessGame;
 import com.google.gson.Gson;
 import resException.ResponseException;
 import webSocketMessages.serverMessages.ErrorMessage;
@@ -21,25 +22,12 @@ public class WebSocketFacade extends Endpoint {
     Session session;
     ServiceMessageHandler messageHandler;
 
-    // Print notification message for players/observers joining or leaving games
-    private void clientNotify(NotificationMessage message) {
-        System.out.println(SET_TEXT_COLOR_RED + message.getMessage() + SET_TEXT_COLOR_BLUE);
-    }
-
-    // Print error message
-    private void clientErrorMessage(ErrorMessage message) {
-        System.out.println("Error: " + message.getMessage());
-    }
-
-    public void wsLoadGame(LoadGameMessage message) {
-
-    }
-
 
     public WebSocketFacade(String url, ServiceMessageHandler msgHandler) throws ResponseException {
         try {
             url = url.replace("http", "ws");
             URI socketURI = new URI(url + "/connect");
+
             this.messageHandler = msgHandler;
 
             WebSocketContainer container = ContainerProvider.getWebSocketContainer();
@@ -49,28 +37,15 @@ public class WebSocketFacade extends Endpoint {
                 @Override
                 public void onMessage(String message) {
                     ServerMessage msg = new Gson().fromJson(message, ServerMessage.class);
-                    switch (msg.getServerMessageType()) {   // Choose what to do with message based on type
-                        case LOAD_GAME:
-
-                            break;
-
-                        case ERROR:
-                            ErrorMessage errMsg = new Gson().fromJson(message, ErrorMessage.class);
-                            break;
-
-                        case NOTIFICATION:  // If message is notification type, deserialize into notification class
-                            NotificationMessage notification = new Gson().fromJson(message, NotificationMessage.class);
-                            clientNotify(notification);
-                            break;
-                    }
+                    msgHandler.notify(message);
                 }
             });
         } catch (DeploymentException | IOException | URISyntaxException ex) {
             throw new ResponseException(500, ex.getMessage());
         }
-
-
     }
+
+
 
 
     //Endpoint requires this method, but you don't have to do anything
