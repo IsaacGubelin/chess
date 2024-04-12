@@ -1,10 +1,11 @@
 package server.webSocket;
 
 import com.google.gson.Gson;
-import model.AuthData;
+import dataAccess.SQLAuthDAO;
 import org.eclipse.jetty.websocket.api.annotations.OnWebSocketMessage;
 import org.eclipse.jetty.websocket.api.annotations.WebSocket;
 import org.eclipse.jetty.websocket.api.Session;
+import resException.ResponseException;
 import webSocketMessages.serverMessages.ServerMessage;
 import webSocketMessages.userCommands.JoinObserverCommand;
 import webSocketMessages.userCommands.JoinPlayerCommand;
@@ -18,8 +19,10 @@ public class WebSocketHandler {
     // A container to keep track of connections related to single game (players and observers)
     private final ConnectionManager connections = new ConnectionManager();
 
+    private final SQLAuthDAO authDAO = new SQLAuthDAO();    // Used for verifying auth tokens
+
     @OnWebSocketMessage
-    public void onMessage(Session session, String message) throws IOException {
+    public void onMessage(Session session, String message) throws IOException, ResponseException {
         UserGameCommand action = new Gson().fromJson(message, UserGameCommand.class);
         // TODO:
         //  Determine type
@@ -38,9 +41,13 @@ public class WebSocketHandler {
     }
 
 
-    private void joinPlayer(JoinPlayerCommand cmd, Session session) throws IOException {
+    private void joinPlayer(JoinPlayerCommand cmd, Session session) throws IOException, ResponseException {
 
-//        AuthData authData = new Gson().fromJson(visitorInfo, AuthData.class);  // Convert json back to auth record
+//        if (!authDAO.hasAuth(cmd.getAuthString())) {
+//            throw new ResponseException(500, "Invalid authToken");
+//        }
+        // TODO: This part is working! Now you just need to do some SQL finessing and stuff. WIN THIS DAY!
+        session.getRemote().sendString("Hello world???");
 //        connections.add(authData.username(), session);      // Add the user's name to the list in connections
 //        String message = String.format("%s has joined the game.", authData.username());
 //        ServerMessage notification = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION);

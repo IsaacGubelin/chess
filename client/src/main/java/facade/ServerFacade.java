@@ -3,22 +3,28 @@ import com.google.gson.Gson;
 
 import model.*;
 import resException.ResponseException;
+import webSocket.ServiceMessageHandler;
+import webSocket.WebSocketFacade;
+import webSocketMessages.userCommands.JoinPlayerCommand;
+
 import java.io.*;
 import java.net.*;
-import java.util.ArrayList;
 
 
 public class ServerFacade {
-    public final String serverUrl;                                     // Connect to server
-    public final String REQ_HEADER_AUTHORIZATION = "authorization";    // Used as key for HTTP request headers
+    public final String serverUrl;                                  // Connect to server
+    private WebSocketFacade clientSocket;                           // Access the methods in the web socket facade
+    public final String REQ_HEADER_AUTHORIZATION = "authorization"; // Used as key for HTTP request headers
 
-    public ServerFacade(String url) {
+    public ServerFacade(String url, ServiceMessageHandler msgHandler) throws ResponseException {
+        clientSocket = new WebSocketFacade(url, msgHandler);
         serverUrl = url;
     }
 
-    public ServerFacade(int port) {
-        String url = "http://localhost:";
-        url += port;
+    public ServerFacade(int port, ServiceMessageHandler msgHandler) throws ResponseException {
+        String url = "http://localhost:";   // Create url
+        url += port;                        // Add port number
+        clientSocket = new WebSocketFacade(url, msgHandler);
         serverUrl = url;
     }
 
@@ -98,20 +104,20 @@ public class ServerFacade {
      * @param authToken
      */
     public void joinGame(String authToken, GameRequestData gameReqData) throws ResponseException {
-        String path = "/game";
-        String method = "PUT";
         try {
-            URL url = (new URI(serverUrl + path).toURL());
-            HttpURLConnection http = (HttpURLConnection) url.openConnection();
-            http.setRequestMethod(method);              // Set the request method (GET, DELETE, POST, etc)
-            http.setDoOutput(true);                     // Indicate that the connection will output data
+//            URL url = (new URI(serverUrl + path).toURL());
+//            HttpURLConnection http = (HttpURLConnection) url.openConnection();
+//            http.setRequestMethod(method);              // Set the request method (GET, DELETE, POST, etc)
+//            http.setDoOutput(true);                     // Indicate that the connection will output data
 
-            http.addRequestProperty(REQ_HEADER_AUTHORIZATION, authToken);   // Add auth token to http header
-            writeBody(gameReqData, http);       // Prepare http body using game request data
-            http.connect();                     // Make connection
-            throwIfNotSuccessful(http);
+//            http.addRequestProperty(REQ_HEADER_AUTHORIZATION, authToken);   // Add auth token to http header
+//            writeBody(gameReqData, http);       // Prepare http body using game request data
+//            http.connect();                     // Make connection
+//            throwIfNotSuccessful(http);
+            JoinPlayerCommand cmd = new JoinPlayerCommand(authToken, gameReqData.gameID(), gameReqData.playerColor());
+            clientSocket.session.getBasicRemote().sendText(new Gson().toJson(cmd));
 
-        } catch (Exception ex) {
+        } catch (IOException ex) {
             throw new ResponseException(500, ex.getMessage());
         }
     }

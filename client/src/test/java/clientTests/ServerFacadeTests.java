@@ -7,7 +7,7 @@ import model.UserData;
 import org.junit.jupiter.api.*;
 import resException.ResponseException;
 import server.Server;
-
+import webSocket.ServiceMessageHandler;
 
 
 public class ServerFacadeTests {
@@ -16,10 +16,15 @@ public class ServerFacadeTests {
     private static ServerFacade facade;
 
     @BeforeAll
-    public static void init() {
+    public static void init() throws ResponseException {
         server = new Server();
         var port = server.run(0);
-        facade = new ServerFacade(port);
+        facade = new ServerFacade(port, new ServiceMessageHandler() {
+            @Override
+            public void notify(String message) {
+
+            }
+        });
         System.out.println("Started test HTTP server on " + port);
     }
 

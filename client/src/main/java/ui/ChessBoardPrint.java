@@ -114,8 +114,7 @@ public class ChessBoardPrint {
      * @param board
      * @param isWhitePieceSide
      */
-    public static void printChessBoard(ChessBoard board, boolean isWhitePieceSide,
-                                       HashSet<ChessMove> highlightMoves, ChessPosition currentPos) {
+    public static void printChessBoard(ChessBoard board, boolean isWhitePieceSide, ChessPosition currentPos) {
 
         // Determine the direction of iteration based on the perspective
         int startRow = isWhitePieceSide ? 8 : 1;
@@ -123,7 +122,10 @@ public class ChessBoardPrint {
         int rowChange = isWhitePieceSide ? -1 : 1;
 
         HashSet<ChessPosition> endPlaces = new HashSet<>(); // Keep track of end moves to highlight on board
-        if (highlightMoves != null) {                       // If collection of ChessMoves parameter was given
+        if (currentPos != null) {                       // If collection of ChessMoves parameter was given
+            ChessGame tempGame = new ChessGame();       // Make temporary game object
+            tempGame.setBoard(board);                   // Apply current state of board to temporary chess object
+            HashSet<ChessMove> highlightMoves = (HashSet<ChessMove>) tempGame.validMoves(currentPos); // Get moves
             for (ChessMove move : highlightMoves) {         // Make a list of all end positions to highlight
                 endPlaces.add(move.getEndPosition());
             }
@@ -177,8 +179,14 @@ public class ChessBoardPrint {
         System.out.println(RESET_BG_COLOR + SET_TEXT_COLOR_WHITE); // Reset text to usual color
     }
 
+    // Same function, but accepts a team color as the second parameter
+    public static void printChessBoard(ChessBoard board, ChessGame.TeamColor color) {
+        boolean isWhitePieceSide = color.equals(ChessGame.TeamColor.WHITE);
+        printChessBoard(board, isWhitePieceSide);
+    }
+
     public static void printChessBoard(ChessBoard board, boolean isWhitePieceSide) {
-        printChessBoard(board, isWhitePieceSide, null, null);
+        printChessBoard(board, isWhitePieceSide, null);
     }
 
     public static void printChessSpectatorView(ChessBoard board) {

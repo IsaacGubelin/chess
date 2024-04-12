@@ -21,7 +21,7 @@ public class Main {
 
         var piece = new ChessPiece(ChessGame.TeamColor.WHITE, ChessPiece.PieceType.PAWN);
         System.out.println("♕ 240 Chess Client: " + piece);
-//
+
 //        ChessGame game = new ChessGame();
 //        try {
 //            game.makeMove(new ChessMove(new ChessPosition(2, 5), new ChessPosition(3, 5)));
@@ -33,8 +33,7 @@ public class Main {
 //        } catch (InvalidMoveException e) {
 //            System.out.println("Whoops");
 //        }
-//        Collection<ChessMove> moves = game.validMoves(new ChessPosition(6, 1));
-//        ChessBoardPrint.printChessBoard(game.getBoard(), true, (HashSet<ChessMove>) moves, new ChessPosition(6, 1));
+//        ChessBoardPrint.printChessBoard(game.getBoard(), true, new ChessPosition(6, 1));
 
         ClientUI clientUi = null;   // User Interface object
         try {

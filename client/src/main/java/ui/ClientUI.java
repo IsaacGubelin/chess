@@ -1,12 +1,13 @@
 package ui;
 import chess.ChessBoard;
 import chess.ChessGame;
+import chess.ChessPosition;
+import chess.InvalidMoveException;
 import com.google.gson.Gson;
 import facade.ServerFacade;
 import model.*;
 import resException.ResponseException;
 import webSocket.ServiceMessageHandler;
-import webSocket.WebSocketFacade;
 import webSocketMessages.serverMessages.*;
 
 import java.util.HashMap;
@@ -16,9 +17,8 @@ import static ui.EscapeSequences.*;
 
 public class ClientUI {
 
-    private final String LOGGED_OUT = "[LOGGED_OUT]";   // Used in pre-login prompts
-    private final String LOGGED_IN = "[LOGGED_IN]";     // Used in post-login prompts
-    private String status;                              // State of client
+
+    private userState status;                           // State of client
     private String name;                                // Username of client
     private ChessGame.TeamColor color;                  // Keep track of user's team color
     private String authToken;                           // Keeps track of the user's authToken
@@ -27,15 +27,21 @@ public class ClientUI {
     // CONNECTIONS AND FACADES
     private final String url;
     private ServiceMessageHandler msgHandler;
-    private WebSocketFacade clientSocket;               // Access the methods in the web socket facade
+
     private final ServerFacade facade;                  // Access the facade methods
-    private HashMap<Integer, Integer> gameIDs;                  // Keeps track of listed games
+    private HashMap<Integer, Integer> gameIDs;          // Keeps track of listed games
 
     private int currentGameIndex;
 
     // Constructor for Client UI object
     public ClientUI(String url) throws ResponseException {
-        facade = new ServerFacade(url); // Initialize server facade with given url
+        msgHandler = new ServiceMessageHandler() {  // in-line implementation for needed functions
+            @Override
+            public void notify(String message) {
+                handleServerMessage(message);  // This function determines the message type and then does needed tasks
+            }
+        };
+        facade = new ServerFacade(url, msgHandler); // Initialize server facade with given url
         this.url = url;                 // Store url
         initClientUI();                 // Initialize all other variables
     }
@@ -43,14 +49,7 @@ public class ClientUI {
     private void initClientUI() throws ResponseException {   // Ordering matters on these initializations
         gameIDs = new HashMap<>();      // Initialize game ID container
         color = null;
-        msgHandler = new ServiceMessageHandler() {  // in-line implementation for needed functions
-            @Override
-            public void notify(String message) {
-                handleServerMessage(message);  // This function determines the message type and then does needed tasks
-            }
-        };
-        clientSocket = new WebSocketFacade(url, msgHandler);
-        status = LOGGED_OUT;            // Status starts in logged out state
+        status = userState.LOGGED_OUT;  // Status starts in logged out state
         authToken = "";                 // No token at startup
         currentGameIndex = -1;          // Will be updated to positive value when user joins/observes game
         updateGamesList();              // Check all current chess games and store their IDs in a list
@@ -64,21 +63,22 @@ public class ClientUI {
 
         // Begin main loop of collecting input and performing requested actions.
         while (true) {
+            setTextToPromptFormat();                                            // Set text to prompt format
             System.out.print(status + " >>> ");                                 // Print status of client
             Scanner scanner = new Scanner(System.in);                           // For reading input
             String line = scanner.nextLine();
             String[] inputs = line.split(" ");                            //  Collect and parse input
             int numArgs = inputs.length;                                        // Evaluate number of input words
             inputs[0] = inputs[0].toLowerCase();                                // Ignore capitals of first argument
-            setTextToPromptFormat();                                            // Set text to prompt format
 
-            if (status.equals(LOGGED_OUT)) {
-                promptLoggedOut(inputs, numArgs);
-            } else {
-                promptLoggedIn(inputs, numArgs);
+
+            switch (status) {                                        // State machine for user interface options
+                case LOGGED_OUT -> promptLoggedOut(inputs, numArgs);
+                case LOGGED_IN -> promptLoggedIn(inputs, numArgs);
+                case IN_GAME -> promptInGame(inputs, numArgs);
             }
 
-            if (line.equals("quit") && status.equals(LOGGED_OUT)) {
+            if (line.equals("quit") && status.equals(userState.LOGGED_OUT)) {
                 break;                              // Quit the application when user enters "quit"
             }
         }
@@ -106,7 +106,7 @@ public class ClientUI {
                         System.out.println("Successful registration for " + inputs[1]);
                         name = inputs[1];                       // Store username
                         authToken = authData.authToken();       // Store token
-                        status = LOGGED_IN;     // Status string shows that newly registered user is logged in
+                        status = userState.LOGGED_IN;  // Status string shows that newly registered user is logged in
 
                     } catch (ResponseException ex) {
                         System.out.println("Could not register.");
@@ -132,7 +132,7 @@ public class ClientUI {
                         System.out.println("Successful login for " + inputs[1]);
                         name = inputs[1];                   // Store username
                         authToken = authData.authToken();   // Store token
-                        status = LOGGED_IN;
+                        status = userState.LOGGED_IN;
                     } catch (ResponseException ex) {
                         System.out.println("Could not log in.");
                         System.out.println(ex.getMessage());        // Print thrown error code
@@ -205,10 +205,12 @@ public class ClientUI {
                         GameRequestData gameReqData = new GameRequestData(null, inputs[2], id); // Make req
                         facade.joinGame(authToken, gameReqData);    // Attempt to call facade join method
                         ListGamesData gamesList = facade.getGamesList(authToken);   // Find game for printing
-                        ChessBoard displayBoard = gamesList.games().get(reqGameIndex).game().getBoard(); // Get board
+                        updateGame(gamesList.games().get(reqGameIndex).game()); // Get chess game
                         boolean isWhite = (inputs[2].equals("WHITE"));  // Check team
-                        ChessBoardPrint.printChessBoard(displayBoard, isWhite);   // Print for white team
+                        color = isWhite ? ChessGame.TeamColor.WHITE : ChessGame.TeamColor.BLACK; // Set client color
+                        ChessBoardPrint.printChessBoard(this.chessGame.getBoard(), isWhite);   // Print for white team
                         currentGameIndex = reqGameIndex;      // If joined, update current game index
+                        status = userState.IN_GAME;           // Set client status to IN_GAME state
                         System.out.println("Successfully joined game " + id);
 
                     } catch (NumberFormatException numEx) { // Prints error message if second argument wasn't a number
@@ -255,7 +257,7 @@ public class ClientUI {
                 try {
                     facade.logout(authToken);
                     System.out.println("Logged out.");
-                    status = LOGGED_OUT;    // Change status string to logged out state
+                    status = userState.LOGGED_OUT;    // Change status string to logged out state
                 } catch (ResponseException ex) {
                     System.out.println("Could not logout.");
                     System.out.println(ex.getMessage());
@@ -271,6 +273,39 @@ public class ClientUI {
                 System.out.println("Invalid input. Follow these options:");
                 printHelpScreenLoggedIn();
                 break;
+        }
+    }
+
+    void promptInGame(String[] inputs, int numArgs) {
+        switch (inputs[0]) {
+            case "help" -> printHelpScreenInGame();
+            case "redraw" -> {
+                System.out.println("Redraw chess board");
+                ChessBoardPrint.printChessBoard(chessGame.getBoard(), color);
+            }
+            case "show" -> {
+                if (numArgs != 2) {             // To be shown moves for a position, user must provide location
+                    System.out.println("Invalid request. Follow format below:");
+                    System.out.println("show <COLUMN_LETTER><ROW_NUMBER>");
+                } else {
+                    try {
+                        ChessPosition highlightPos = InputToChessMove.getPositionFromString(inputs[1]);
+                        boolean isTeamWhite = color.equals(ChessGame.TeamColor.WHITE);
+                        ChessBoardPrint.printChessBoard(chessGame.getBoard(), isTeamWhite, highlightPos);
+                    } catch (InvalidMoveException ex) {
+                        System.out.println("Invalid position. Give a position in bounds, such as \"B4\".");
+                    }
+                }
+            }
+
+            case "leave" -> {
+                status = userState.LOGGED_IN;   // Transition back to menu for login state
+            }
+
+
+            // TODO: resign
+
+            // TODO: move
         }
     }
 
@@ -360,6 +395,21 @@ public class ClientUI {
         System.out.println("observe <ID>" + RESET_TEXT_BOLD_FAINT + " --> be a spectator in a game");
         setTextToPromptFormat();
         System.out.println("logout" + RESET_TEXT_BOLD_FAINT + " --> exit when done");
+        setTextToPromptFormat();
+        System.out.println("help" + RESET_TEXT_BOLD_FAINT + " --> show available options");
+    }
+
+    private void printHelpScreenInGame() {
+        setTextToPromptFormat();
+        System.out.println("redraw" + RESET_TEXT_BOLD_FAINT + " --> Refresh the chess board display");
+        setTextToPromptFormat();
+        System.out.println("leave" + RESET_TEXT_BOLD_FAINT + " --> Leave current game");
+        setTextToPromptFormat();
+        System.out.println("move <COLUMN><ROW><COLUMN><ROW>" + RESET_TEXT_BOLD_FAINT + " --> move chess piece");
+        setTextToPromptFormat();
+        System.out.println("resign" + RESET_TEXT_BOLD_FAINT + " --> forfeit the game");
+        setTextToPromptFormat();
+        System.out.println("show <COLUMN><ROW>" + RESET_TEXT_BOLD_FAINT + " --> Highlight available moves");
         setTextToPromptFormat();
         System.out.println("help" + RESET_TEXT_BOLD_FAINT + " --> show available options");
     }

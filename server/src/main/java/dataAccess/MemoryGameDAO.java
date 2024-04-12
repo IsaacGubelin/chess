@@ -9,7 +9,6 @@ import java.util.HashMap;
 
 public class MemoryGameDAO implements GameDAO {
 
-    //TODO: Remove when SQL implementation is complete
     private HashMap<Integer, GameData> gamesTable = new HashMap<>();
 
     // A game ID generator that automatically finds available ID numbers.

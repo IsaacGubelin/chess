@@ -1,12 +1,9 @@
 package webSocket;
 
 
-import chess.ChessGame;
 import com.google.gson.Gson;
 import resException.ResponseException;
 import webSocketMessages.serverMessages.ErrorMessage;
-import webSocketMessages.serverMessages.LoadGameMessage;
-import webSocketMessages.serverMessages.NotificationMessage;
 import webSocketMessages.serverMessages.ServerMessage;
 import javax.websocket.*;
 import java.io.IOException;
@@ -17,8 +14,8 @@ import static ui.EscapeSequences.SET_TEXT_COLOR_RED;
 
 public class WebSocketFacade extends Endpoint {
 
-    Session session;
-    ServiceMessageHandler messageHandler;
+    public Session session;
+    private ServiceMessageHandler messageHandler;
 
 
     public WebSocketFacade(String url, ServiceMessageHandler msgHandler) throws ResponseException {
@@ -34,7 +31,8 @@ public class WebSocketFacade extends Endpoint {
             this.session.addMessageHandler(new MessageHandler.Whole<String>() { // DO NOT replace with lambda
                 @Override
                 public void onMessage(String message) {
-                    ServerMessage msg = new Gson().fromJson(message, ServerMessage.class);
+//                    ServerMessage msg = new Gson().fromJson(message, ServerMessage.class);
+                    System.out.println("WE got a message:" + message);      // TODO: This is where you left off!
                     msgHandler.notify(message);
                 }
             });
