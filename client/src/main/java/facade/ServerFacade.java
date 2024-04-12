@@ -5,7 +5,7 @@ import model.*;
 import resException.ResponseException;
 import webSocket.ServiceMessageHandler;
 import webSocket.WebSocketFacade;
-import webSocketMessages.userCommands.JoinPlayerCommand;
+import webSocketMessages.userCommands.JoinPlayer;
 
 import java.io.*;
 import java.net.*;
@@ -114,7 +114,7 @@ public class ServerFacade {
 //            writeBody(gameReqData, http);       // Prepare http body using game request data
 //            http.connect();                     // Make connection
 //            throwIfNotSuccessful(http);
-            JoinPlayerCommand cmd = new JoinPlayerCommand(authToken, gameReqData.gameID(), gameReqData.playerColor());
+            JoinPlayer cmd = new JoinPlayer(authToken, gameReqData.gameID(), gameReqData.playerColor());
             clientSocket.session.getBasicRemote().sendText(new Gson().toJson(cmd));
 
         } catch (IOException ex) {

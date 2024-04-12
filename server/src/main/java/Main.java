@@ -2,7 +2,6 @@ import chess.*;
 import exception.DataAccessException;
 import dataAccess.DatabaseManager;
 import server.Server;
-import server.webSocket.UpdateChessGame;
 
 
 // FIXME: Change DAO types in server and remove multi-DAO object class entirely

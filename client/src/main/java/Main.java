@@ -38,10 +38,10 @@ public class Main {
         ClientUI clientUi = null;   // User Interface object
         try {
             clientUi = new ClientUI(serverUrl);
+            clientUi.runInterface();
         } catch (ResponseException e) {
             System.out.println("Error: exception thrown during client initialization.");
         }
-        clientUi.runInterface();
 
     }
 }

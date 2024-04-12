@@ -7,8 +7,8 @@ package config;
 
 public class ConfigConsts {
 
-    // Numeric values
-    public static final int GAME_ID_MIN = 1;    // Smallest value of game ID
+    // Numeric values. These only apply to the memory DAOs (not SQL)
+    public static final int GAME_ID_MIN = 1;    // Smallest value of game ID, JUS
     public static final int GAME_ID_MAX = 999;  // MAXIMUM ALLOWED GAMES (And highest game ID value)
 
 

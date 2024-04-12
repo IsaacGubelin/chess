@@ -9,11 +9,8 @@ import dataAccess.ExecuteSQL;
 
 import java.sql.SQLException;
 
-public class UpdateChessGame {
+public class UpdateChessDatabase {
 
-    public static boolean verifyAuthToken(String authToken) {
-        return false;
-    }
 
     public static void updateGameMakeMove(int gameID, ChessGame game, ChessMove move) throws InvalidMoveException {
         game.makeMove(move);                        // Make the requested chess move
