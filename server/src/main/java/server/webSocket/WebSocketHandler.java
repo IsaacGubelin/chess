@@ -65,11 +65,11 @@ public class WebSocketHandler {
         // TODO: This part is working! Now you just need to do some SQL finessing and stuff. WIN THIS DAY!
         session.getRemote().sendString("Hello world???");
 
-//        if (!authDAO.hasAuth(cmd.getAuthString())) {                            // Validate user's auth token
-//            ErrorMessage errMsg = new ErrorMessage(ServerMessage.ServerMessageType.ERROR);  // Create error message
-//            errMsg.setMessage("Error: Invalid auth token given.");                          // Write message
-//            session.getRemote().sendString(new Gson().toJson(errMsg));                      // Send to client
-//        }
+        if (!authDAO.hasAuth(cmd.getAuthString())) {                            // Validate user's auth token
+            ErrorMessage errMsg = new ErrorMessage(ServerMessage.ServerMessageType.ERROR);  // Create error message
+            errMsg.setMessage("Error: Invalid auth token given.");                          // Write message
+            session.getRemote().sendString(new Gson().toJson(errMsg));                      // Send to client
+        }
 //        else try {
 //            if (cmd.getRequestedColor().equals(ChessGame.TeamColor.WHITE)) {    // If user requested white team
 ////                gameDAO.updateWhiteUsername(cmd.getGameID(), cmd.);
