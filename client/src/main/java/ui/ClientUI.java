@@ -63,8 +63,6 @@ public class ClientUI {
         status = UserState.LOGGED_OUT;  // Status starts in logged out state
         authToken = "";                 // No token at startup
         currentGameIndex = -1;          // Will be updated to positive value when user joins/observes game
-        // FIXME: Remove initial updateGamesList
-        updateGamesList();              // Check all current chess games and store their IDs in a list
     }
 
     // The main looping interface that collects user input and prints prompt messages.
@@ -233,7 +231,6 @@ public class ClientUI {
                         System.out.println("Specified game ID does not exist.");
                     }
                 }
-//                printHelpScreenInGame();    // Give the user a rundown on available options in-game
                 break;
 
             case "observe":
@@ -319,6 +316,10 @@ public class ClientUI {
             // TODO: resign
 
             // TODO: move
+            default -> {
+                System.out.println("Invalid input. Follow these options:");
+                printHelpScreenInGame();
+            }
         }
     }
 
@@ -345,8 +346,8 @@ public class ClientUI {
                 System.out.println(SET_TEXT_COLOR_RED + errMsg); // Print the error
             }
             case NOTIFICATION -> {  // If message is notification type, deserialize into notification class
-                String notification = new Gson().fromJson(message, NotificationMessage.class).getMessage();
-                System.out.println(notification);   // Print notification to user's terminal
+                String notification = new Gson().fromJson(message, Notification.class).getMessage();
+                System.out.println(SET_TEXT_COLOR_GREEN + notification);   // Print notification to user's terminal
             }
         }
         printStatus();      // Reprint the status and prompt input

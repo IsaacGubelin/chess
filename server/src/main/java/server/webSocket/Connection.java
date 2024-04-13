@@ -1,6 +1,8 @@
 package server.webSocket;
 
+import com.google.gson.Gson;
 import org.eclipse.jetty.websocket.api.Session;
+import webSocketMessages.serverMessages.Notification;
 
 import java.io.IOException;
 
@@ -24,7 +26,8 @@ public class Connection {
      * @param msg
      * @throws IOException
      */
-    public void send(String msg) throws IOException {
-        session.getRemote().sendString(msg);
+    public void send(Notification msg) throws IOException {
+        System.out.println("YAHOO made it inside the send method of CONNECTION.JAVA");
+        session.getRemote().sendString(new Gson().toJson(msg));
     }
 }

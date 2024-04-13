@@ -7,12 +7,14 @@ import dataAccess.SQLGameDAO;
 import dataAccess.SQLUserDAO;
 import exception.AlreadyTakenException;
 import exception.DataAccessException;
+import org.eclipse.jetty.util.IO;
 import org.eclipse.jetty.websocket.api.annotations.OnWebSocketMessage;
 import org.eclipse.jetty.websocket.api.annotations.WebSocket;
 import org.eclipse.jetty.websocket.api.Session;
 import resException.ResponseException;
 import webSocketMessages.serverMessages.Error;
 import webSocketMessages.serverMessages.LoadGame;
+import webSocketMessages.serverMessages.Notification;
 import webSocketMessages.serverMessages.ServerMessage;
 import webSocketMessages.userCommands.JoinObserver;
 import webSocketMessages.userCommands.JoinPlayer;
@@ -29,7 +31,7 @@ import java.sql.SQLException;
 public class WebSocketHandler {
 
     // A container to keep track of connections related to single game (players and observers)
-    private final ConnectionManager connections = new ConnectionManager();
+    private final ConnectionManager connManager = new ConnectionManager();
 
     private final SQLAuthDAO authDAO = new SQLAuthDAO();    // Used for verifying auth tokens
     private final SQLGameDAO gameDAO = new SQLGameDAO();    // For updating chess games
@@ -71,7 +73,7 @@ public class WebSocketHandler {
 
     private void joinPlayer(JoinPlayer cmd, Session session) throws IOException {
 
-        // TODO: This part is working! Now you just need to do some SQL finessing and stuff. WIN THIS DAY!
+        // TODO: This part is working! Now you just need to WIN THIS DAY!
 
         // Validate user's auth token and existence of game ID
         if (!authDAO.hasAuth(cmd.getAuthString())) {                            // Check the given auth token
@@ -85,8 +87,10 @@ public class WebSocketHandler {
             } else if (cmd.getRequestedColor().equals(ChessGame.TeamColor.BLACK)) { // If black team request
                 gameDAO.updateBlackUsername(cmd.getGameID(), username);
             }
-            // TODO: Retrieve game from SQL, make LoadGame message, and send back to client
+
             sendLoadGameMessage(cmd.getGameID(), session);  // Send a successful load game message to client
+            connManager.add(cmd.getGameID(), cmd.getAuthString(), session);         // Add session to list of sessions
+            sendBroadcastJoinPlayer(cmd);                                           // Broadcast a notification
 
         } catch (DataAccessException | SQLException ex) {                       // If an exception is thrown
             sendErrorMessage("Error in accessing SQL database", session);   // SQL error message
@@ -101,9 +105,23 @@ public class WebSocketHandler {
     }
 
     /**
+     * Helper method for creating, writing, and sending a notification to all clients when a new user joins their game
+     * @param cmd
+     * @throws DataAccessException
+     */
+    void sendBroadcastJoinPlayer(JoinPlayer cmd) throws DataAccessException, IOException {
+        String broadcastMsg = authDAO.getAuth(cmd.getAuthString()).username();  // Start message with user's name
+        broadcastMsg += " has joined the game.";
+        Notification notification = new Notification(NOTIFY, broadcastMsg);
+        System.out.println("In helper sendBroadcastJoinPlayer");
+        connManager.broadcast(cmd.getGameID(), cmd.getAuthString(), notification);
+    }
+
+    /**
      * Helper method for creating, writing, and sending error messages to the client
      * @param msg
      * @param session
+     * @throws IOException
      */
     private void sendErrorMessage(String msg, Session session) throws IOException {
         Error errMsg = new Error(ServerMessage.ServerMessageType.ERROR);  // Create error message

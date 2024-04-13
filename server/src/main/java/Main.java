@@ -1,10 +1,7 @@
 import chess.*;
-import dataAccess.SQLGameDAO;
 import exception.DataAccessException;
 import dataAccess.DatabaseManager;
 import server.Server;
-
-import java.sql.SQLException;
 
 
 // FIXME: Change DAO types in server and remove multi-DAO object class entirely
