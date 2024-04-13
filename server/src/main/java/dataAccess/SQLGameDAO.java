@@ -151,6 +151,32 @@ public class SQLGameDAO implements GameDAO{
         }
     }
 
+    /**
+     *
+     * @param gameID
+     * @return
+     * @throws SQLException
+     */
+    public ChessGame getChessGameFromDatabase(int gameID) throws SQLException {
+        try (var conn = DatabaseManager.getConnection()) {
+            // Make query statement to get all entries
+            String queryStmt = "SELECT game FROM " + ConfigConsts.GAME_TABLE_NAME + " WHERE gameID = ?";
+            try (var ps = conn.prepareStatement(queryStmt)) {
+                ps.setInt(1, gameID);   // Plug in game ID
+                // Executing the query and retrieving the result set
+                try (var rs = ps.executeQuery()) {
+                    if (rs.next()) {
+                        ChessGame game = new Gson().fromJson(rs.getString("game"), ChessGame.class);
+                        return game;
+                    }
+                }
+            }
+        } catch (DataAccessException | SQLException e) {
+            throw new SQLException("Could not look for game!");
+        }
+        return null;
+    }
+
 
     @Override
     public boolean isEmpty() throws DataAccessException {

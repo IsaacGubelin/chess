@@ -9,6 +9,7 @@ import model.*;
 import resException.ResponseException;
 import webSocket.ServiceMessageHandler;
 import webSocketMessages.serverMessages.*;
+import webSocketMessages.serverMessages.Error;
 
 import java.util.HashMap;
 import java.util.Scanner;
@@ -18,7 +19,8 @@ import static ui.EscapeSequences.*;
 public class ClientUI {
 
 
-    private userState status;                           // State of client
+    private UserState status;                           // State of client
+//    private boolean
     private String name;                                // Username of client
     private ChessGame.TeamColor color;                  // Keep track of user's team color
     private String authToken;                           // Keeps track of the user's authToken
@@ -33,11 +35,20 @@ public class ClientUI {
 
     private int currentGameIndex;
 
-    // Constructor for Client UI object
+    /**
+     * ClientUI constructor. This does an in-line implementation of ServerMessageHandler.
+     * <p>
+     * This class contains a ServerFacade, which in turn contains a WebSocketFacade object.
+     * <p>
+     * Received messages from the WebSocket facade will be printed in this class.
+     *
+     * @param url
+     * @throws ResponseException
+     */
     public ClientUI(String url) throws ResponseException {
         msgHandler = new ServiceMessageHandler() {  // in-line implementation for needed functions
             @Override
-            public void notify(String message) {
+            public void notify(String message) throws ResponseException {
                 handleServerMessage(message);  // This function determines the message type and then does needed tasks
             }
         };
@@ -49,9 +60,10 @@ public class ClientUI {
     private void initClientUI() throws ResponseException {   // Ordering matters on these initializations
         gameIDs = new HashMap<>();      // Initialize game ID container
         color = null;
-        status = userState.LOGGED_OUT;  // Status starts in logged out state
+        status = UserState.LOGGED_OUT;  // Status starts in logged out state
         authToken = "";                 // No token at startup
         currentGameIndex = -1;          // Will be updated to positive value when user joins/observes game
+        // FIXME: Remove initial updateGamesList
         updateGamesList();              // Check all current chess games and store their IDs in a list
     }
 
@@ -63,13 +75,12 @@ public class ClientUI {
 
         // Begin main loop of collecting input and performing requested actions.
         while (true) {
-            setTextToPromptFormat();                                            // Set text to prompt format
-            System.out.print(status + " >>> ");                                 // Print status of client
-            Scanner scanner = new Scanner(System.in);                           // For reading input
+            printStatus();                                              // Print status of client
+            Scanner scanner = new Scanner(System.in);                   // For reading input
             String line = scanner.nextLine();
-            String[] inputs = line.split(" ");                            //  Collect and parse input
-            int numArgs = inputs.length;                                        // Evaluate number of input words
-            inputs[0] = inputs[0].toLowerCase();                                // Ignore capitals of first argument
+            String[] inputs = line.split(" ");                    //  Collect and parse input
+            int numArgs = inputs.length;                                // Evaluate number of input words
+            inputs[0] = inputs[0].toLowerCase();                        // Ignore capitals of first argument
 
 
             switch (status) {                                        // State machine for user interface options
@@ -78,10 +89,15 @@ public class ClientUI {
                 case IN_GAME -> promptInGame(inputs, numArgs);
             }
 
-            if (line.equals("quit") && status.equals(userState.LOGGED_OUT)) {
+            if (line.equals("quit") && status.equals(UserState.LOGGED_OUT)) {
                 break;                              // Quit the application when user enters "quit"
             }
         }
+    }
+
+    void printStatus() {
+        setTextToPromptFormat();            // Set text to prompt format
+        System.out.print(status + " >>> "); // Show status of user
     }
 
     // Prints prompts and evaluates input during logged-out state
@@ -106,7 +122,7 @@ public class ClientUI {
                         System.out.println("Successful registration for " + inputs[1]);
                         name = inputs[1];                       // Store username
                         authToken = authData.authToken();       // Store token
-                        status = userState.LOGGED_IN;  // Status string shows that newly registered user is logged in
+                        status = UserState.LOGGED_IN;  // Status string shows that newly registered user is logged in
 
                     } catch (ResponseException ex) {
                         System.out.println("Could not register.");
@@ -132,7 +148,7 @@ public class ClientUI {
                         System.out.println("Successful login for " + inputs[1]);
                         name = inputs[1];                   // Store username
                         authToken = authData.authToken();   // Store token
-                        status = userState.LOGGED_IN;
+                        status = UserState.LOGGED_IN;
                     } catch (ResponseException ex) {
                         System.out.println("Could not log in.");
                         System.out.println(ex.getMessage());        // Print thrown error code
@@ -204,14 +220,9 @@ public class ClientUI {
                         int id = gameIDs.get(reqGameIndex);             // Retrieve corresponding game ID
                         GameRequestData gameReqData = new GameRequestData(null, inputs[2], id); // Make req
                         facade.joinGame(authToken, gameReqData);    // Attempt to call facade join method
-                        ListGamesData gamesList = facade.getGamesList(authToken);   // Find game for printing
-                        updateGame(gamesList.games().get(reqGameIndex).game()); // Get chess game
-                        boolean isWhite = (inputs[2].equals("WHITE"));  // Check team
-                        color = isWhite ? ChessGame.TeamColor.WHITE : ChessGame.TeamColor.BLACK; // Set client color
-                        ChessBoardPrint.printChessBoard(this.chessGame.getBoard(), isWhite);   // Print for white team
-                        currentGameIndex = reqGameIndex;      // If joined, update current game index
-                        status = userState.IN_GAME;           // Set client status to IN_GAME state
-                        System.out.println("Successfully joined game " + id);
+
+                        currentGameIndex = reqGameIndex;      // If joined, update current game index and team color
+                        color = inputs[2].equals("WHITE") ? ChessGame.TeamColor.WHITE : ChessGame.TeamColor.BLACK;
 
                     } catch (NumberFormatException numEx) { // Prints error message if second argument wasn't a number
                         System.out.println("Please use only integers for ID of requested game.");
@@ -222,7 +233,7 @@ public class ClientUI {
                         System.out.println("Specified game ID does not exist.");
                     }
                 }
-
+//                printHelpScreenInGame();    // Give the user a rundown on available options in-game
                 break;
 
             case "observe":
@@ -257,7 +268,7 @@ public class ClientUI {
                 try {
                     facade.logout(authToken);
                     System.out.println("Logged out.");
-                    status = userState.LOGGED_OUT;    // Change status string to logged out state
+                    status = UserState.LOGGED_OUT;    // Change status string to logged out state
                 } catch (ResponseException ex) {
                     System.out.println("Could not logout.");
                     System.out.println(ex.getMessage());
@@ -292,6 +303,7 @@ public class ClientUI {
                         ChessPosition highlightPos = InputToChessMove.getPositionFromString(inputs[1]);
                         boolean isTeamWhite = color.equals(ChessGame.TeamColor.WHITE);
                         ChessBoardPrint.printChessBoard(chessGame.getBoard(), isTeamWhite, highlightPos);
+
                     } catch (InvalidMoveException ex) {
                         System.out.println("Invalid position. Give a position in bounds, such as \"B4\".");
                     }
@@ -299,7 +311,8 @@ public class ClientUI {
             }
 
             case "leave" -> {
-                status = userState.LOGGED_IN;   // Transition back to menu for login state
+
+                status = UserState.LOGGED_IN;   // Transition back to menu for login state
             }
 
 
@@ -310,27 +323,33 @@ public class ClientUI {
     }
 
     // Helper function is used for implementation of ServiceMessageHandler (see client init)
-    void handleServerMessage(String message) {
+    void handleServerMessage(String message) throws ResponseException {
         var js = new Gson();                                                    // Make a Json conversion object
         ServerMessage msg = js.fromJson(message, ServerMessage.class);          // Deserialize into ServerMessage
         ServerMessage.ServerMessageType type = msg.getServerMessageType();      // Determine type of message
         switch (type) {                                             // Choose what to do with message based on type
             case LOAD_GAME -> {
-                this.chessGame = js.fromJson(message, LoadGameMessage.class).getGame(); // Update the local game
+                this.chessGame = js.fromJson(message, LoadGame.class).getGame(); // Update the local game
                 System.out.printf("Chess game updated for %s.\n", name);    // Notify user
                 // Determine team to print. If color is null, client is a spectator and will see white's perspective.
                 boolean printWhiteSide = (this.color.equals(ChessGame.TeamColor.WHITE) || (this.color == null));
                 ChessBoardPrint.printChessBoard(this.chessGame.getBoard(), printWhiteSide); // Print game board
+                if (this.color == null) {
+                    status = UserState.OBSERVING;
+                } else {
+                    status = UserState.IN_GAME;
+                }
             }
             case ERROR -> {
-                String errMsg = new Gson().fromJson(message, ErrorMessage.class).getMessage();  // Get error message
-                System.out.println(SET_TEXT_COLOR_RED + "Error: " + errMsg + SET_TEXT_COLOR_BLUE); // Print the error
+                String errMsg = new Gson().fromJson(message, Error.class).getMessage();  // Get error message
+                System.out.println(SET_TEXT_COLOR_RED + "Error: " + errMsg); // Print the error
             }
             case NOTIFICATION -> {  // If message is notification type, deserialize into notification class
                 String notification = new Gson().fromJson(message, NotificationMessage.class).getMessage();
                 System.out.println(notification);   // Print notification to user's terminal
             }
         }
+        printStatus();      // Reprint the status and prompt input
     }
 
     private void updateGamesList() {
@@ -368,11 +387,6 @@ public class ClientUI {
             }
             i++;                            // Increment index
         }
-    }
-
-    // Set chess game private member to given parameter
-    public void updateGame(ChessGame game) {
-        this.chessGame = game;
     }
 
     private void printHelpScreenLoggedOut() {

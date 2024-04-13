@@ -52,49 +52,6 @@ public class UpdateChessDatabase {
     }
 
 
-    /**
-     * Updates the white team username for a given chess game ID in the SQL database
-     * @param gameID
-     * @param whiteName
-     */
-    public static void updateChessWhiteUsername(int gameID, String whiteName) {
-        // Prepare a SQL statement
-        String updateStmt = "UPDATE " + ConfigConsts.GAME_TABLE_NAME + " SET whiteUsername = ? WHERE " +
-                " gameID = " + gameID;
-        try {
-            ExecuteSQL.executeUpdate(updateStmt, whiteName);
-        } catch (SQLException e) {
-            System.out.println("Could not update SQL database.");
-        }
-    }
-
-    /**
-     * Update the black username in the SQL database
-     * @param gameID
-     * @param blackName
-     */
-    public static void updateChessBlackUsername(int gameID, String blackName) {
-        // Prepare a SQL statement
-        String updateStmt = "UPDATE " + ConfigConsts.GAME_TABLE_NAME + " SET blackUsername = ? WHERE " +
-                " gameID = " + gameID;
-        try {
-            ExecuteSQL.executeUpdate(updateStmt, blackName);
-        } catch (SQLException e) {
-            System.out.println("Could not update SQL database.");
-        }
-    }
-
-    /**
-     * Updates both team usernames in the SQL database
-     * @param gameID
-     * @param whiteName
-     * @param blackName
-     */
-    public static void updateChessUsernames(int gameID, String whiteName, String blackName) {
-        updateChessBlackUsername(gameID, blackName);
-        updateChessWhiteUsername(gameID, whiteName);
-    }
-
     //FIXME: may not need a retrieval after all?
 //    public static ChessGame retrieveDatabaseChessGame(int gameID) {
 //

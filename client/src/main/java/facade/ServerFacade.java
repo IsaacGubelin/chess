@@ -105,15 +105,6 @@ public class ServerFacade {
      */
     public void joinGame(String authToken, GameRequestData gameReqData) throws ResponseException {
         try {
-//            URL url = (new URI(serverUrl + path).toURL());
-//            HttpURLConnection http = (HttpURLConnection) url.openConnection();
-//            http.setRequestMethod(method);              // Set the request method (GET, DELETE, POST, etc)
-//            http.setDoOutput(true);                     // Indicate that the connection will output data
-
-//            http.addRequestProperty(REQ_HEADER_AUTHORIZATION, authToken);   // Add auth token to http header
-//            writeBody(gameReqData, http);       // Prepare http body using game request data
-//            http.connect();                     // Make connection
-//            throwIfNotSuccessful(http);
             JoinPlayer cmd = new JoinPlayer(authToken, gameReqData.gameID(), gameReqData.playerColor());
             clientSocket.session.getBasicRemote().sendText(new Gson().toJson(cmd));
 
