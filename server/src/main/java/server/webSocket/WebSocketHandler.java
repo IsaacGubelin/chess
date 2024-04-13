@@ -72,12 +72,13 @@ public class WebSocketHandler {
     private void joinPlayer(JoinPlayer cmd, Session session) throws IOException, ResponseException {
 
         // TODO: This part is working! Now you just need to do some SQL finessing and stuff. WIN THIS DAY!
-        session.getRemote().sendString("Hello world???");
 
-        if (!authDAO.hasAuth(cmd.getAuthString())) {                            // Validate user's auth token
+        // Validate user's auth token and existence of game ID
+        if (!authDAO.hasAuth(cmd.getAuthString())) {                            // Check the given auth token
             sendErrorMessage("Error: Invalid auth token given.", session); // Send error message if invalid
-        }
-        else try {                                                              // Otherwise, proceed with join
+        } else if (!gameDAO.hasGame(cmd.getGameID())) {                         // Check requested game ID
+            sendErrorMessage("Error: Invalid game ID.", session);          // Send error if game ID doesn't exist
+        } else try {                                                              // Otherwise, proceed with join
             String username = authDAO.getAuth(cmd.getAuthString()).username();  // Retrieve username
             if (cmd.getRequestedColor().equals(ChessGame.TeamColor.WHITE)) {    // If user requested white team
                 gameDAO.updateWhiteUsername(cmd.getGameID(), username);

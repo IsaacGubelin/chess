@@ -342,7 +342,7 @@ public class ClientUI {
             }
             case ERROR -> {
                 String errMsg = new Gson().fromJson(message, Error.class).getMessage();  // Get error message
-                System.out.println(SET_TEXT_COLOR_RED + "Error: " + errMsg); // Print the error
+                System.out.println(SET_TEXT_COLOR_RED + errMsg); // Print the error
             }
             case NOTIFICATION -> {  // If message is notification type, deserialize into notification class
                 String notification = new Gson().fromJson(message, NotificationMessage.class).getMessage();
