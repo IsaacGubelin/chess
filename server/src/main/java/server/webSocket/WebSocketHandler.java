@@ -69,7 +69,7 @@ public class WebSocketHandler {
     }
 
 
-    private void joinPlayer(JoinPlayer cmd, Session session) throws IOException, ResponseException {
+    private void joinPlayer(JoinPlayer cmd, Session session) throws IOException {
 
         // TODO: This part is working! Now you just need to do some SQL finessing and stuff. WIN THIS DAY!
 
