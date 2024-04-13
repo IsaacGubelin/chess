@@ -216,7 +216,9 @@ public class ClientUI {
                     try {
                         int reqGameIndex = Integer.parseInt(inputs[1]); // Get integer from second argument
                         int id = gameIDs.get(reqGameIndex);             // Retrieve corresponding game ID
-                        GameRequestData gameReqData = new GameRequestData(null, inputs[2], id); // Make req
+                        ChessGame.TeamColor chosenColor = inputs[2].equals("WHITE") ? ChessGame.TeamColor.WHITE
+                                                        : ChessGame.TeamColor.BLACK;    // Get chosen team color
+                        GameRequestData gameReqData = new GameRequestData(null, chosenColor, id); // Make req
                         facade.joinGame(authToken, gameReqData);    // Attempt to call facade join method
 
                         currentGameIndex = reqGameIndex;      // If joined, update current game index and team color

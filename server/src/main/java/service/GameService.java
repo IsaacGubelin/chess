@@ -1,5 +1,6 @@
 package service;
 
+import chess.ChessGame;
 import config.ConfigConsts;
 import dataAccess.*;
 import exception.AlreadyTakenException;
@@ -32,7 +33,7 @@ public class GameService {
     }
 
     // joinGame service. This needs the authDAO for retrieving the username and the gameDAO for adding user to game.
-    public static void joinGame(int gameID, String color, String authToken, AuthDAO aDao, GameDAO gDao)
+    public static void joinGame(int gameID, ChessGame.TeamColor color, String authToken, AuthDAO aDao, GameDAO gDao)
             throws AlreadyTakenException, BadRequestException, SQLException {
 
         if (!gDao.hasGame(gameID)) {  // If the requested game doesn't exist
@@ -41,7 +42,7 @@ public class GameService {
 
         // SPECTATE: If color is null, user wants to join game as spectator
         if (color == null) {
-            // Add logic here for spectating
+            // FIXME: Add logic here for spectating
         }
         else {
             try {
@@ -49,14 +50,14 @@ public class GameService {
 
 
                 // Join user to black team of specified game
-                if (color.equals(ConfigConsts.BLACK_TEAM_REQ)) {
+                if (color.equals(ChessGame.TeamColor.BLACK)) {
                     // Check if the requested game has an open slot for the black team
                     if (!gDao.hasAvailableTeam(gameID, ConfigConsts.BLACK_TEAM_COL)) // If black team isn't available
                         throw new AlreadyTakenException("Black team already taken.");
                     gDao.updateBlackUsername(gameID, username); // If good to do so, update black team name
                 }
                 // Join user to white team
-                else if (color.equals(ConfigConsts.WHITE_TEAM_REQ)) {
+                else if (color.equals(ChessGame.TeamColor.WHITE)) {
                     // Check if requested game has an open slot for the white team
                     if (!gDao.hasAvailableTeam(gameID, ConfigConsts.WHITE_TEAM_COL)) // If white team isn't available
                         throw new AlreadyTakenException("White team already taken.");

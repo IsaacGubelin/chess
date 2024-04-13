@@ -1,5 +1,6 @@
 package dataAccessTests;
 
+import chess.ChessGame;
 import config.ConfigConsts;
 import dataAccess.*;
 import exception.AlreadyTakenException;
@@ -623,7 +624,7 @@ public class DataAccessTests {
         String gameName = "Game1";                      // Name for new chess game
         String userName = "Freddy";                     // Username for client
         String otherUser = "Bonnie";                    // User trying to join already-taken team
-        String requestedTeam = "WHITE";                 // Team that second user will try to join
+        ChessGame.TeamColor requestedTeam = ChessGame.TeamColor.WHITE; // Team that second user will try to join
         try {
             aDao.createAuth(userName);                   // Add both users to auth table
             String token = aDao.createAuth(otherUser);   // Keep second user's token for test

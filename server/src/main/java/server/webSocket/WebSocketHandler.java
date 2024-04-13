@@ -4,14 +4,11 @@ import chess.ChessGame;
 import com.google.gson.Gson;
 import dataAccess.SQLAuthDAO;
 import dataAccess.SQLGameDAO;
-import dataAccess.SQLUserDAO;
 import exception.AlreadyTakenException;
 import exception.DataAccessException;
-import org.eclipse.jetty.util.IO;
 import org.eclipse.jetty.websocket.api.annotations.OnWebSocketMessage;
 import org.eclipse.jetty.websocket.api.annotations.WebSocket;
 import org.eclipse.jetty.websocket.api.Session;
-import resException.ResponseException;
 import webSocketMessages.serverMessages.Error;
 import webSocketMessages.serverMessages.LoadGame;
 import webSocketMessages.serverMessages.Notification;
@@ -23,10 +20,6 @@ import webSocketMessages.userCommands.UserGameCommand;
 import java.io.IOException;
 import java.sql.SQLException;
 
-//TODO:
-// Add a mapping data structure that holds key-value pairs:
-// KEY: gameID, VALUE: List of connections/sessions
-
 @WebSocket
 public class WebSocketHandler {
 
@@ -35,7 +28,6 @@ public class WebSocketHandler {
 
     private final SQLAuthDAO authDAO = new SQLAuthDAO();    // Used for verifying auth tokens
     private final SQLGameDAO gameDAO = new SQLGameDAO();    // For updating chess games
-    private final SQLUserDAO userDAO = new SQLUserDAO();    // For retrieving usernames //FIXME: possible removal
 
     // ServerMessage types for replying to client requests
     private final ServerMessage.ServerMessageType LOAD = ServerMessage.ServerMessageType.LOAD_GAME;
@@ -43,7 +35,7 @@ public class WebSocketHandler {
     private final ServerMessage.ServerMessageType NOTIFY = ServerMessage.ServerMessageType.NOTIFICATION;
 
     @OnWebSocketMessage
-    public void onMessage(Session session, String message) throws IOException, ResponseException {
+    public void onMessage(Session session, String message) throws IOException {
         UserGameCommand action = new Gson().fromJson(message, UserGameCommand.class);
         // TODO:
         //  Send to appropriate helper method
@@ -106,8 +98,8 @@ public class WebSocketHandler {
 
     /**
      * Helper method for creating, writing, and sending a notification to all clients when a new user joins their game
-     * @param cmd
-     * @throws DataAccessException
+     * @param cmd This is a JoinPlayer UserGameCommand.
+     * @throws DataAccessException Thrown if authToken doesn't exist
      */
     void sendBroadcastJoinPlayer(JoinPlayer cmd) throws DataAccessException, IOException {
         String broadcastMsg = authDAO.getAuth(cmd.getAuthString()).username();  // Start message with user's name
@@ -119,22 +111,22 @@ public class WebSocketHandler {
 
     /**
      * Helper method for creating, writing, and sending error messages to the client
-     * @param msg
-     * @param session
-     * @throws IOException
+     * @param msg The error message that will be displayed on the client's terminal
+     * @param session The session for the client
+     * @throws IOException IO error
      */
     private void sendErrorMessage(String msg, Session session) throws IOException {
-        Error errMsg = new Error(ServerMessage.ServerMessageType.ERROR);  // Create error message
+        Error errMsg = new Error(ERR);  // Create error message
         errMsg.setMessage(msg);                                                         // Write message
         session.getRemote().sendString(new Gson().toJson(errMsg));                      // Send to client
     }
 
     /**
      * Helper method for sending a load_game message to client
-     * @param gameID
-     * @param session
-     * @throws IOException
-     * @throws SQLException
+     * @param gameID This is used to retrieve the correct game from the SQL database
+     * @param session   The client's websocket session
+     * @throws IOException Thrown for IO error
+     * @throws SQLException May be thrown if database access doesn't work
      */
     private void sendLoadGameMessage(int gameID, Session session) throws IOException, SQLException{
         ServerMessage loadMsg = new LoadGame(LOAD, gameDAO.getChessGameFromDatabase(gameID));
