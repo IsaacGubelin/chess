@@ -41,13 +41,13 @@ public class WebSocketHandler {
         //  Send to appropriate helper method
         switch (action.getCommandType()) {
             case JOIN_PLAYER:
-                JoinPlayer joinPlayercmd = new Gson().fromJson(message, JoinPlayer.class);
-                joinPlayer(joinPlayercmd, session);
+                JoinPlayer joinPlayerCmd = new Gson().fromJson(message, JoinPlayer.class);
+                joinPlayer(joinPlayerCmd, session);
                 break;
 
             case JOIN_OBSERVER:
-                JoinObserver joinObservercmd = new Gson().fromJson(message, JoinObserver.class);
-                joinObserver(joinObservercmd, session);
+                JoinObserver joinObserverCmd = new Gson().fromJson(message, JoinObserver.class);
+                joinObserver(joinObserverCmd, session);
                 break;
 
             case LEAVE:
