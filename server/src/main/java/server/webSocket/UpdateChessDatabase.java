@@ -23,37 +23,4 @@ public class UpdateChessDatabase {
             System.out.println("Could not update SQL database.");
         }
     }
-
-    public static void updateChessGame(int gameID, ChessGame game) {
-        String gameJson = new Gson().toJson(game);  // Serialize the updated game
-        String updateStmt = "UPDATE " + ConfigConsts.GAME_TABLE_NAME + " SET game = ? WHERE " +
-                            " gameID = " + gameID;
-        try {
-            ExecuteSQL.executeUpdate(updateStmt, gameJson);
-        } catch (SQLException e) {
-            System.out.println("Could not update SQL database.");
-        }
-    }
-
-    /**
-     * This is used for updating the game name of an existing chess game.
-     * @param gameID
-     * @param gameName
-     */
-    public static void updateChessGameName(int gameID, String gameName) {
-        // Prepare a SQL statement
-        String updateStmt = "UPDATE " + ConfigConsts.GAME_TABLE_NAME + " SET gameName = ? WHERE " +
-                " gameID = " + gameID;
-        try {
-            ExecuteSQL.executeUpdate(updateStmt, gameName);
-        } catch (SQLException e) {
-            System.out.println("Could not update SQL database.");
-        }
-    }
-
-
-    //FIXME: may not need a retrieval after all?
-//    public static ChessGame retrieveDatabaseChessGame(int gameID) {
-//
-//    }
 }
