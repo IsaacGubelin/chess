@@ -10,6 +10,7 @@ import model.GameData;
 import java.util.ArrayList;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Objects;
 
 
 public class SQLGameDAO implements GameDAO{
@@ -94,6 +95,46 @@ public class SQLGameDAO implements GameDAO{
         } catch (DataAccessException ex) {
             throw new SQLException("Could not update black username.");
         }
+    }
+
+    /**
+     * Helper method for removing user from game upon Leave request.
+     * @param gameID Which game they're exiting
+     * @param color Which team to set vacant
+     * @throws SQLException Thrown if there is a database accessing error
+     */
+    public void removePlayer(int gameID, ChessGame.TeamColor color) throws SQLException {
+        String colorColumn = color.equals(ChessGame.TeamColor.WHITE) ? "whiteUsername" : "blackUsername";
+        String removeStmt = "UPDATE games SET " + colorColumn + "=? WHERE gameID=?";
+        ExecuteSQL.executeUpdate(removeStmt, null, gameID);
+    }
+
+    /**
+     *
+     * @param gameID select requested game
+     * @param color controls the query statement to get whiteUsername or blackUsername
+     * @return
+     * @throws SQLException thrown if there's an issue with retrieving the names from the database.
+     */
+    public String getUsername(int gameID, ChessGame.TeamColor color) throws SQLException {
+        try (var conn = DatabaseManager.getConnection()) {
+            // Make query statement to get all entries
+            String colLabel = color.equals(ChessGame.TeamColor.WHITE) ? "whiteUsername" : "blackUsername";
+            String queryStmt = "SELECT " + colLabel + " FROM " + ConfigConsts.GAME_TABLE_NAME + " WHERE gameID = ?";
+            try (var ps = conn.prepareStatement(queryStmt)) {
+                ps.setInt(1, gameID);   // Plug in game ID
+                // Executing the query and retrieving the result set
+                try (var rs = ps.executeQuery()) {
+                    if (rs.next()) {
+                        // Return white or black username string based on request. If null, return empty string
+                        return Objects.requireNonNullElse(rs.getString(colLabel), "");
+                    }
+                }
+            }
+        } catch (DataAccessException | SQLException e) {
+            throw new SQLException("Could not look for game!");
+        }
+        return null;
     }
 
     @Override

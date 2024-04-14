@@ -4,7 +4,8 @@ import chess.ChessGame;
 import chess.ChessPosition;
 import chess.InvalidMoveException;
 import com.google.gson.Gson;
-import facade.ServerFacade;
+import facade.HTTPFacade;
+import facade.WSFacade;
 import model.*;
 import resException.ResponseException;
 import webSocket.ServiceMessageHandler;
@@ -30,7 +31,8 @@ public class ClientUI {
     private final String url;
     private ServiceMessageHandler msgHandler;
 
-    private final ServerFacade facade;                  // Access the facade methods
+    private final WSFacade wsFacade;                  // Access the websocket facade methods
+    private final HTTPFacade httpFacade;                // Access the HTTP facade methods
     private HashMap<Integer, Integer> gameIDs;          // Keeps track of listed games
 
     private int currentGameIndex;
@@ -52,7 +54,8 @@ public class ClientUI {
                 handleServerMessage(message);  // This function determines the message type and then does needed tasks
             }
         };
-        facade = new ServerFacade(url, msgHandler); // Initialize server facade with given url
+        wsFacade = new WSFacade(url, msgHandler); // Initialize websocket facade with given url
+        httpFacade = new HTTPFacade(url);       // Initialize HTTP facade with same url
         this.url = url;                 // Store url
         initClientUI();                 // Initialize all other variables
     }
@@ -116,7 +119,7 @@ public class ClientUI {
                 } else if (numArgs == 4) {
                     UserData userData = new UserData(inputs[1], inputs[2], inputs[3]);  // Generate user data
                     try {
-                        var authData = facade.register(userData);  // Call register method in server facade
+                        var authData = httpFacade.register(userData);  // Call register method in http facade
                         System.out.println("Successful registration for " + inputs[1]);
                         name = inputs[1];                       // Store username
                         authToken = authData.authToken();       // Store token
@@ -142,7 +145,7 @@ public class ClientUI {
                 } else {    // Correct format, attempt to call server login endpoint
                     UserData userData = new UserData(inputs[1], inputs[2], null); // No email needed for login
                     try {
-                        var authData = facade.login(userData);
+                        var authData = httpFacade.login(userData);
                         System.out.println("Successful login for " + inputs[1]);
                         name = inputs[1];                   // Store username
                         authToken = authData.authToken();   // Store token
@@ -181,7 +184,7 @@ public class ClientUI {
                 } else {
                     String gameName = inputs[1]; // Collect game name input
                     try {
-                        GameIDData idData = facade.createGame(authToken, gameName);
+                        GameIDData idData = httpFacade.createGame(authToken, gameName);
                         System.out.println("Successful game creation. Game ID: " + idData.gameID());
                     } catch (ResponseException ex) {
                         System.out.println("Could not create game.");
@@ -195,7 +198,7 @@ public class ClientUI {
                     System.out.println("To list games, type \"list\" with no other text or arguments.");
                 } else {
                     try {
-                        ListGamesData gamesList = facade.getGamesList(authToken);
+                        ListGamesData gamesList = httpFacade.getGamesList(authToken);
                         listGamesInfo(gamesList);  // Print info for all active chess games
                     } catch (ResponseException ex) {
                         System.out.println("Could not list games.");
@@ -219,10 +222,12 @@ public class ClientUI {
                         ChessGame.TeamColor chosenColor = inputs[2].equals("WHITE") ? ChessGame.TeamColor.WHITE
                                                         : ChessGame.TeamColor.BLACK;    // Get chosen team color
                         GameRequestData gameReqData = new GameRequestData(null, chosenColor, id); // Make req
-                        facade.joinGame(authToken, gameReqData);    // Attempt to call facade join method
+                        httpFacade.joinGame(authToken, gameReqData);    // Attempt to join game
+                        wsFacade.joinGame(authToken, gameReqData);      // Try to get a LOAD_GAME message
 
                         currentGameIndex = reqGameIndex;      // If joined, update current game index and team color
                         color = inputs[2].equals("WHITE") ? ChessGame.TeamColor.WHITE : ChessGame.TeamColor.BLACK;
+
 
                     } catch (NumberFormatException numEx) { // Prints error message if second argument wasn't a number
                         System.out.println("Please use only integers for ID of requested game.");
@@ -242,22 +247,25 @@ public class ClientUI {
                 } else {
                     updateGamesList();  // Get updated list of available game IDs
                     try {
-                        int requestedIndex = Integer.parseInt(inputs[1]);     // Get integer from second argument
-                        if (!gameIDs.containsKey(requestedIndex)) {
-                            System.out.println("Specified game ID does not exist.");
-                        } else {
-                            currentGameIndex = requestedIndex;
-                            ListGamesData gamesList = facade.getGamesList(authToken);   // Find game for printing
-                            ChessBoard displayBoard = gamesList.games().get(currentGameIndex).game().getBoard(); // Get the board
-                            ChessBoardPrint.printChessBoard(displayBoard, false);   // Print black team
-                            ChessBoardPrint.printChessBoard(displayBoard, true);   // Print white team
-                            System.out.println("Observing game " + currentGameIndex);
-                        }
-                    } catch (NumberFormatException numEx) {
-                        System.out.println("Second argument not a number. Must use integer.");
+
+                        // FIXME: OBSERVER REQUEST
+
+                        int reqGameIndex = Integer.parseInt(inputs[1]); // Get integer from second argument
+                        int id = gameIDs.get(reqGameIndex);             // Retrieve corresponding game ID
+
+                        GameRequestData gameReqData = new GameRequestData(null, null, id);
+                        httpFacade.joinGame(authToken, gameReqData);    // Attempt to join game
+                        wsFacade.joinGame(authToken, gameReqData);      // Try to get a LOAD_GAME message
+
+                        currentGameIndex = reqGameIndex;      // If joined, update current game index and team color
+                        // FIXME: OBSERVER REQUEST
+                    } catch (NumberFormatException numEx) { // Prints error message if second argument wasn't a number
+                        System.out.println("Please use only integers for ID of requested game.");
                     } catch (ResponseException ex) {
-                        System.out.println("Could not retrieve game for viewing.");
+                        System.out.println("Could not join game.");
                         System.out.println(ex.getMessage());
+                    } catch (NullPointerException nullEx) {
+                        System.out.println("Specified game ID does not exist.");
                     }
                 }
 
@@ -265,7 +273,7 @@ public class ClientUI {
 
             case "logout":
                 try {
-                    facade.logout(authToken);
+                    httpFacade.logout(authToken);
                     System.out.println("Logged out.");
                     status = UserState.LOGGED_OUT;    // Change status string to logged out state
                 } catch (ResponseException ex) {
@@ -310,8 +318,14 @@ public class ClientUI {
             }
 
             case "leave" -> {
-
-                status = UserState.LOGGED_IN;   // Transition back to menu for login state
+                try {
+                    int id = gameIDs.get(currentGameIndex); // Get current game ID
+                    wsFacade.leaveGame(authToken, id);  // Remove user from game
+                    color = null;                   // Reset current color to null
+                    status = UserState.LOGGED_IN;   // Transition back to menu for login state
+                } catch (ResponseException ex) {
+                    System.out.println("Error: Could not leave game.");
+                }
             }
 
 
@@ -357,7 +371,7 @@ public class ClientUI {
 
     private void updateGamesList() {
         try {
-            ListGamesData gamesList = facade.getGamesList(authToken);
+            ListGamesData gamesList = httpFacade.getGamesList(authToken);
             int i = 0;  // For indexing list
             for (GameData game : gamesList.games()) {
                 gameIDs.put(i, game.gameID());  // Pair index with game ID and add to list

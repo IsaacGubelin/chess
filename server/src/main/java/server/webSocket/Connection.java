@@ -27,7 +27,6 @@ public class Connection {
      * @throws IOException
      */
     public void send(Notification msg) throws IOException {
-        System.out.println("YAHOO made it inside the send method of CONNECTION.JAVA");
         session.getRemote().sendString(new Gson().toJson(msg));
     }
 }

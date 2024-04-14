@@ -22,18 +22,6 @@ public class Main {
         var piece = new ChessPiece(ChessGame.TeamColor.WHITE, ChessPiece.PieceType.PAWN);
         System.out.println("♕ 240 Chess Client: " + piece);
 
-//        ChessGame game = new ChessGame();
-//        try {
-//            game.makeMove(new ChessMove(new ChessPosition(2, 5), new ChessPosition(3, 5)));
-//            game.makeMove(new ChessMove(new ChessPosition(7, 1), new ChessPosition(6, 1)));
-//            game.makeMove(new ChessMove(new ChessPosition(1, 4), new ChessPosition(2, 5)));
-//            game.makeMove(new ChessMove(new ChessPosition(7, 4), new ChessPosition(6, 4)));
-//            game.makeMove(new ChessMove(new ChessPosition(2, 5), new ChessPosition(6, 1)));
-//            game.makeMove(new ChessMove(new ChessPosition(2, 1), new ChessPosition(3, 1)));
-//        } catch (InvalidMoveException e) {
-//            System.out.println("Whoops");
-//        }
-//        ChessBoardPrint.printChessBoard(game.getBoard(), true, new ChessPosition(6, 1));
 
         ClientUI clientUi = null;   // User Interface object
         try {

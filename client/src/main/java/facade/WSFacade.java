@@ -4,99 +4,32 @@ import com.google.gson.Gson;
 import model.*;
 import resException.ResponseException;
 import webSocket.ServiceMessageHandler;
-import webSocket.WebSocketFacade;
+import webSocket.ClientWS;
 import webSocketMessages.userCommands.JoinPlayer;
+import webSocketMessages.userCommands.Leave;
 
 import java.io.*;
 import java.net.*;
 
 
-public class ServerFacade {
+public class WSFacade {
     public final String serverUrl;                                  // Connect to server
-    private final WebSocketFacade clientSocket;                     // Access the methods in the web socket facade
+    private final ClientWS clientSocket;                     // Access the methods in the web socket facade
     public final String REQ_HEADER_AUTHORIZATION = "authorization"; // Used as key for HTTP request headers
 
-    public ServerFacade(String url, ServiceMessageHandler msgHandler) throws ResponseException {
-        clientSocket = new WebSocketFacade(url, msgHandler);
+    public WSFacade(String url, ServiceMessageHandler msgHandler) throws ResponseException {
+        clientSocket = new ClientWS(url, msgHandler);
         serverUrl = url;
     }
 
-    public ServerFacade(int port, ServiceMessageHandler msgHandler) throws ResponseException {
+    public WSFacade(int port, ServiceMessageHandler msgHandler) throws ResponseException {
         String url = "http://localhost:";   // Create url
         url += port;                        // Add port number
-        clientSocket = new WebSocketFacade(url, msgHandler);
+        clientSocket = new ClientWS(url, msgHandler);
         serverUrl = url;
     }
 
 
-    public AuthData register(UserData userData) throws ResponseException {
-        String path = "/user";      // HTTP path
-        return this.makeRequest("POST", path, userData, AuthData.class);
-    }
-
-
-    public AuthData login(UserData userData) throws ResponseException {
-        String path = "/session";
-        return this.makeRequest("POST", path, userData, AuthData.class);
-    }
-
-    public void logout(String authToken) throws ResponseException {
-        String path = "/session";
-        String method = "DELETE";
-        try {
-            URL url = (new URI(serverUrl + path)).toURL();
-            HttpURLConnection http = (HttpURLConnection) url.openConnection();
-            http.setRequestMethod(method);              // Set the request method (GET, DELETE, POST, etc)
-            http.setDoOutput(true);                     // Indicate that the connection will output data
-
-            http.addRequestProperty(REQ_HEADER_AUTHORIZATION, authToken);
-            http.connect();                             // Connect to server
-            throwIfNotSuccessful(http);
-        } catch (Exception ex) {
-            throw new ResponseException(500, ex.getMessage());
-        }
-    }
-
-    public GameIDData createGame(String authToken, String gameName) throws ResponseException {
-        String path = "/game";
-        String method = "POST";
-        GameRequestData newGameData = new GameRequestData(gameName, null, 0);
-
-        try {
-            URL url = (new URI(serverUrl + path).toURL());
-            HttpURLConnection http = (HttpURLConnection) url.openConnection();
-            http.setRequestMethod(method);              // Set the request method (GET, DELETE, POST, etc)
-            http.setDoOutput(true);                     // Indicate that the connection will output data
-
-            http.addRequestProperty(REQ_HEADER_AUTHORIZATION, authToken);   // Add auth token to http header
-            writeBody(newGameData, http);
-
-            http.connect();
-            throwIfNotSuccessful(http);
-            return readBody(http, GameIDData.class);
-        } catch (Exception ex) {
-            throw new ResponseException(500, ex.getMessage());
-        }
-    }
-
-
-    public ListGamesData getGamesList(String authToken) throws ResponseException {
-        String path = "/game";
-        String method = "GET";
-        try {
-            URL url = (new URI(serverUrl + path).toURL());
-            HttpURLConnection http = (HttpURLConnection) url.openConnection();
-            http.setRequestMethod(method);              // Set the request method (GET, DELETE, POST, etc)
-            http.setDoOutput(true);                     // Indicate that the connection will output data
-
-            http.addRequestProperty(REQ_HEADER_AUTHORIZATION, authToken);   // Add auth token to http header
-            http.connect();
-            throwIfNotSuccessful(http);
-            return readBody(http, ListGamesData.class);
-        } catch (Exception ex) {
-            throw new ResponseException(500, ex.getMessage());
-        }
-    }
 
     /**
      * A function called by the chess client to join an available game.
@@ -105,17 +38,6 @@ public class ServerFacade {
      */
     public void joinGame(String authToken, GameRequestData gameReqData) throws ResponseException {
         try {
-
-            URL url = (new URI(serverUrl + path).toURL());
-            HttpURLConnection http = (HttpURLConnection) url.openConnection();
-            http.setRequestMethod(method);              // Set the request method (GET, DELETE, POST, etc)
-            http.setDoOutput(true);                     // Indicate that the connection will output data
-
-            http.addRequestProperty(REQ_HEADER_AUTHORIZATION, authToken);   // Add auth token to http header
-            writeBody(gameReqData, http);       // Prepare http body using game request data
-            http.connect();                     // Make connection
-            throwIfNotSuccessful(http);
-
             JoinPlayer cmd = new JoinPlayer(authToken, gameReqData.gameID(), gameReqData.playerColor());
             clientSocket.session.getBasicRemote().sendText(new Gson().toJson(cmd));
 
@@ -124,58 +46,13 @@ public class ServerFacade {
         }
     }
 
-    public <T> T makeRequest(String method, String path, Object request, Class<T> responseClass) throws ResponseException {
+    public void leaveGame(String authToken, int gameID) throws ResponseException {
+        Leave leaveCmd = new Leave(authToken, gameID);
         try {
-            URL url = (new URI(serverUrl + path)).toURL();
-            HttpURLConnection http = (HttpURLConnection) url.openConnection();
-            http.setRequestMethod(method);              // Set the request method (GET, DELETE, POST, etc)
-            http.setDoOutput(true);                     // Indicate that the connection will output data
-
-            writeBody(request, http);
-            http.connect();                             // Connect to server
-            throwIfNotSuccessful(http);
-            return readBody(http, responseClass);
-        } catch (Exception ex) {
+            clientSocket.session.getBasicRemote().sendText(new Gson().toJson(leaveCmd));
+        } catch (IOException ex) {
             throw new ResponseException(500, ex.getMessage());
         }
     }
-
-
-    public static void writeBody(Object request, HttpURLConnection http) throws IOException {
-        if (request != null) {
-            http.addRequestProperty("Content-Type", "application/json");
-            String reqData = new Gson().toJson(request);
-            try (OutputStream reqBody = http.getOutputStream()) {
-                reqBody.write(reqData.getBytes());
-            }
-        }
-    }
-
-    // Reads the response body from the input stream of the HTTP connection.
-    public static <T> T readBody(HttpURLConnection http, Class<T> responseClass) throws IOException {
-        T response = null;
-        if (http.getContentLength() < 0) {  // If content length is negative, there is content to read
-            try (InputStream respBody = http.getInputStream()) {
-                InputStreamReader reader = new InputStreamReader(respBody);
-                if (responseClass != null) {
-                    response = new Gson().fromJson(reader, responseClass);  // Deserialize
-                }
-            }
-        }
-        return response;
-    }
-
-    public void throwIfNotSuccessful(HttpURLConnection http) throws IOException, ResponseException {
-        var status = http.getResponseCode();
-        if (!isSuccessful(status)) {
-            throw new ResponseException(status, "failure: " + status);
-        }
-    }
-
-    // Returns true if status code is 200-299 (good)
-    public boolean isSuccessful(int status) {
-        return status / 100 == 2;
-    }
-
 
 }

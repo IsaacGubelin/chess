@@ -1,7 +1,10 @@
 import chess.*;
+import dataAccess.SQLGameDAO;
 import exception.DataAccessException;
 import dataAccess.DatabaseManager;
 import server.Server;
+
+import java.sql.SQLException;
 
 
 // FIXME: Change DAO types in server and remove multi-DAO object class entirely
@@ -19,5 +22,12 @@ public class Main {
         } catch (DataAccessException e) {
             System.out.println("Unable to create database.");
         }
+
+//        SQLGameDAO gDao = new SQLGameDAO(); // TEST CODE FOR NEW FUNCTIONS
+//        try {
+//            gDao.removePlayer(1, ChessGame.TeamColor.WHITE);
+//        } catch (SQLException e) {
+//            System.out.println("Went wrong");
+//        }
     }
 }

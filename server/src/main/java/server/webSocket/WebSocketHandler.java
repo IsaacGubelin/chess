@@ -6,6 +6,7 @@ import dataAccess.SQLAuthDAO;
 import dataAccess.SQLGameDAO;
 import exception.AlreadyTakenException;
 import exception.DataAccessException;
+import org.eclipse.jetty.util.IO;
 import org.eclipse.jetty.websocket.api.annotations.OnWebSocketMessage;
 import org.eclipse.jetty.websocket.api.annotations.WebSocket;
 import org.eclipse.jetty.websocket.api.Session;
@@ -15,10 +16,13 @@ import webSocketMessages.serverMessages.Notification;
 import webSocketMessages.serverMessages.ServerMessage;
 import webSocketMessages.userCommands.JoinObserver;
 import webSocketMessages.userCommands.JoinPlayer;
+import webSocketMessages.userCommands.Leave;
 import webSocketMessages.userCommands.UserGameCommand;
 
+import javax.xml.crypto.Data;
 import java.io.IOException;
 import java.sql.SQLException;
+import java.util.Locale;
 
 @WebSocket
 public class WebSocketHandler {
@@ -41,16 +45,18 @@ public class WebSocketHandler {
         //  Send to appropriate helper method
         switch (action.getCommandType()) {
             case JOIN_PLAYER:
-                JoinPlayer joinPlayerCmd = new Gson().fromJson(message, JoinPlayer.class);
+                JoinPlayer joinPlayerCmd = new Gson().fromJson(message, JoinPlayer.class); // Make JoinPlayer format
                 joinPlayer(joinPlayerCmd, session);
                 break;
 
             case JOIN_OBSERVER:
-                JoinObserver joinObserverCmd = new Gson().fromJson(message, JoinObserver.class);
+                JoinObserver joinObserverCmd = new Gson().fromJson(message, JoinObserver.class); // JoinObserver format
                 joinObserver(joinObserverCmd, session);
                 break;
 
             case LEAVE:
+                Leave lvCmd = new Gson().fromJson(message, Leave.class);    // Make into Leave command format
+                removeUserFromGame(lvCmd, session);                         // User exits game
                 break;
 
             case MAKE_MOVE:
@@ -65,35 +71,53 @@ public class WebSocketHandler {
 
     private void joinPlayer(JoinPlayer cmd, Session session) throws IOException {
 
-        // TODO: This part is working! Now you just need to WIN THIS DAY!
+        // TODO:  WIN THIS DAY!
 
         // Validate user's auth token and existence of game ID
         if (!authDAO.hasAuth(cmd.getAuthString())) {                            // Check the given auth token
             sendErrorMessage("Error: Invalid auth token given.", session); // Send error message if invalid
         } else if (!gameDAO.hasGame(cmd.getGameID())) {                         // Check requested game ID
             sendErrorMessage("Error: Invalid game ID.", session);          // Send error if game ID doesn't exist
-        } else try {                                                              // Otherwise, proceed with join
-            String username = authDAO.getAuth(cmd.getAuthString()).username();  // Retrieve username
-            if (cmd.getRequestedColor().equals(ChessGame.TeamColor.WHITE)) {    // If user requested white team
-                gameDAO.updateWhiteUsername(cmd.getGameID(), username);
-            } else if (cmd.getRequestedColor().equals(ChessGame.TeamColor.BLACK)) { // If black team request
-                gameDAO.updateBlackUsername(cmd.getGameID(), username);
+        }
+        else try {                                                              // Otherwise, proceed with join
+            String joinName = authDAO.getAuth(cmd.getAuthString()).username();  // Username from requester
+            String foundName = gameDAO.getUsername(cmd.getGameID(), cmd.getRequestedColor()); // Updated username
+            // Join attempt is a failure if the username in the requested game is null or doesn't match
+            if (foundName == null || !foundName.equals(joinName)) {
+                sendErrorMessage("Error: user failed to join game.", session);  // Send an error message
+            } else {
+                System.out.println("name was NOT null");
+                sendLoadGameMessage(cmd.getGameID(), session);  // If joined, send a load game message to client
+                connManager.add(cmd.getGameID(), cmd.getAuthString(), session);     // Add session to list of sessions
+                sendBroadcastJoinPlayer(cmd);                                       // Broadcast a notification
             }
 
-            sendLoadGameMessage(cmd.getGameID(), session);  // Send a successful load game message to client
-            connManager.add(cmd.getGameID(), cmd.getAuthString(), session);         // Add session to list of sessions
-            sendBroadcastJoinPlayer(cmd);                                           // Broadcast a notification
-
         } catch (DataAccessException | SQLException ex) {                       // If an exception is thrown
-            sendErrorMessage("Error in accessing SQL database", session);   // SQL error message
-        } catch (AlreadyTakenException alrEx) {
+            sendErrorMessage("Error: trouble accessing SQL database", session);   // SQL error message
+        } /*catch (AlreadyTakenException alrEx) {
             sendErrorMessage("Team already used.", session);                // Send error message if team is taken
-        }
+        } */
+    }
 
-//        connections.add(authData.username(), session);      // Add the user's name to the list in connections
-//        String message = String.format("%s has joined the game.", authData.username());
-//        ServerMessage notification = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION);
-//        connections.broadcast(authData.username(), notification);
+    private void removeUserFromGame(Leave leaveCmd, Session session) throws IOException {
+        System.out.println("In removeUserFromGame in websocket handler");
+        try {
+            String leaveName = authDAO.getAuth(leaveCmd.getAuthString()).username();    // Get username from token
+            int id = leaveCmd.getGameID();                                              // Get game ID
+            if (!gameDAO.hasGame(leaveCmd.getGameID())) {                         // Check requested game ID
+                sendErrorMessage("Error: Invalid game ID.", session);       // Send error if game ID doesn't exist
+            }   // Check if user requesting to leave is on black team
+            else if (gameDAO.getUsername(id, ChessGame.TeamColor.BLACK).equals(leaveName)) {
+                gameDAO.removePlayer(id, ChessGame.TeamColor.BLACK);
+            }   // else, check if user is on the white team
+            else if (gameDAO.getUsername(id, ChessGame.TeamColor.WHITE).equals(leaveName)) {
+                gameDAO.removePlayer(id, ChessGame.TeamColor.WHITE);
+            }
+            connManager.remove(leaveCmd.getGameID(), leaveCmd.getAuthString()); // Take user off broadcast list
+            sendBroadcastPlayerLeft(leaveCmd);                                  // Let everyone know that user left
+        } catch (DataAccessException | SQLException ex) {
+            sendErrorMessage("Error: Could not leave game.", session);  // Send error message if leave fails
+        }
     }
 
     /**
@@ -105,8 +129,14 @@ public class WebSocketHandler {
         String broadcastMsg = authDAO.getAuth(cmd.getAuthString()).username();  // Start message with user's name
         broadcastMsg += " has joined the game.";
         Notification notification = new Notification(NOTIFY, broadcastMsg);
-        System.out.println("In helper sendBroadcastJoinPlayer");
         connManager.broadcast(cmd.getGameID(), cmd.getAuthString(), notification);
+    }
+
+    void sendBroadcastPlayerLeft(Leave lvCmd) throws DataAccessException, IOException {
+        String broadcastMsg = authDAO.getAuth(lvCmd.getAuthString()).username();    // Find name of user that left
+        broadcastMsg += " has left the game.";
+        Notification notification = new Notification(NOTIFY, broadcastMsg);         // Make a new notification
+        connManager.broadcast(lvCmd.getGameID(), lvCmd.getAuthString(), notification);  // Send to users in same game
     }
 
     /**
@@ -116,7 +146,7 @@ public class WebSocketHandler {
      * @throws IOException IO error
      */
     private void sendErrorMessage(String msg, Session session) throws IOException {
-        Error errMsg = new Error(ERR);  // Create error message
+        Error errMsg = new Error(ERR);                                                  // Create error message
         errMsg.setMessage(msg);                                                         // Write message
         session.getRemote().sendString(new Gson().toJson(errMsg));                      // Send to client
     }

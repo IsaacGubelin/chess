@@ -7,13 +7,13 @@ import javax.websocket.*;
 import java.io.IOException;
 import java.net.*;
 
-public class WebSocketFacade extends Endpoint {
+public class ClientWS extends Endpoint {
 
     public Session session;
     private ServiceMessageHandler messageHandler;
 
 
-    public WebSocketFacade(String url, ServiceMessageHandler msgHandler) throws ResponseException {
+    public ClientWS(String url, ServiceMessageHandler msgHandler) throws ResponseException {
         try {
             url = url.replace("http", "ws");
             URI socketURI = new URI(url + "/connect");

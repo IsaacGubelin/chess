@@ -42,7 +42,6 @@ public class ConnectionManager {
 
     // Send a message out to many clients. Useful for observer/player joining notifications.
     public void broadcast(int gameID, String excludeAuthToken, Notification msg) throws IOException {
-        System.out.println("BROADCASTING MESSAGE FROM MANAGER CLASS");
         HashSet<Connection> notifyList = gameConnections.get(gameID);   // Get all sessions to notify
         ArrayList<Connection> removeList = new ArrayList<>();           // Add closed connections to this list
         for (Connection c : notifyList) {                                      // Go through all connections
