@@ -13,7 +13,7 @@ import java.net.*;
 
 public class ServerFacade {
     public final String serverUrl;                                  // Connect to server
-    private WebSocketFacade clientSocket;                           // Access the methods in the web socket facade
+    private final WebSocketFacade clientSocket;                     // Access the methods in the web socket facade
     public final String REQ_HEADER_AUTHORIZATION = "authorization"; // Used as key for HTTP request headers
 
     public ServerFacade(String url, ServiceMessageHandler msgHandler) throws ResponseException {
@@ -100,11 +100,22 @@ public class ServerFacade {
 
     /**
      * A function called by the chess client to join an available game.
-     * @param gameReqData
-     * @param authToken
+     * @param gameReqData Contains needed data about which game and team color to join
+     * @param authToken Used for user verification
      */
     public void joinGame(String authToken, GameRequestData gameReqData) throws ResponseException {
         try {
+
+            URL url = (new URI(serverUrl + path).toURL());
+            HttpURLConnection http = (HttpURLConnection) url.openConnection();
+            http.setRequestMethod(method);              // Set the request method (GET, DELETE, POST, etc)
+            http.setDoOutput(true);                     // Indicate that the connection will output data
+
+            http.addRequestProperty(REQ_HEADER_AUTHORIZATION, authToken);   // Add auth token to http header
+            writeBody(gameReqData, http);       // Prepare http body using game request data
+            http.connect();                     // Make connection
+            throwIfNotSuccessful(http);
+
             JoinPlayer cmd = new JoinPlayer(authToken, gameReqData.gameID(), gameReqData.playerColor());
             clientSocket.session.getBasicRemote().sendText(new Gson().toJson(cmd));
 
