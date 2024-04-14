@@ -71,8 +71,6 @@ public class WebSocketHandler {
 
     private void joinPlayer(JoinPlayer cmd, Session session) throws IOException {
 
-        // TODO:  WIN THIS DAY!
-
         // Validate user's auth token and existence of game ID
         if (!authDAO.hasAuth(cmd.getAuthString())) {                            // Check the given auth token
             sendErrorMessage("Error: Invalid auth token given.", session); // Send error message if invalid
@@ -94,9 +92,7 @@ public class WebSocketHandler {
 
         } catch (DataAccessException | SQLException ex) {                       // If an exception is thrown
             sendErrorMessage("Error: trouble accessing SQL database", session);   // SQL error message
-        } /*catch (AlreadyTakenException alrEx) {
-            sendErrorMessage("Team already used.", session);                // Send error message if team is taken
-        } */
+        }
     }
 
     private void removeUserFromGame(Leave leaveCmd, Session session) throws IOException {
@@ -121,6 +117,30 @@ public class WebSocketHandler {
     }
 
     /**
+     * This method is called when the websocket detects a JoinObserver command.
+     * @param cmd contains game ID of game observer wishes to watch
+     * @param session connection to observer
+     * @throws IOException May be thrown from notification broadcast
+     */
+    private void joinObserver(JoinObserver cmd, Session session) throws IOException {
+        // Validate user's auth token and existence of game ID
+        if (!authDAO.hasAuth(cmd.getAuthString())) {                            // Check the given auth token
+            sendErrorMessage("Error: Invalid auth token given.", session); // Send error message if invalid
+        } else if (!gameDAO.hasGame(cmd.getGameID())) {                         // Check requested game ID
+            sendErrorMessage("Error: Invalid game ID.", session);          // Send error if game ID doesn't exist
+        } else try {                                                              // Otherwise, add observer
+
+            sendLoadGameMessage(cmd.getGameID(), session);  // Send a load game message to client
+            connManager.add(cmd.getGameID(), cmd.getAuthString(), session);     // Add session to list of sessions
+            sendBroadcastJoinObserver(cmd);                                     // Broadcast a notification
+
+        } catch (DataAccessException | SQLException ex) {                       // If an exception is thrown
+            sendErrorMessage("Error: trouble accessing SQL database", session);   // SQL error message
+        }
+
+    }
+
+    /**
      * Helper method for creating, writing, and sending a notification to all clients when a new user joins their game
      * @param cmd This is a JoinPlayer UserGameCommand.
      * @throws DataAccessException Thrown if authToken doesn't exist
@@ -130,6 +150,13 @@ public class WebSocketHandler {
         broadcastMsg += " has joined the game.";
         Notification notification = new Notification(NOTIFY, broadcastMsg);
         connManager.broadcast(cmd.getGameID(), cmd.getAuthString(), notification);
+    }
+
+    void sendBroadcastJoinObserver(JoinObserver obsCmd) throws DataAccessException, IOException {
+        String broacastMsg = authDAO.getAuth(obsCmd.getAuthString()).username(); // Start message with observer's name
+        broacastMsg += " is watching the game.";
+        Notification notification = new Notification(NOTIFY, broacastMsg);  // Create new notification
+        connManager.broadcast(obsCmd.getGameID(), obsCmd.getAuthString(), notification); // Send to users in same game
     }
 
     void sendBroadcastPlayerLeft(Leave lvCmd) throws DataAccessException, IOException {
@@ -163,10 +190,5 @@ public class WebSocketHandler {
         session.getRemote().sendString(new Gson().toJson(loadMsg));
     }
 
-    private void joinObserver(JoinObserver cmd, Session session) throws IOException {
-//        connections.remove(visitorName);
-//        var message = String.format("%s left the shop", visitorName);
-//        var notification = new Notification(Notification.Type.DEPARTURE, message);
-//        connections.broadcast(visitorName, notification);
-    }
+
 }

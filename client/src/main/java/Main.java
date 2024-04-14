@@ -1,15 +1,17 @@
 import resException.ResponseException;
-import ui.ChessBoardPrint;
 import ui.ClientUI;
 
-/**
- * LAST LEFT OFF:
- * Weird error with joining/observing last game in list
- */
+
 import chess.*;
 
-import java.util.Collection;
-import java.util.HashSet;
+/////// TODO:
+// TODO:
+//  Put in another repl function for OBSERVING mode
+//  lowercase the inputs like in the other repl functions
+//  Add leave functionality for observer
+
+
+
 
 
 public class Main {

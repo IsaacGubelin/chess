@@ -88,6 +88,7 @@ public class ClientUI {
                 case LOGGED_OUT -> promptLoggedOut(inputs, numArgs);
                 case LOGGED_IN -> promptLoggedIn(inputs, numArgs);
                 case IN_GAME -> promptInGame(inputs, numArgs);
+                case OBSERVING -> promptObserving(inputs, numArgs);
             }
 
             if (line.equals("quit") && status.equals(UserState.LOGGED_OUT)) {
@@ -247,15 +248,11 @@ public class ClientUI {
                 } else {
                     updateGamesList();  // Get updated list of available game IDs
                     try {
-
-                        // FIXME: OBSERVER REQUEST
-
                         int reqGameIndex = Integer.parseInt(inputs[1]); // Get integer from second argument
                         int id = gameIDs.get(reqGameIndex);             // Retrieve corresponding game ID
 
                         GameRequestData gameReqData = new GameRequestData(null, null, id);
-                        httpFacade.joinGame(authToken, gameReqData);    // Attempt to join game
-                        wsFacade.joinGame(authToken, gameReqData);      // Try to get a LOAD_GAME message
+                        wsFacade.joinObserve(authToken, gameReqData);      // Try to get a LOAD_GAME message
 
                         currentGameIndex = reqGameIndex;      // If joined, update current game index and team color
                         // FIXME: OBSERVER REQUEST
@@ -339,6 +336,14 @@ public class ClientUI {
         }
     }
 
+    void promptObserving(String[] inputs, int numArgs) {
+        // TODO: Put another case statement here for observer actions
+        System.out.println("In observing state.");
+        if (inputs[0].equals("LEAVE")) {
+            status = UserState.LOGGED_IN;
+        }
+    }
+
     // Helper function is used for implementation of ServiceMessageHandler (see client init)
     void handleServerMessage(String message) throws ResponseException {
         var js = new Gson();                                                    // Make a Json conversion object
@@ -349,7 +354,7 @@ public class ClientUI {
                 this.chessGame = js.fromJson(message, LoadGame.class).getGame(); // Update the local game
                 System.out.printf("Chess game updated for %s.\n", name);    // Notify user
                 // Determine team to print. If color is null, client is a spectator and will see white's perspective.
-                boolean printWhiteSide = (this.color.equals(ChessGame.TeamColor.WHITE) || (this.color == null));
+                boolean printWhiteSide = ((this.color == null) || this.color.equals(ChessGame.TeamColor.WHITE));
                 ChessBoardPrint.printChessBoard(this.chessGame.getBoard(), printWhiteSide); // Print game board
                 if (this.color == null) {
                     status = UserState.OBSERVING;

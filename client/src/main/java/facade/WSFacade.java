@@ -5,6 +5,7 @@ import model.*;
 import resException.ResponseException;
 import webSocket.ServiceMessageHandler;
 import webSocket.ClientWS;
+import webSocketMessages.userCommands.JoinObserver;
 import webSocketMessages.userCommands.JoinPlayer;
 import webSocketMessages.userCommands.Leave;
 
@@ -41,6 +42,15 @@ public class WSFacade {
             JoinPlayer cmd = new JoinPlayer(authToken, gameReqData.gameID(), gameReqData.playerColor());
             clientSocket.session.getBasicRemote().sendText(new Gson().toJson(cmd));
 
+        } catch (IOException ex) {
+            throw new ResponseException(500, ex.getMessage());
+        }
+    }
+
+    public void joinObserve(String authToken, GameRequestData gameRequestData) throws ResponseException {
+        try {
+            JoinObserver observeCmd = new JoinObserver(authToken, gameRequestData.gameID());
+            clientSocket.session.getBasicRemote().sendText(new Gson().toJson(observeCmd));
         } catch (IOException ex) {
             throw new ResponseException(500, ex.getMessage());
         }
