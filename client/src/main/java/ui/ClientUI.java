@@ -324,10 +324,10 @@ public class ClientUI {
             // TODO: resign
 
             case "move" -> {
-                if (isObserving) {  // If the person is an observer, they cannot move pieces.
-                    System.out.println("Cannot move chess pieces in observing mode. Available options:");
-                    printHelpScreenInGame(true);    // Print observer menu guide
-                } else try {
+                if (numArgs != 2) {
+                    System.out.println("Invalid format.");
+                }
+                else try {
                     ChessMove desiredMove = InputToChessMove.getMoveFromString(inputs[1]);  // Parse input for move
                     int gameID = gameIDs.get(currentGameIndex);                             // Get ID of current game
                     wsFacade.playerMakeMove(authToken, gameID, desiredMove);        // Send move to websocket handler

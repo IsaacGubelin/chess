@@ -125,6 +125,8 @@ public class ChessGame {
      */
     public void makeMove(ChessMove move) throws InvalidMoveException {
 
+        if (isBadMove(move)) throw new InvalidMoveException("Invalid move.");   // Check for valid move positioning
+
         // Get type and color for piece being moved
         ChessPiece.PieceType type = board.getPiece(move.getStartPosition()).getPieceType();
         TeamColor pieceColor = board.getPiece(move.getStartPosition()).getTeamColor();
@@ -142,7 +144,6 @@ public class ChessGame {
         board.addPiece(move.getEndPosition(), new ChessPiece(pieceColor, type)); // Place piece
         board.removePiece(move.getStartPosition());                              // Remove from old spot
 
-
         // Promote if the piece was a pawn.
         if (type == ChessPiece.PieceType.PAWN && move.getPromotionPiece() != null) { // Check for valid promotion
             board.addPiece(move.getEndPosition(), new ChessPiece(pieceColor, move.getPromotionPiece()));
@@ -153,6 +154,19 @@ public class ChessGame {
 
         // Switch team turn.
         turn = (turn == TeamColor.BLACK) ? TeamColor.WHITE : TeamColor.BLACK;
+    }
+
+    /**
+     * Checks some obvious bad move edge cases:
+     * <p>
+     *     Moving an empty location
+     * <p>
+     *     Moving to the same position
+     * @param move The chess move to be evaluated
+     */
+    private boolean isBadMove(ChessMove move) {
+        return (move.getStartPosition().equals(move.getEndPosition()) ||
+                board.hasNoPieceAt(move.getStartPosition()));
     }
 
     /**
@@ -208,7 +222,6 @@ public class ChessGame {
         }
         return availableMoves.isEmpty();
     }
-
 
 
     /**
