@@ -1,8 +1,5 @@
 package ui;
-import chess.ChessBoard;
-import chess.ChessGame;
-import chess.ChessPosition;
-import chess.InvalidMoveException;
+import chess.*;
 import com.google.gson.Gson;
 import facade.HTTPFacade;
 import facade.WSFacade;
@@ -87,8 +84,8 @@ public class ClientUI {
             switch (status) {                                        // State machine for user interface options
                 case LOGGED_OUT -> promptLoggedOut(inputs, numArgs);
                 case LOGGED_IN -> promptLoggedIn(inputs, numArgs);
-                case IN_GAME -> promptInGame(inputs, numArgs);
-                case OBSERVING -> promptObserving(inputs, numArgs);
+                case IN_GAME -> promptInGame(inputs, numArgs, false);
+                case OBSERVING -> promptInGame(inputs, numArgs, true);
             }
 
             if (line.equals("quit") && status.equals(UserState.LOGGED_OUT)) {
@@ -127,7 +124,7 @@ public class ClientUI {
                         status = UserState.LOGGED_IN;  // Status string shows that newly registered user is logged in
 
                     } catch (ResponseException ex) {
-                        System.out.println("Could not register.");
+                        System.out.println(SET_TEXT_COLOR_RED + "Could not register.");
                         System.out.println(ex.getMessage());    // Print thrown error code
                     }
                 }
@@ -152,7 +149,7 @@ public class ClientUI {
                         authToken = authData.authToken();   // Store token
                         status = UserState.LOGGED_IN;
                     } catch (ResponseException ex) {
-                        System.out.println("Could not log in.");
+                        System.out.println(SET_TEXT_COLOR_RED + "Could not log in.");
                         System.out.println(ex.getMessage());        // Print thrown error code
                     }
                 }
@@ -188,7 +185,7 @@ public class ClientUI {
                         GameIDData idData = httpFacade.createGame(authToken, gameName);
                         System.out.println("Successful game creation. Game ID: " + idData.gameID());
                     } catch (ResponseException ex) {
-                        System.out.println("Could not create game.");
+                        System.out.println(SET_TEXT_COLOR_RED + "Could not create game.");
                         System.out.println(ex.getMessage());
                     }
                 }
@@ -202,7 +199,7 @@ public class ClientUI {
                         ListGamesData gamesList = httpFacade.getGamesList(authToken);
                         listGamesInfo(gamesList);  // Print info for all active chess games
                     } catch (ResponseException ex) {
-                        System.out.println("Could not list games.");
+                        System.out.println(SET_TEXT_COLOR_RED + "Could not list games.");
                         System.out.println(ex.getMessage());
                     }
                 }
@@ -233,7 +230,7 @@ public class ClientUI {
                     } catch (NumberFormatException numEx) { // Prints error message if second argument wasn't a number
                         System.out.println("Please use only integers for ID of requested game.");
                     } catch (ResponseException ex) {
-                        System.out.println("Could not join game.");
+                        System.out.println(SET_TEXT_COLOR_RED + "Could not join game.");
                         System.out.println(ex.getMessage());
                     } catch (NullPointerException nullEx) {
                         System.out.println("Specified game ID does not exist.");
@@ -250,16 +247,14 @@ public class ClientUI {
                     try {
                         int reqGameIndex = Integer.parseInt(inputs[1]); // Get integer from second argument
                         int id = gameIDs.get(reqGameIndex);             // Retrieve corresponding game ID
-
-                        GameRequestData gameReqData = new GameRequestData(null, null, id);
-                        wsFacade.joinObserve(authToken, gameReqData);      // Try to get a LOAD_GAME message
+                        wsFacade.joinObserve(authToken, id);      // Try to get a LOAD_GAME message
 
                         currentGameIndex = reqGameIndex;      // If joined, update current game index and team color
                         // FIXME: OBSERVER REQUEST
                     } catch (NumberFormatException numEx) { // Prints error message if second argument wasn't a number
                         System.out.println("Please use only integers for ID of requested game.");
                     } catch (ResponseException ex) {
-                        System.out.println("Could not join game.");
+                        System.out.println(SET_TEXT_COLOR_RED + "Could not join game.");
                         System.out.println(ex.getMessage());
                     } catch (NullPointerException nullEx) {
                         System.out.println("Specified game ID does not exist.");
@@ -274,7 +269,7 @@ public class ClientUI {
                     System.out.println("Logged out.");
                     status = UserState.LOGGED_OUT;    // Change status string to logged out state
                 } catch (ResponseException ex) {
-                    System.out.println("Could not logout.");
+                    System.out.println(SET_TEXT_COLOR_RED + "Could not logout.");
                     System.out.println(ex.getMessage());
                 }
                 break;
@@ -291,9 +286,9 @@ public class ClientUI {
         }
     }
 
-    void promptInGame(String[] inputs, int numArgs) {
+    void promptInGame(String[] inputs, int numArgs, boolean isObserving) {
         switch (inputs[0]) {
-            case "help" -> printHelpScreenInGame();
+            case "help" -> printHelpScreenInGame(false);
             case "redraw" -> {
                 System.out.println("Redraw chess board");
                 ChessBoardPrint.printChessBoard(chessGame.getBoard(), color);
@@ -321,30 +316,42 @@ public class ClientUI {
                     color = null;                   // Reset current color to null
                     status = UserState.LOGGED_IN;   // Transition back to menu for login state
                 } catch (ResponseException ex) {
-                    System.out.println("Error: Could not leave game.");
+                    System.out.println(SET_TEXT_COLOR_RED + "Error: Could not leave game.");
                 }
             }
 
 
             // TODO: resign
 
-            // TODO: move
+            case "move" -> {
+                if (isObserving) {  // If the person is an observer, they cannot move pieces.
+                    System.out.println("Cannot move chess pieces in observing mode. Available options:");
+                    printHelpScreenInGame(true);    // Print observer menu guide
+                } else try {
+                    ChessMove desiredMove = InputToChessMove.getMoveFromString(inputs[1]);  // Parse input for move
+                    int gameID = gameIDs.get(currentGameIndex);                             // Get ID of current game
+                    wsFacade.playerMakeMove(authToken, gameID, desiredMove);        // Send move to websocket handler
+                } catch (InvalidMoveException invalidEx) {
+                    System.out.println(invalidEx.getMessage() + " Follow format below:");
+                    System.out.println("move <OLD_COL><OLD_ROW><NEW_COL><NEW_ROW>");
+                } catch (ResponseException ex) {
+                    System.out.println(SET_TEXT_COLOR_RED + ex.getMessage());   // Print out exception if needed
+                }
+            }
+
             default -> {
                 System.out.println("Invalid input. Follow these options:");
-                printHelpScreenInGame();
+                printHelpScreenInGame(false);
             }
         }
     }
 
-    void promptObserving(String[] inputs, int numArgs) {
-        // TODO: Put another case statement here for observer actions
-        System.out.println("In observing state.");
-        if (inputs[0].equals("LEAVE")) {
-            status = UserState.LOGGED_IN;
-        }
-    }
 
-    // Helper function is used for implementation of ServiceMessageHandler (see client init)
+    /**
+     * Helper function is used for implementation of ServiceMessageHandler (see client init)
+     * @param message The ServerMessage to be evaluated
+      */
+
     void handleServerMessage(String message) throws ResponseException {
         var js = new Gson();                                                    // Make a Json conversion object
         ServerMessage msg = js.fromJson(message, ServerMessage.class);          // Deserialize into ServerMessage
@@ -383,7 +390,7 @@ public class ClientUI {
                 i++;                            // Increment index
             }
         } catch (ResponseException ex) {
-            System.out.println("Could not update games list.");
+            System.out.println(SET_TEXT_COLOR_RED + "Could not update games list.");
             System.out.println(ex.getMessage());
         }
     }
@@ -435,20 +442,27 @@ public class ClientUI {
         System.out.println("help" + RESET_TEXT_BOLD_FAINT + " --> show available options");
     }
 
-    private void printHelpScreenInGame() {
+    /**
+     * Prints the help menu for available options while in a chess game room.
+     * @param isObserving Hides the "move" description, since observers don't participate.
+     */
+    private void printHelpScreenInGame(boolean isObserving) {
         setTextToPromptFormat();
         System.out.println("redraw" + RESET_TEXT_BOLD_FAINT + " --> Refresh the chess board display");
         setTextToPromptFormat();
         System.out.println("leave" + RESET_TEXT_BOLD_FAINT + " --> Leave current game");
         setTextToPromptFormat();
-        System.out.println("move <COLUMN><ROW><COLUMN><ROW>" + RESET_TEXT_BOLD_FAINT + " --> move chess piece");
-        setTextToPromptFormat();
+        if (!isObserving) {     // The make move command is only available for actual players in the chess game
+            System.out.println("move <COLUMN><ROW><COLUMN><ROW>" + RESET_TEXT_BOLD_FAINT + " --> move chess piece");
+            setTextToPromptFormat();
+        }
         System.out.println("resign" + RESET_TEXT_BOLD_FAINT + " --> forfeit the game");
         setTextToPromptFormat();
         System.out.println("show <COLUMN><ROW>" + RESET_TEXT_BOLD_FAINT + " --> Highlight available moves");
         setTextToPromptFormat();
         System.out.println("help" + RESET_TEXT_BOLD_FAINT + " --> show available options");
     }
+
 
 
     // Calls unicode escape sequences to make command prompt text italicized and green

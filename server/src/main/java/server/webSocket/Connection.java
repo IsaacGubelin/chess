@@ -5,6 +5,7 @@ import org.eclipse.jetty.websocket.api.Session;
 import webSocketMessages.serverMessages.Notification;
 
 import java.io.IOException;
+import java.util.Objects;
 
 /**
  * A collection of these will be held in a data structure for easy sending of notifications.
@@ -28,5 +29,13 @@ public class Connection {
      */
     public void send(Notification msg) throws IOException {
         session.getRemote().sendString(new Gson().toJson(msg));
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Connection that = (Connection) o;
+        return authToken.equals(that.authToken) && session.equals(that.session);
     }
 }

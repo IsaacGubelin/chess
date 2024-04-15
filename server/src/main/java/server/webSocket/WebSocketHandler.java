@@ -1,28 +1,22 @@
 package server.webSocket;
 
 import chess.ChessGame;
+import chess.ChessMove;
+import chess.InvalidMoveException;
 import com.google.gson.Gson;
 import dataAccess.SQLAuthDAO;
 import dataAccess.SQLGameDAO;
-import exception.AlreadyTakenException;
 import exception.DataAccessException;
-import org.eclipse.jetty.util.IO;
 import org.eclipse.jetty.websocket.api.annotations.OnWebSocketMessage;
 import org.eclipse.jetty.websocket.api.annotations.WebSocket;
 import org.eclipse.jetty.websocket.api.Session;
+import webSocketMessages.serverMessages.*;
 import webSocketMessages.serverMessages.Error;
-import webSocketMessages.serverMessages.LoadGame;
-import webSocketMessages.serverMessages.Notification;
-import webSocketMessages.serverMessages.ServerMessage;
-import webSocketMessages.userCommands.JoinObserver;
-import webSocketMessages.userCommands.JoinPlayer;
-import webSocketMessages.userCommands.Leave;
-import webSocketMessages.userCommands.UserGameCommand;
+import webSocketMessages.userCommands.*;
+import server.webSocket.Connection;
 
-import javax.xml.crypto.Data;
 import java.io.IOException;
 import java.sql.SQLException;
-import java.util.Locale;
 
 @WebSocket
 public class WebSocketHandler {
@@ -60,6 +54,8 @@ public class WebSocketHandler {
                 break;
 
             case MAKE_MOVE:
+                MakeMove moveCmd = new Gson().fromJson(message, MakeMove.class);    // MakeMove format
+                playerMove(moveCmd, session);                                       // Attempt to make move
                 break;
 
             case RESIGN:
@@ -84,7 +80,6 @@ public class WebSocketHandler {
             if (foundName == null || !foundName.equals(joinName)) {
                 sendErrorMessage("Error: user failed to join game.", session);  // Send an error message
             } else {
-                System.out.println("name was NOT null");
                 sendLoadGameMessage(cmd.getGameID(), session);  // If joined, send a load game message to client
                 connManager.add(cmd.getGameID(), cmd.getAuthString(), session);     // Add session to list of sessions
                 sendBroadcastJoinPlayer(cmd);                                       // Broadcast a notification
@@ -96,7 +91,6 @@ public class WebSocketHandler {
     }
 
     private void removeUserFromGame(Leave leaveCmd, Session session) throws IOException {
-        System.out.println("In removeUserFromGame in websocket handler");
         try {
             String leaveName = authDAO.getAuth(leaveCmd.getAuthString()).username();    // Get username from token
             int id = leaveCmd.getGameID();                                              // Get game ID
@@ -109,7 +103,8 @@ public class WebSocketHandler {
             else if (gameDAO.getUsername(id, ChessGame.TeamColor.WHITE).equals(leaveName)) {
                 gameDAO.removePlayer(id, ChessGame.TeamColor.WHITE);
             }
-            connManager.remove(leaveCmd.getGameID(), leaveCmd.getAuthString()); // Take user off broadcast list
+            connManager.removeConnection(leaveCmd.getGameID(), leaveCmd.getAuthString()); // Take user off broadcast list
+
             sendBroadcastPlayerLeft(leaveCmd);                                  // Let everyone know that user left
         } catch (DataAccessException | SQLException ex) {
             sendErrorMessage("Error: Could not leave game.", session);  // Send error message if leave fails
@@ -137,7 +132,27 @@ public class WebSocketHandler {
         } catch (DataAccessException | SQLException ex) {                       // If an exception is thrown
             sendErrorMessage("Error: trouble accessing SQL database", session);   // SQL error message
         }
+    }
 
+    /**
+     * Handles a MakeMove command. Verifies that the move is legal and throws an error otherwise.
+     * @param moveCmd contains the needed game ID and chess move information
+     * @param session connection to client who sent the command
+     * @throws IOException Possible exception
+     */
+    private void playerMove(MakeMove moveCmd, Session session) throws IOException {
+        if (!authDAO.hasAuth(moveCmd.getAuthString())) {
+            sendErrorMessage("Error: Invalid authToken.", session);
+        } else if (!gameDAO.hasGame(moveCmd.getGameID())) {
+            sendErrorMessage("Error: game ID does not exist in database.", session);
+        } else try {
+            gameDAO.updateGameMakeMove(moveCmd.getGameID(), moveCmd.getMove()); // Make the move
+            SendBroadcastLoadGame(moveCmd);         // Load new board for everyone, including player who made the move
+        } catch (SQLException | DataAccessException ex) {
+            sendErrorMessage("Error: trouble accessing SQL database.", session);
+        } catch (InvalidMoveException invEx) {
+            sendErrorMessage("Error: invalid chess move.", session);
+        }
     }
 
     /**
@@ -164,6 +179,17 @@ public class WebSocketHandler {
         broadcastMsg += " has left the game.";
         Notification notification = new Notification(NOTIFY, broadcastMsg);         // Make a new notification
         connManager.broadcast(lvCmd.getGameID(), lvCmd.getAuthString(), notification);  // Send to users in same game
+    }
+
+    void SendBroadcastLoadGame(MakeMove moveCmd) throws IOException, SQLException, DataAccessException {
+        int gameID = moveCmd.getGameID();                                       // Retrieve ID for easy reference
+        for (Connection conn : connManager.gameConnections.get(gameID)) {
+            sendLoadGameMessage(gameID, conn.session);                          // Update everyone's boards
+        }
+        String broadcastMsg = authDAO.getAuth(moveCmd.getAuthString()).username();  // Start update message with name
+        broadcastMsg += " has made a move: " + moveCmd.getMove().toString();        // Chess move information
+        Notification notification = new Notification(NOTIFY, broadcastMsg);         // Make a notification
+        connManager.broadcast(gameID, moveCmd.getAuthString(), notification);   // Send notification about new move
     }
 
     /**

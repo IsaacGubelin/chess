@@ -9,7 +9,7 @@ import chess.*;
 //  Put in another repl function for OBSERVING mode
 //  lowercase the inputs like in the other repl functions
 //  Add leave functionality for observer
-
+//  Check all boxes in notebook
 
 
 

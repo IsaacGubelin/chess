@@ -82,10 +82,11 @@ public class ChessMove {
 
     @Override
     public String toString() {
-        return "ChessMove{" +
-                "startPosition=" + startPosition +
-                ", endPosition=" + endPosition +
-                ", promotionPiece=" + promotionPiece +
-                '}';
+        // Get the column letter labels for the starting and ending positions
+        char startColumn = (char) ('a' + startPosition.getColumn() - 1);
+        char endColumn = (char) ('a' + endPosition.getColumn() - 1);
+
+        // Construct the string representation of the move
+        return "" + startColumn + startPosition.getRow() + endColumn + endPosition.getRow();
     }
 }

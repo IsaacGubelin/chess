@@ -1,6 +1,8 @@
 package dataAccess;
 
 import chess.ChessGame;
+import chess.ChessMove;
+import chess.InvalidMoveException;
 import config.ConfigConsts;
 import exception.AlreadyTakenException;
 import exception.DataAccessException;
@@ -218,6 +220,19 @@ public class SQLGameDAO implements GameDAO{
         return null;
     }
 
+    /**
+     * Attempts to update a chess game with a given move.
+     * @param gameID ID of game to make move in
+     * @param move Contains start and end positions of move
+     * @throws InvalidMoveException Thrown if the move was invalid
+     */
+    public void updateGameMakeMove(int gameID, ChessMove move) throws InvalidMoveException, SQLException {
+        ChessGame game = getChessGameFromDatabase(gameID);
+        game.makeMove(move);                        // Make the requested chess move
+        String gameJson = new Gson().toJson(game);  // Serialize the updated game object
+        String updateStmt = "UPDATE " + ConfigConsts.GAME_TABLE_NAME + " SET game=? WHERE " + "gameID = " + gameID;
+        ExecuteSQL.executeUpdate(updateStmt, gameJson); // Execute SQL statement
+    }
 
     @Override
     public boolean isEmpty() throws DataAccessException {

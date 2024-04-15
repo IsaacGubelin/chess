@@ -17,7 +17,7 @@ public class InputToChessMove {
      */
     public static ChessPosition getPositionFromString(String input) throws InvalidMoveException {
         if (input.length() != 2) {
-            throw new InvalidMoveException("Input string gives invalid position");
+            throw new InvalidMoveException("Input string gives invalid position.");
         }
         input = input.toUpperCase();        // Convert any lowercase letters to uppercase
         char columnChar = input.charAt(0);  // Collect column character

@@ -1,9 +1,7 @@
 package server.webSocket;
 
 import org.eclipse.jetty.websocket.api.Session;
-import resException.ResponseException;
 import webSocketMessages.serverMessages.Notification;
-import webSocketMessages.serverMessages.ServerMessage;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -15,10 +13,9 @@ public class ConnectionManager {
      * This adds a session to a group of sessions associated with a single chess game.
      * <p>
      * As users leave or join a chess game, notifications are sent to all sessions connected to that game's ID.
-     * @param gameID
-     * @param authToken
-     * @param session
-     * @throws ResponseException
+     * @param gameID ID of game to add user to
+     * @param authToken Used for verification
+     * @param session Connection to user
      */
     public void add(int gameID, String authToken, Session session) {
         Connection connection = new Connection(authToken, session);         // Make a Connection object
@@ -33,11 +30,11 @@ public class ConnectionManager {
 
     /**
      * Removes the given auth token from the session collection held by the given gameID.
-     * @param gameID
-     * @param authToken
+     * @param gameID Used to retrieve the correct group of connections
+     * @param authToken The connection with this authToken is removed
      */
-    public void remove(int gameID, String authToken) {
-        gameConnections.get(gameID).remove(authToken);
+    public void removeConnection(int gameID, String authToken) {
+        gameConnections.get(gameID).removeIf(conn -> conn.authToken.equals(authToken));
     }
 
     // Send a message out to many clients. Useful for observer/player joining notifications.

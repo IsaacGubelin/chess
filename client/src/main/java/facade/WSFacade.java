@@ -1,22 +1,18 @@
 package facade;
+import chess.ChessMove;
 import com.google.gson.Gson;
 
 import model.*;
 import resException.ResponseException;
 import webSocket.ServiceMessageHandler;
 import webSocket.ClientWS;
-import webSocketMessages.userCommands.JoinObserver;
-import webSocketMessages.userCommands.JoinPlayer;
-import webSocketMessages.userCommands.Leave;
-
+import webSocketMessages.userCommands.*;
 import java.io.*;
-import java.net.*;
 
 
 public class WSFacade {
     public final String serverUrl;                                  // Connect to server
     private final ClientWS clientSocket;                     // Access the methods in the web socket facade
-    public final String REQ_HEADER_AUTHORIZATION = "authorization"; // Used as key for HTTP request headers
 
     public WSFacade(String url, ServiceMessageHandler msgHandler) throws ResponseException {
         clientSocket = new ClientWS(url, msgHandler);
@@ -24,8 +20,7 @@ public class WSFacade {
     }
 
     public WSFacade(int port, ServiceMessageHandler msgHandler) throws ResponseException {
-        String url = "http://localhost:";   // Create url
-        url += port;                        // Add port number
+        String url = "http://localhost:" + port;   // Create url with port number
         clientSocket = new ClientWS(url, msgHandler);
         serverUrl = url;
     }
@@ -47,10 +42,27 @@ public class WSFacade {
         }
     }
 
-    public void joinObserve(String authToken, GameRequestData gameRequestData) throws ResponseException {
+    public void joinObserve(String authToken, int id) throws ResponseException {
         try {
-            JoinObserver observeCmd = new JoinObserver(authToken, gameRequestData.gameID());
+            JoinObserver observeCmd = new JoinObserver(authToken, id);
             clientSocket.session.getBasicRemote().sendText(new Gson().toJson(observeCmd));
+        } catch (IOException ex) {
+            throw new ResponseException(500, ex.getMessage());
+        }
+    }
+
+    /**
+     * This sends a MakeMove command out to the server websocket handler. If successful, client will receive a
+     * LoadGame message with an updated chessboard.
+     * @param authToken Verification
+     * @param gameID Game being played
+     * @param move Proposed chess move
+     * @throws ResponseException If an IO exception is caught, this exception is thrown afterward
+     */
+    public void playerMakeMove(String authToken, int gameID, ChessMove move) throws ResponseException {
+        try {
+            MakeMove moveCmd = new MakeMove(authToken, gameID, move);   // Create a new make move command
+            clientSocket.session.getBasicRemote().sendText(new Gson().toJson(moveCmd));
         } catch (IOException ex) {
             throw new ResponseException(500, ex.getMessage());
         }
