@@ -42,7 +42,7 @@ public class GameService {
 
         // SPECTATE: If color is null, user wants to join game as spectator
         if (color == null) {
-            // FIXME: Add logic here for spectating
+            System.out.println("GameService received no team color.");
         }
         else {
             try {

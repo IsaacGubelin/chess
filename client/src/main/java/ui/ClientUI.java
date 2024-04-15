@@ -250,7 +250,6 @@ public class ClientUI {
                         wsFacade.joinObserve(authToken, id);      // Try to get a LOAD_GAME message
 
                         currentGameIndex = reqGameIndex;      // If joined, update current game index and team color
-                        // FIXME: OBSERVER REQUEST
                     } catch (NumberFormatException numEx) { // Prints error message if second argument wasn't a number
                         System.out.println("Please use only integers for ID of requested game.");
                     } catch (ResponseException ex) {

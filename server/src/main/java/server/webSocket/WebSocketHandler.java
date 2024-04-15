@@ -36,8 +36,7 @@ public class WebSocketHandler {
     @OnWebSocketMessage
     public void onMessage(Session session, String message) throws IOException {
         UserGameCommand action = new Gson().fromJson(message, UserGameCommand.class);
-        // TODO:
-        //  Send to appropriate helper method
+
         switch (action.getCommandType()) {
             case JOIN_PLAYER:
                 JoinPlayer joinPlayerCmd = new Gson().fromJson(message, JoinPlayer.class); // Make JoinPlayer format

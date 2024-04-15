@@ -1,9 +1,7 @@
 package ui;
 
 import static ui.EscapeSequences.*;
-
 import chess.*;
-
 import java.util.HashSet;
 
 /**
