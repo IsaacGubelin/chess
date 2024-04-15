@@ -228,7 +228,11 @@ public class SQLGameDAO implements GameDAO{
      */
     public void updateGameMakeMove(int gameID, ChessMove move) throws InvalidMoveException, SQLException {
         ChessGame game = getChessGameFromDatabase(gameID);
-        game.makeMove(move);                        // Make the requested chess move
+        game.makeMove(move);        // Make the requested chess move
+        updateGame(gameID, game);   // Update game in database
+    }
+
+    public void updateGame(int gameID, ChessGame game) throws SQLException {
         String gameJson = new Gson().toJson(game);  // Serialize the updated game object
         String updateStmt = "UPDATE " + ConfigConsts.GAME_TABLE_NAME + " SET game=? WHERE " + "gameID = " + gameID;
         ExecuteSQL.executeUpdate(updateStmt, gameJson); // Execute SQL statement

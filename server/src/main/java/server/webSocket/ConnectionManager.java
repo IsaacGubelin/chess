@@ -57,4 +57,9 @@ public class ConnectionManager {
         }
     }
 
+    // Send message out to everyone, including the sender.
+    public void broadcast(int gameID, Notification msg) throws IOException {
+        broadcast(gameID, "", msg);
+    }
+
 }

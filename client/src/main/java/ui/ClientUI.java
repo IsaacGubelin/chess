@@ -321,7 +321,21 @@ public class ClientUI {
             }
 
 
-            // TODO: resign
+            case "resign" -> {
+                System.out.println("Are you sure you wish to forfeit the game? Enter 'y' or 'n'");
+                Scanner scanner = new Scanner(System.in);                   // For reading input
+                String line = scanner.nextLine();
+                String[] choice = line.split(" ");                    //  Collect and parse input
+                if (choice[0].equals("y")) {        // If YES
+                    try {
+                        wsFacade.playerResign(authToken, gameIDs.get(currentGameIndex));    // Send resign request
+                    } catch (ResponseException ex) {
+                        System.out.println(SET_TEXT_COLOR_RED + "Error: Couldn't resign.");
+                    }
+                } else {
+                    System.out.println("Resignation cancelled, back in game.");
+                }
+            }
 
             case "move" -> {
                 if (numArgs != 2) {

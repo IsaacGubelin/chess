@@ -77,4 +77,12 @@ public class WSFacade {
         }
     }
 
+    public void playerResign(String authToken, int gameID) throws ResponseException {
+        Resign resCmd = new Resign(authToken, gameID);
+        try {
+            clientSocket.session.getBasicRemote().sendText(new Gson().toJson(resCmd));
+        } catch (IOException ex) {
+            throw new ResponseException(500, ex.getMessage());
+        }
+    }
 }

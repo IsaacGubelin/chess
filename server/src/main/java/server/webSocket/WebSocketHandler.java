@@ -1,5 +1,6 @@
 package server.webSocket;
 
+import chess.ChessBoard;
 import chess.ChessGame;
 import chess.ChessMove;
 import chess.InvalidMoveException;
@@ -59,6 +60,8 @@ public class WebSocketHandler {
                 break;
 
             case RESIGN:
+                Resign resignCmd = new Gson().fromJson(message, Resign.class);  // Resign command format
+                playerResign(resignCmd, session);
                 break;
 
         }
@@ -147,12 +150,34 @@ public class WebSocketHandler {
         } else if (!gameDAO.hasGame(moveCmd.getGameID())) {
             sendErrorMessage("Error: game ID does not exist in database.", session);
         } else try {
+            // Quickly check to make sure game isn't finished
+            if (gameDAO.getChessGameFromDatabase(moveCmd.getGameID()).isFinished()) {
+                sendErrorMessage("Error: game is already finished.", session);
+                proceedForward = false;
+            }
+        } catch (SQLException ex) {
+            sendErrorMessage("Something annoying happened with SQL.", session);
+            proceedForward = false;
+        }
+
+
+        if (proceedForward) try {
             String nameOfRequester = authDAO.getAuth(moveCmd.getAuthString()).username();
-            if (!gameDAO.getUsername(moveCmd.getGameID(), ChessGame.TeamColor.BLACK).equals(nameOfRequester) &&
+            ChessBoard tmpBoard = gameDAO.getChessGameFromDatabase(moveCmd.getGameID()).getBoard(); // Look at board
+            ChessGame.TeamColor requesterColor;
+            if (tmpBoard.hasPieceAt(moveCmd.getMove().getStartPosition())) { // If there's a piece
+                requesterColor = tmpBoard.getPiece(moveCmd.getMove().getStartPosition()).getTeamColor(); // get color
+                if (!gameDAO.getUsername(moveCmd.getGameID(), requesterColor).equals(nameOfRequester)) {
+                    sendErrorMessage("Error: You can't do that. It's rude.", session);
+                    proceedForward = false; // Make sure player isn't trying to move opponent's piece
+                }
+            }
+            else if (!gameDAO.getUsername(moveCmd.getGameID(), ChessGame.TeamColor.BLACK).equals(nameOfRequester) &&
                 !gameDAO.getUsername(moveCmd.getGameID(), ChessGame.TeamColor.WHITE).equals(nameOfRequester)) {
                 sendErrorMessage("Error: Silly observer. You don't participate!", session);
                 proceedForward = false;
             }
+
         } catch (DataAccessException | SQLException e) {
             throw new RuntimeException(e);
         }
@@ -166,6 +191,40 @@ public class WebSocketHandler {
             } catch (InvalidMoveException invEx) {
                 sendErrorMessage("Error: invalid chess move.", session);
             }
+        }
+    }
+
+    private void playerResign(Resign resCmd, Session session) throws IOException {
+        if (!authDAO.hasAuth(resCmd.getAuthString())) {
+            sendErrorMessage("Error: Invalid authToken.", session);
+        } else if (!gameDAO.hasGame(resCmd.getGameID())) {
+            sendErrorMessage("Error: game ID does not exist in database.", session);
+        } else try {
+            ChessGame game = gameDAO.getChessGameFromDatabase(resCmd.getGameID());
+            String resignName = authDAO.getAuth(resCmd.getAuthString()).username();
+            ChessGame.TeamColor resignColor = null;
+            // If person requesting to quit is on the black team
+            if (gameDAO.getUsername(resCmd.getGameID(), ChessGame.TeamColor.BLACK).equals(resignName)) {
+                resignColor = ChessGame.TeamColor.BLACK;
+            }   // Else, if they're on the white team
+            else if (gameDAO.getUsername(resCmd.getGameID(), ChessGame.TeamColor.WHITE).equals(resignName)) {
+                resignColor = ChessGame.TeamColor.WHITE;
+            }  else {   // Neither color matches name, so requester must be an observer
+                sendErrorMessage("Error: Observer cannot resign.", session);
+                throw new IOException("Observer resignation is not allowed");
+            }
+            // Now we know the name, team color, and game of the person requesting to resign
+            if (game.isFinished()) {    // If game is already over
+                sendErrorMessage("Error: Game is already over.", session);
+            } else { // winner is the opposite team
+                ChessGame.TeamColor winningTeam = resignColor.equals(ChessGame.TeamColor.WHITE) ?
+                                                  ChessGame.TeamColor.BLACK : ChessGame.TeamColor.WHITE;
+                game.setWinner(winningTeam);
+                gameDAO.updateGame(resCmd.getGameID(), game);   // Update game in database
+                sendBroadcastPlayerResigned(resCmd);    // Let everyone know this player is a quitter
+            }
+        } catch (SQLException | DataAccessException ex) {
+            sendErrorMessage("Error: Problem accessing SQL database.", session);
         }
     }
 
@@ -193,6 +252,13 @@ public class WebSocketHandler {
         broadcastMsg += " has left the game.";
         Notification notification = new Notification(NOTIFY, broadcastMsg);         // Make a new notification
         connManager.broadcast(lvCmd.getGameID(), lvCmd.getAuthString(), notification);  // Send to users in same game
+    }
+
+    void sendBroadcastPlayerResigned(Resign resignCmd) throws DataAccessException, IOException {
+        String broadcastMsg = authDAO.getAuth(resignCmd.getAuthString()).username();
+        broadcastMsg += " resigned from the game.";
+        Notification notification = new Notification(NOTIFY, broadcastMsg); // Make new notification
+        connManager.broadcast(resignCmd.getGameID(), notification); // Send message to everyone, including sender
     }
 
     void SendBroadcastLoadGame(MakeMove moveCmd) throws IOException, SQLException, DataAccessException {

@@ -17,21 +17,15 @@ public class ChessGame {
     }
 
     // Private variables for determining game status
-    private TeamColor turn;
     private ChessBoard board;
+    private TeamColor turn;
+    private boolean isGameOver;
+    private TeamColor winner;
 
     // These positions are checked each turn to check if either king is in check
     private ChessPosition blackKingLocation;
     private ChessPosition whiteKingLocation;
 
-
-
-    /**
-     * @return Which team's turn it is
-     */
-    public TeamColor getTeamTurn() {
-        return turn;
-    }
 
     /**
      * Set's which teams turn it is
@@ -40,6 +34,23 @@ public class ChessGame {
      */
     public void setTeamTurn(TeamColor team) {
         turn = team;
+    }
+
+    /**
+     * Upon a resign, the server will use this to declare the other team the winner.
+     * @param team set as winner
+     */
+    public void setWinner(TeamColor team) {
+        isGameOver = true;
+        winner = team;
+    }
+
+    /**
+     * Determine if a game is over.
+     * @return isGameOver This boolean is true if a player has won.
+     */
+    public boolean isFinished() {
+        return isGameOver;
     }
 
     /**
@@ -154,6 +165,11 @@ public class ChessGame {
 
         // Switch team turn.
         turn = (turn == TeamColor.BLACK) ? TeamColor.WHITE : TeamColor.BLACK;
+        if (isInCheckmate(turn)) {      // If team playing next turn is in checkmate, game is over
+            isGameOver = true;
+            // Team from previous team was the winner
+            winner = (turn == TeamColor.BLACK) ? TeamColor.WHITE : TeamColor.BLACK;
+        }
     }
 
     /**
@@ -250,6 +266,8 @@ public class ChessGame {
         board = new ChessBoard();   // Construct the chess board private member
         board.resetBoard();         // Place all pieces in starting positions
         turn = TeamColor.WHITE;     // White team starts the game
+        isGameOver = false;
+        winner = null;
     }
 
     @Override
