@@ -10,7 +10,7 @@ import java.util.UUID;
 
 public class SQLAuthDAO implements AuthDAO {
 
-    private final String[] createAuthTableStatements = { // FIXME: Change statements
+    private final String[] createAuthTableStatements = {
             """
             CREATE TABLE IF NOT EXISTS  auths
             (
@@ -126,17 +126,17 @@ public class SQLAuthDAO implements AuthDAO {
     public boolean isEmpty() throws DataAccessException {
         try (var conn = DatabaseManager.getConnection()) {
             // Make query statement to count entries
-            String queryStmt = "SELECT COUNT(*) FROM " + ConfigConsts.AUTH_TABLE_NAME;
-            try (var ps = conn.prepareStatement(queryStmt)) {
+            String authQueryStmt = "SELECT COUNT(*) FROM " + ConfigConsts.AUTH_TABLE_NAME;
+            try (var ps = conn.prepareStatement(authQueryStmt)) {
 
                 // Executing the query and retrieving the result set
-                ResultSet resultSet = ps.executeQuery();
+                ResultSet rSet = ps.executeQuery();
 
                 // Checking if the result set has any rows
-                if (resultSet.next()) {
-                    int count = resultSet.getInt(1);
+                if (rSet.next()) {
+                    int cnt = rSet.getInt(1);
                     // If count is 0, tables is empty
-                    return (count == 0);
+                    return (cnt == 0);
                 }
             }
         } catch (DataAccessException | SQLException e) {

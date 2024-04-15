@@ -31,45 +31,6 @@ public class ChessBoardPrint {
 
     private static final String UNICODE_ESCAPE = "\u001b";  // Used for setting background color
 
-    /**
-     * This method takes in a Chesspiece object and returns a unicode chess char of the same type and color.
-     * @param piece The type and color are used to select the correct unicode char
-     * @return pieceChar will have the requested unicode character.
-     */
-    private static char getPieceEmoji(ChessPiece piece) {
-        char pieceChar = ' ';
-        ChessGame.TeamColor color = piece.getTeamColor();
-
-        switch (piece.getPieceType()) { // Automatically sets piece character to correct unicode character and color.
-            case KING:
-                pieceChar = (color == ChessGame.TeamColor.WHITE) ? WHITE_KING : BLACK_KING;
-                break;
-
-            case QUEEN:
-                pieceChar = (color == ChessGame.TeamColor.WHITE) ? WHITE_QUEEN : BLACK_QUEEN;
-                break;
-
-            case BISHOP:
-                pieceChar = (color == ChessGame.TeamColor.WHITE) ? WHITE_BISHOP : BLACK_BISHOP;
-                break;
-
-            case KNIGHT:
-                pieceChar = (color == ChessGame.TeamColor.WHITE) ? WHITE_KNIGHT : BLACK_KNIGHT;
-                break;
-
-            case ROOK:
-                pieceChar = (color == ChessGame.TeamColor.WHITE) ? WHITE_ROOK : BLACK_ROOK;
-                break;
-
-            case PAWN:
-                pieceChar = (color == ChessGame.TeamColor.WHITE) ? WHITE_PAWN : BLACK_PAWN;
-                break;
-
-            default:
-                return '?';
-        }
-        return pieceChar;
-    }
 
     // Get just the letter for the chess piece
     // K is used for king, N used for knight
@@ -187,34 +148,7 @@ public class ChessBoardPrint {
         printChessBoard(board, isWhitePieceSide, null);
     }
 
-    public static void printChessSpectatorView(ChessBoard board) {
-        // Print the column labels right to left
-        System.out.println(SET_TEXT_COLOR_DARK_GREY + SET_BG_COLOR_LIGHT_GREY +
-                "    1  2  3  4  5  6  7  8    " + SET_BG_COLOR_BLACK);
-        char colLetter = 'a'; // Used for column labels (rows for spectator view)
 
-        // Go through every square in the board
-        for (int col = 1; col < OUT_BOUNDS; col++) {     // Go from bottom to top
-            // print row number on chessboard border
-            System.out.print(SET_TEXT_COLOR_DARK_GREY + SET_BG_COLOR_LIGHT_GREY + " " + colLetter + " ");
-            for (int row = 1; row < OUT_BOUNDS; row++) {
-                setBackgroundToSquareColor(row, col);                           // Chess square color
-                if (board.hasPieceAt(row, col)) {                               // If there's a piece, print it
-                    setTextToPieceColor(board.getPiece(row, col).getTeamColor()); // Print text in correct color
-                    System.out.print(" " + getPieceLetter(board.getPiece(row, col)) + " ");
-                }
-                else
-                    System.out.print("   ");                            // Otherwise, print blank square
-            }
-            System.out.print(SET_TEXT_COLOR_DARK_GREY + SET_BG_COLOR_LIGHT_GREY + " " + colLetter + " ");
-            System.out.print(SET_BG_COLOR_BLACK + "\n");
-            colLetter++; // Changes label to next letter for next printout
-        }
-        // Print bottom border of chess board with column labels
-        System.out.println(SET_TEXT_COLOR_DARK_GREY + SET_BG_COLOR_LIGHT_GREY +
-                "    1  2  3  4  5  6  7  8    " + SET_BG_COLOR_BLACK);
-        System.out.println(RESET_BG_COLOR + SET_TEXT_COLOR_WHITE); // Reset text to usual color
-    }
 
 
 

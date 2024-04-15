@@ -29,9 +29,9 @@ public class WebSocketHandler {
     private final SQLGameDAO gameDAO = new SQLGameDAO();    // For updating chess games
 
     // ServerMessage types for replying to client requests
-    private final ServerMessage.ServerMessageType LOAD = ServerMessage.ServerMessageType.LOAD_GAME;
-    private final ServerMessage.ServerMessageType ERR = ServerMessage.ServerMessageType.ERROR;
-    private final ServerMessage.ServerMessageType NOTIFY = ServerMessage.ServerMessageType.NOTIFICATION;
+    private static final ServerMessage.ServerMessageType LOAD = ServerMessage.ServerMessageType.LOAD_GAME;
+    private static final ServerMessage.ServerMessageType ERR = ServerMessage.ServerMessageType.ERROR;
+    private static final ServerMessage.ServerMessageType NOTIFY = ServerMessage.ServerMessageType.NOTIFICATION;
 
     @OnWebSocketMessage
     public void onMessage(Session session, String message) throws IOException {
@@ -184,7 +184,7 @@ public class WebSocketHandler {
         if (proceedForward) {
             try {
                 gameDAO.updateGameMakeMove(moveCmd.getGameID(), moveCmd.getMove()); // Make the move
-                SendBroadcastLoadGame(moveCmd);         // Load new board for everyone, including player who made the move
+                sendBroadcastLoadGame(moveCmd);         // Load new board for everyone, including player who made the move
             } catch (SQLException | DataAccessException ex) {
                 sendErrorMessage("Error: trouble accessing SQL database.", session);
             } catch (InvalidMoveException invEx) {
@@ -260,7 +260,7 @@ public class WebSocketHandler {
         connManager.broadcast(resignCmd.getGameID(), notification); // Send message to everyone, including sender
     }
 
-    void SendBroadcastLoadGame(MakeMove moveCmd) throws IOException, SQLException, DataAccessException {
+    void sendBroadcastLoadGame(MakeMove moveCmd) throws IOException, SQLException, DataAccessException {
         int gameID = moveCmd.getGameID();                                       // Retrieve ID for easy reference
         for (Connection conn : connManager.gameConnections.get(gameID)) {
             sendLoadGameMessage(gameID, conn.session);                          // Update everyone's boards

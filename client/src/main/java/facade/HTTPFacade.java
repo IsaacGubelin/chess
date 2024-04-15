@@ -15,7 +15,7 @@ import java.net.URL;
 public class HTTPFacade {
 
     public final String serverUrl;                                     // Connect to server
-    public final String REQ_HEADER_AUTHORIZATION = "authorization";    // Used as key for HTTP request headers
+    public static final String REQ_HEADER_AUTHORIZATION = "authorization";    // Used as key for HTTP request headers
 
     public HTTPFacade(String url) {
         serverUrl = url;

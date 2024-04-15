@@ -94,13 +94,13 @@ public class ClientUI {
         }
     }
 
-    void printStatus() {
+    private void printStatus() {
         setTextToPromptFormat();            // Set text to prompt format
         System.out.print(status + " >>> "); // Show status of user
     }
 
     // Prints prompts and evaluates input during logged-out state
-    void promptLoggedOut(String[] inputs, int numArgs) {
+    private void promptLoggedOut(String[] inputs, int numArgs) {
         // Look at first argument of user's entry. Check following arguments if applicable
         switch (inputs[0]) {
             case "help":
@@ -171,7 +171,7 @@ public class ClientUI {
     }
 
     // Prints prompts and evaluates input during logged-in state
-    void promptLoggedIn(String[] inputs, int numArgs) {
+    private void promptLoggedIn(String[] inputs, int numArgs) {
         // Look at first argument of user's entry. Check following arguments if applicable
         switch (inputs[0]) {
 
@@ -207,35 +207,7 @@ public class ClientUI {
                 break;
 
             case "join":
-                if (numArgs != 3) {
-                    System.out.println("Invalid entry. To join a game, use below format:");
-                    System.out.println("join <ID> [WHITE|BLACK]");
-                } else if (!inputs[2].equals("WHITE") && !inputs[2].equals("BLACK")) {
-                    System.out.println("Invalid team request. Type \"BLACK\" or \"WHITE\"");
-                } else {
-                    updateGamesList();  // Update list of games
-                    try {
-                        int reqGameIndex = Integer.parseInt(inputs[1]); // Get integer from second argument
-                        int id = gameIDs.get(reqGameIndex);             // Retrieve corresponding game ID
-                        ChessGame.TeamColor chosenColor = inputs[2].equals("WHITE") ? ChessGame.TeamColor.WHITE
-                                                        : ChessGame.TeamColor.BLACK;    // Get chosen team color
-                        GameRequestData gameReqData = new GameRequestData(null, chosenColor, id); // Make req
-                        httpFacade.joinGame(authToken, gameReqData);    // Attempt to join game
-                        wsFacade.joinGame(authToken, gameReqData);      // Try to get a LOAD_GAME message
-
-                        currentGameIndex = reqGameIndex;      // If joined, update current game index and team color
-                        color = inputs[2].equals("WHITE") ? ChessGame.TeamColor.WHITE : ChessGame.TeamColor.BLACK;
-
-
-                    } catch (NumberFormatException numEx) { // Prints error message if second argument wasn't a number
-                        System.out.println("Please use only integers for ID of requested game.");
-                    } catch (ResponseException ex) {
-                        System.out.println(SET_TEXT_COLOR_RED + "Could not join game.");
-                        System.out.println(ex.getMessage());
-                    } catch (NullPointerException nullEx) {
-                        System.out.println("Specified game ID does not exist.");
-                    }
-                }
+                parseJoinPlayer(inputs, numArgs);
                 break;
 
             case "observe":
@@ -268,7 +240,7 @@ public class ClientUI {
                     System.out.println("Logged out.");
                     status = UserState.LOGGED_OUT;    // Change status string to logged out state
                 } catch (ResponseException ex) {
-                    System.out.println(SET_TEXT_COLOR_RED + "Could not logout.");
+                    System.out.println(SET_TEXT_COLOR_RED + "Could not logout. Error code: " + ex.getStatusCode());
                     System.out.println(ex.getMessage());
                 }
                 break;
@@ -285,7 +257,7 @@ public class ClientUI {
         }
     }
 
-    void promptInGame(String[] inputs, int numArgs, boolean isObserving) {
+    private void promptInGame(String[] inputs, int numArgs, boolean isObserving) {
         switch (inputs[0]) {
             case "help" -> printHelpScreenInGame(false);
             case "redraw" -> {
@@ -359,13 +331,49 @@ public class ClientUI {
         }
     }
 
+    /**
+     * This helper method is called when the repl detects "join" in the input
+     * @param inputs array of words typed into keyboard
+     * @param numArgs number of words
+     */
+    private void parseJoinPlayer(String[] inputs, int numArgs) {
+        if (numArgs != 3) {
+            System.out.println("Invalid entry. To join a game, use below format:");
+            System.out.println("join <ID> [WHITE|BLACK]");
+        } else if (!inputs[2].equals("WHITE") && !inputs[2].equals("BLACK")) {
+            System.out.println("Invalid team request. Type \"BLACK\" or \"WHITE\"");
+        } else {
+            updateGamesList();  // Update list of games
+            try {
+                int reqGameIndex = Integer.parseInt(inputs[1]); // Get integer from second argument
+                int id = gameIDs.get(reqGameIndex);             // Retrieve corresponding game ID
+                ChessGame.TeamColor chosenColor = inputs[2].equals("WHITE") ? ChessGame.TeamColor.WHITE
+                        : ChessGame.TeamColor.BLACK;    // Get chosen team color
+                GameRequestData gameReqData = new GameRequestData(null, chosenColor, id); // Make req
+                httpFacade.joinGame(authToken, gameReqData);    // Attempt to join game
+                wsFacade.joinGame(authToken, gameReqData);      // Try to get a LOAD_GAME message
+
+                currentGameIndex = reqGameIndex;      // If joined, update current game index and team color
+                color = inputs[2].equals("WHITE") ? ChessGame.TeamColor.WHITE : ChessGame.TeamColor.BLACK;
+
+
+            } catch (NumberFormatException numEx) { // Prints error message if second argument wasn't a number
+                System.out.println("Please use only integers for ID of requested game.");
+            } catch (ResponseException ex) {
+                System.out.println(SET_TEXT_COLOR_RED + "Could not join game.");
+                System.out.println(ex.getMessage());
+            } catch (NullPointerException nullEx) {
+                System.out.println("Specified game ID does not exist.");
+            }
+        }
+    }
+
 
     /**
      * Helper function is used for implementation of ServiceMessageHandler (see client init)
      * @param message The ServerMessage to be evaluated
       */
-
-    void handleServerMessage(String message) throws ResponseException {
+    private void handleServerMessage(String message) throws ResponseException {
         var js = new Gson();                                                    // Make a Json conversion object
         ServerMessage msg = js.fromJson(message, ServerMessage.class);          // Deserialize into ServerMessage
         ServerMessage.ServerMessageType type = msg.getServerMessageType();      // Determine type of message
