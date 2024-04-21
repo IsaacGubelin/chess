@@ -159,7 +159,7 @@ public class ClientUI {
                 if (numArgs > 1) {
                     System.out.println("To quit the game, type \"quit\" with no other text.");
                 } else {
-                    System.out.println("Good bye!");
+                    System.out.println("Good bye!" + SET_TEXT_COLOR_WHITE);
                 }
                 break;
 

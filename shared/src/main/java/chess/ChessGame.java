@@ -20,6 +20,9 @@ public class ChessGame {
     private ChessBoard board;
     private TeamColor turn;
     private boolean isGameOver;
+
+    private boolean isCheckmate;
+    private boolean isTeamInCheck;
     private TeamColor winner;
 
     // These positions are checked each turn to check if either king is in check
@@ -43,6 +46,14 @@ public class ChessGame {
     public void setWinner(TeamColor team) {
         isGameOver = true;
         winner = team;
+    }
+
+    public boolean isTeamPlacedInCheck() {
+        return isTeamInCheck;
+    }
+
+    public boolean isTeamInCheckMate() {
+        return isCheckmate;
     }
 
     /**
@@ -159,14 +170,21 @@ public class ChessGame {
         if (type == ChessPiece.PieceType.PAWN && move.getPromotionPiece() != null) { // Check for valid promotion
             board.addPiece(move.getEndPosition(), new ChessPiece(pieceColor, move.getPromotionPiece()));
         }
+        board.getPiece(move.getEndPosition()).setMoveFlagHigh(); // Raise the hasMoved flag
 
-        // Raise the hasMoved flag
-        board.getPiece(move.getEndPosition()).setMoveFlagHigh();
+        doPostMoveActions();    // Takes care of flipping whose turn it is and verifying checkmate situations
+    }
 
-        // Switch team turn.
-        turn = (turn == TeamColor.BLACK) ? TeamColor.WHITE : TeamColor.BLACK;
+    /**
+     * Switches whose turn it is and checks for check and checkmate.
+     * TODO: Add stalemate boolean and checker
+     */
+    void doPostMoveActions() {
+        turn = (turn == TeamColor.BLACK) ? TeamColor.WHITE : TeamColor.BLACK;   // Switch team turn.
+        isTeamInCheck = isInCheck(turn);                                // If next team is in check, raise flag.
         if (isInCheckmate(turn)) {      // If team playing next turn is in checkmate, game is over
             isGameOver = true;
+            isCheckmate = true;         // Raise the checkmate flag
             // Team from previous team was the winner
             winner = (turn == TeamColor.BLACK) ? TeamColor.WHITE : TeamColor.BLACK;
         }
@@ -266,8 +284,10 @@ public class ChessGame {
         board = new ChessBoard();   // Construct the chess board private member
         board.resetBoard();         // Place all pieces in starting positions
         turn = TeamColor.WHITE;     // White team starts the game
-        isGameOver = false;
-        winner = null;
+        isTeamInCheck = false;      // Checked by the server to notify a team when they've been placed in check
+        isCheckmate = false;        // Checked by server to notify players of a checkmate
+        isGameOver = false;         // Set true when either a game has reached an end state or a player resigns
+        winner = null;              // This is given the team color of the team that wins
     }
 
     @Override

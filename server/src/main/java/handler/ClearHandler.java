@@ -1,7 +1,6 @@
 package handler;
 
 import dataAccess.*;
-import server.DatabaseDAOCollection;
 import service.ClearService;
 import spark.Request;
 import spark.Response;

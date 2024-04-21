@@ -6,7 +6,6 @@ import exception.DataAccessException;
 import exception.UnauthorizedException;
 import model.AuthData;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import server.DatabaseDAOCollection;
 
 import java.sql.SQLException;
 

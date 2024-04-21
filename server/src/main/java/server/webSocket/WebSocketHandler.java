@@ -32,37 +32,34 @@ public class WebSocketHandler {
     private static final ServerMessage.ServerMessageType LOAD = ServerMessage.ServerMessageType.LOAD_GAME;
     private static final ServerMessage.ServerMessageType ERR = ServerMessage.ServerMessageType.ERROR;
     private static final ServerMessage.ServerMessageType NOTIFY = ServerMessage.ServerMessageType.NOTIFICATION;
+    private static final ChessGame.TeamColor TEAM_WHITE = ChessGame.TeamColor.WHITE;
+    private static final ChessGame.TeamColor TEAM_BLACK = ChessGame.TeamColor.BLACK;
 
     @OnWebSocketMessage
     public void onMessage(Session session, String message) throws IOException {
         UserGameCommand action = new Gson().fromJson(message, UserGameCommand.class);
 
         switch (action.getCommandType()) {
-            case JOIN_PLAYER:
+            case JOIN_PLAYER -> {
                 JoinPlayer joinPlayerCmd = new Gson().fromJson(message, JoinPlayer.class); // Make JoinPlayer format
                 joinPlayer(joinPlayerCmd, session);
-                break;
-
-            case JOIN_OBSERVER:
+            }
+            case JOIN_OBSERVER -> {
                 JoinObserver joinObserverCmd = new Gson().fromJson(message, JoinObserver.class); // JoinObserver format
                 joinObserver(joinObserverCmd, session);
-                break;
-
-            case LEAVE:
+            }
+            case LEAVE -> {
                 Leave lvCmd = new Gson().fromJson(message, Leave.class);    // Make into Leave command format
                 removeUserFromGame(lvCmd, session);                         // User exits game
-                break;
-
-            case MAKE_MOVE:
+            }
+            case MAKE_MOVE -> {
                 MakeMove moveCmd = new Gson().fromJson(message, MakeMove.class);    // MakeMove format
                 playerMove(moveCmd, session);                                       // Attempt to make move
-                break;
-
-            case RESIGN:
+            }
+            case RESIGN -> {
                 Resign resignCmd = new Gson().fromJson(message, Resign.class);  // Resign command format
                 playerResign(resignCmd, session);
-                break;
-
+            }
         }
     }
 
@@ -143,7 +140,8 @@ public class WebSocketHandler {
      * @throws IOException Possible exception
      */
     private void playerMove(MakeMove moveCmd, Session session) throws IOException {
-        boolean proceedForward = true;  // Stupid autograder tests. After semester, change this function.
+        boolean proceedForward = true;  //FIXME: Stupid auto grader tests. After semester, change this function.
+        ChessGame.TeamColor requesterColor; // This is set
         if (!authDAO.hasAuth(moveCmd.getAuthString())) {
             sendErrorMessage("Error: Invalid authToken.", session);
         } else if (!gameDAO.hasGame(moveCmd.getGameID())) {
@@ -159,11 +157,10 @@ public class WebSocketHandler {
             proceedForward = false;
         }
 
-
         if (proceedForward) try {
             String nameOfRequester = authDAO.getAuth(moveCmd.getAuthString()).username();
             ChessBoard tmpBoard = gameDAO.getChessGameFromDatabase(moveCmd.getGameID()).getBoard(); // Look at board
-            ChessGame.TeamColor requesterColor;
+
             if (tmpBoard.hasPieceAt(moveCmd.getMove().getStartPosition())) { // If there's a piece
                 requesterColor = tmpBoard.getPiece(moveCmd.getMove().getStartPosition()).getTeamColor(); // get color
                 if (!gameDAO.getUsername(moveCmd.getGameID(), requesterColor).equals(nameOfRequester)) {
@@ -171,8 +168,8 @@ public class WebSocketHandler {
                     proceedForward = false; // Make sure player isn't trying to move opponent's piece
                 }
             }
-            else if (!gameDAO.getUsername(moveCmd.getGameID(), ChessGame.TeamColor.BLACK).equals(nameOfRequester) &&
-                !gameDAO.getUsername(moveCmd.getGameID(), ChessGame.TeamColor.WHITE).equals(nameOfRequester)) {
+            else if (!gameDAO.getUsername(moveCmd.getGameID(), TEAM_BLACK).equals(nameOfRequester) &&
+                !gameDAO.getUsername(moveCmd.getGameID(), TEAM_WHITE).equals(nameOfRequester)) {
                 sendErrorMessage("Error: Silly observer. You don't participate!", session);
                 proceedForward = false;
             }
@@ -184,7 +181,13 @@ public class WebSocketHandler {
         if (proceedForward) {
             try {
                 gameDAO.updateGameMakeMove(moveCmd.getGameID(), moveCmd.getMove()); // Make the move
-                sendBroadcastLoadGame(moveCmd);         // Load new board for everyone, including player who made the move
+                ChessGame tmpGame = gameDAO.getChessGameFromDatabase(moveCmd.getGameID());  // Get a temporary copy
+                sendBroadcastLoadGame(moveCmd);     // Load new board for everyone, including player who made the move
+                if (tmpGame.isTeamInCheckMate()) {
+                    sendBroadcastGeneralGameNotification(moveCmd.getGameID(), "CHECKMATE!");
+                } else if (tmpGame.isTeamPlacedInCheck()) {
+                    sendBroadcastGeneralGameNotification(moveCmd.getGameID(), "Check!");
+                }
             } catch (SQLException | DataAccessException ex) {
                 sendErrorMessage("Error: trouble accessing SQL database.", session);
             } catch (InvalidMoveException invEx) {
@@ -269,6 +272,11 @@ public class WebSocketHandler {
         broadcastMsg += " has made a move: " + moveCmd.getMove().toString();        // Chess move information
         Notification notification = new Notification(NOTIFY, broadcastMsg);         // Make a notification
         connManager.broadcast(gameID, moveCmd.getAuthString(), notification);   // Send notification about new move
+    }
+
+    void sendBroadcastGeneralGameNotification(int gameID, String message) throws IOException {
+        Notification notification = new Notification(NOTIFY, message);  // Make notification
+        connManager.broadcast(gameID, notification);
     }
 
     /**

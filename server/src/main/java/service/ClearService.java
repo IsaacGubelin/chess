@@ -1,7 +1,6 @@
 package service;
 
 import dataAccess.*;
-import server.DatabaseDAOCollection;
 
 public class ClearService {
 
