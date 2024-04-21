@@ -11,14 +11,9 @@ import spark.*;
 public class Server {
 
     /**
-     * This DAO collection object contains six DAOs:
-     * <p>
-     *     - Three memory DAOs for game, auth, and user
-     * </p> <p>
-     *     - Three SQL DAOs for game, auth, and user
-     * </p>
+     *  - Three SQL DAOs for game, auth, and user
      */
-    private DatabaseDAOCollection dataObjects = new DatabaseDAOCollection();
+
     private WebSocketHandler socketHandler = new WebSocketHandler();
 
     // Collection of SQL DAOs. These retain data even when server is offline.
@@ -34,25 +29,25 @@ public class Server {
         Spark.webSocket("/connect", socketHandler);
 
         // CLEAR APPLICATION
-        Spark.delete("/db", (req, res) -> new ClearHandler().clearDatabases(req, res, dataObjects.sqlGameDAO, dataObjects.sqlUserDAO, dataObjects.sqlAuthDAO));
+        Spark.delete("/db", (req, res) -> new ClearHandler().clearDatabases(req, res, sqlGameDAO, sqlUserDAO, sqlAuthDAO));
 
         // REGISTER USER
-        Spark.post("/user", (req, res) -> new RegisterHandler().registerHandle(req, res, dataObjects.sqlUserDAO, dataObjects.sqlAuthDAO));
+        Spark.post("/user", (req, res) -> new RegisterHandler().registerHandle(req, res, sqlUserDAO, sqlAuthDAO));
 
         // LOGIN USER
-        Spark.post("/session", (req, res) -> new LoginOutHandler().loginHandle(req, res, dataObjects.sqlUserDAO, dataObjects.sqlAuthDAO) );
+        Spark.post("/session", (req, res) -> new LoginOutHandler().loginHandle(req, res, sqlUserDAO, sqlAuthDAO) );
 
         // LOGOUT USER
-        Spark.delete("/session", (req, res) -> new LoginOutHandler().logoutHandle(req, res, dataObjects.sqlAuthDAO));
+        Spark.delete("/session", (req, res) -> new LoginOutHandler().logoutHandle(req, res, sqlAuthDAO));
 
         // CREATE GAME
-        Spark.post("/game", (req, res) -> new GameHandler().createGameHandle(req, res, dataObjects.sqlAuthDAO, dataObjects.sqlGameDAO));
+        Spark.post("/game", (req, res) -> new GameHandler().createGameHandle(req, res, sqlAuthDAO, sqlGameDAO));
 
         // LIST GAMES
-        Spark.get("/game", (req, res) -> new GameHandler().listGamesHandle(req, res, dataObjects.sqlAuthDAO, dataObjects.sqlGameDAO));
+        Spark.get("/game", (req, res) -> new GameHandler().listGamesHandle(req, res, sqlAuthDAO, sqlGameDAO));
 
         // JOIN GAME
-        Spark.put("/game", (req, res) -> new GameHandler().joinGameHandle(req, res, dataObjects.sqlAuthDAO, dataObjects.sqlGameDAO));
+        Spark.put("/game", (req, res) -> new GameHandler().joinGameHandle(req, res, sqlAuthDAO, sqlGameDAO));
 
 
         Spark.awaitInitialization();
